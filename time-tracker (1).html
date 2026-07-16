@@ -1,0 +1,652 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ink:#1B2733;
+    --panel:#243040;
+    --panel-2:#2C3A4C;
+    --line:#3A4A5C;
+    --paper:#EDE7DD;
+    --paper-dim:#B9C2CC;
+    --amber:#E8A33D;
+    --amber-dim:#7A5A28;
+    --stop:#C1443C;
+    --stop-dim:#5C2622;
+  }
+  *{box-sizing:border-box;}
+  body,.tt-root{margin:0;padding:0;}
+  .tt-root{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Work Sans',system-ui,sans-serif;
+    min-height:100%;
+    padding:28px 16px 48px;
+  }
+  .tt-wrap{max-width:640px;margin:0 auto;}
+
+  .tt-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;}
+  .tt-title{font-family:'Space Mono',monospace;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-dim);}
+  .tt-sub{font-size:12px;color:var(--paper-dim);opacity:.7;}
+  .tt-account{font-size:11px;color:var(--paper-dim);opacity:.7;text-align:right;}
+  .tt-account button{background:none;border:none;color:var(--amber);opacity:.85;cursor:pointer;font-size:11px;padding:0;margin-left:6px;text-decoration:underline;}
+
+  /* punch clock face */
+  .tt-clock{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:28px 22px 24px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .tt-clock::before{
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--amber),transparent 60%);
+    opacity:.8;
+  }
+  .tt-status{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    margin-bottom:10px;
+  }
+  .tt-status.running{color:var(--amber);}
+  .tt-status .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:7px;position:relative;top:-1px;}
+  .tt-status.running .dot{animation:tt-pulse 1.4s ease-in-out infinite;}
+  @keyframes tt-pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+  .tt-digits{
+    font-family:'Space Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:56px;
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--paper);
+    line-height:1;
+    margin-bottom:22px;
+  }
+
+  .tt-punch{
+    -webkit-appearance:none;appearance:none;border:none;cursor:pointer;
+    width:120px;height:120px;border-radius:50%;
+    font-family:'Space Mono',monospace;font-size:14px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:var(--amber);
+    box-shadow:0 6px 0 var(--amber-dim), 0 10px 18px rgba(0,0,0,.35);
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .tt-punch:active{transform:translateY(5px);box-shadow:0 1px 0 var(--amber-dim), 0 4px 10px rgba(0,0,0,.35);}
+  .tt-punch.stop{background:var(--stop);box-shadow:0 6px 0 var(--stop-dim), 0 10px 18px rgba(0,0,0,.35);color:#fff;}
+  .tt-punch.stop:active{box-shadow:0 1px 0 var(--stop-dim), 0 4px 10px rgba(0,0,0,.35);}
+  .tt-punch:focus-visible{outline:3px solid var(--paper);outline-offset:4px;}
+  .tt-punch:disabled{opacity:.5;cursor:not-allowed;}
+
+  .tt-note-row{margin-top:16px;display:flex;justify-content:center;}
+  .tt-note{
+    width:100%; max-width:360px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px;
+    padding:9px 11px;
+  }
+  .tt-note::placeholder{color:var(--paper-dim);opacity:.6;}
+  .tt-note:focus-visible{outline:2px solid var(--amber);}
+
+  /* today strip */
+  .tt-today{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:18px; padding:14px 18px;
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  }
+  .tt-today-label{font-size:12px;color:var(--paper-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Space Mono',monospace;}
+  .tt-today-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums;}
+  .tt-month-strip{margin-top:8px;}
+  .tt-month-strip .tt-today-val{color:var(--paper-dim);}
+
+  /* month nav */
+  .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:30px 0 12px;}
+  .tt-navbtn{
+    background:none;border:1px solid var(--line);color:var(--paper);
+    width:32px;height:32px;border-radius:4px;cursor:pointer;font-size:15px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tt-navbtn:hover{background:var(--panel-2);}
+  .tt-monthlabel{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper);}
+  .tt-monthtotal{font-size:12px;color:var(--paper-dim);}
+
+  .tt-ledger{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .tt-row{
+    display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+    padding:9px 16px;border-bottom:1px solid var(--line);font-size:13px;
+  }
+  .tt-row:last-child{border-bottom:none;}
+  .tt-row.head{background:var(--panel-2);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-dim);}
+  .tt-row.today{background:rgba(232,163,61,.10);}
+  .tt-day{color:var(--paper-dim);}
+  .tt-row.today .tt-day{color:var(--paper);font-weight:600;}
+  .tt-count{color:var(--paper-dim);font-size:11px;text-align:right;min-width:56px;}
+  .tt-hours{font-family:'Space Mono',monospace;text-align:right;min-width:64px;font-variant-numeric:tabular-nums;}
+  .tt-row.empty .tt-hours{color:var(--paper-dim);opacity:.4;}
+
+  .tt-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .tt-btn{
+    flex:1; min-width:140px;
+    background:var(--panel); border:1px solid var(--line); color:var(--paper);
+    font-family:'Work Sans',sans-serif; font-size:13px; font-weight:600;
+    padding:11px 14px; border-radius:5px; cursor:pointer;
+  }
+  .tt-btn:hover{background:var(--panel-2);}
+  .tt-btn:focus-visible{outline:2px solid var(--amber);}
+  .tt-btn.danger{border-color:var(--stop-dim);color:#E7A29D;}
+  .tt-btn.primary{background:var(--amber);color:var(--ink);border-color:var(--amber-dim);}
+  .tt-btn.primary:hover{background:#f0b258;}
+  .tt-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .tt-manage{margin-top:10px;text-align:center;}
+  .tt-manage-toggle{
+    background:none;border:none;color:var(--paper-dim);opacity:.55;
+    font-family:'Work Sans',sans-serif;font-size:11px;letter-spacing:.04em;
+    cursor:pointer;padding:6px 10px;
+  }
+  .tt-manage-toggle:hover{opacity:.85;}
+  .tt-manage-toggle:focus-visible{outline:2px solid var(--amber);opacity:1;}
+  .tt-manage-panel{margin-top:8px;}
+
+  .tt-modal-backdrop{
+    position:fixed; inset:0; background:rgba(10,14,18,.72);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    z-index:1000;
+  }
+  .tt-modal-backdrop[hidden]{display:none;}
+  .tt-modal{
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    max-width:360px; width:100%; padding:22px 22px 18px;
+    box-shadow:0 20px 50px rgba(0,0,0,.45);
+  }
+  .tt-modal-title{
+    font-family:'Space Mono',monospace; font-size:15px; letter-spacing:.04em;
+    color:var(--stop); font-weight:700; margin-bottom:10px;
+  }
+  .tt-modal-desc{font-size:13px; line-height:1.5; color:var(--paper-dim); margin-bottom:18px;}
+  .tt-modal-actions{display:flex; gap:10px;}
+  .tt-modal-actions .tt-btn{margin:0;}
+
+  .tt-foot{margin-top:14px;font-size:11px;color:var(--paper-dim);opacity:.55;text-align:center;}
+
+  /* auth screen */
+  .tt-auth-backdrop{
+    position:fixed; inset:0; background:var(--ink);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:2000;
+  }
+  .tt-auth-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    max-width:340px; width:100%; padding:28px 24px;
+  }
+  .tt-auth-title{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:18px;text-align:center;}
+  .tt-auth-field{margin-bottom:12px;}
+  .tt-auth-field label{display:block;font-size:11px;color:var(--paper-dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
+  .tt-auth-field input{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:14px; padding:10px 11px;
+  }
+  .tt-auth-field input:focus-visible{outline:2px solid var(--amber);}
+  .tt-auth-error{font-size:12px;color:#E7A29D;margin:8px 0;min-height:16px;}
+  .tt-auth-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+  .tt-auth-switch{text-align:center;font-size:12px;color:var(--paper-dim);margin-top:14px;}
+  .tt-auth-switch button{background:none;border:none;color:var(--amber);cursor:pointer;font-size:12px;text-decoration:underline;padding:0;}
+  .tt-auth-loading{text-align:center;color:var(--paper-dim);font-family:'Space Mono',monospace;font-size:12px;}
+
+  @media (max-width:420px){
+    .tt-digits{font-size:44px;}
+    .tt-punch{width:104px;height:104px;}
+  }
+</style>
+
+<div class="tt-auth-backdrop" id="tt-auth-backdrop">
+  <div class="tt-auth-card">
+    <div class="tt-auth-title" id="tt-auth-title">Sign in — Double T</div>
+    <div id="tt-auth-loading" class="tt-auth-loading" hidden>Connecting…</div>
+    <form id="tt-auth-form">
+      <div class="tt-auth-field">
+        <label for="tt-auth-email">Email</label>
+        <input type="email" id="tt-auth-email" autocomplete="email" required />
+      </div>
+      <div class="tt-auth-field">
+        <label for="tt-auth-password">Password</label>
+        <input type="password" id="tt-auth-password" autocomplete="current-password" required minlength="6" />
+      </div>
+      <div class="tt-auth-error" id="tt-auth-error"></div>
+      <div class="tt-auth-actions">
+        <button type="submit" class="tt-btn primary" id="tt-auth-submit">Sign in</button>
+      </div>
+    </form>
+    <div class="tt-auth-switch">
+      <span id="tt-auth-switch-text">New here?</span>
+      <button type="button" id="tt-auth-switch-btn">Create an account</button>
+    </div>
+  </div>
+</div>
+
+<div class="tt-root" id="tt-app-root" style="display:none;">
+  <div class="tt-wrap">
+    <div class="tt-header">
+      <div class="tt-title">Double T</div>
+      <div style="text-align:right;">
+        <div class="tt-sub" id="tt-today-date"></div>
+        <div class="tt-account"><span id="tt-account-email"></span><button id="tt-signout">Sign out</button></div>
+      </div>
+    </div>
+
+    <div class="tt-clock">
+      <div class="tt-status" id="tt-status"><span class="dot"></span><span id="tt-status-text">Idle</span></div>
+      <div class="tt-digits" id="tt-digits">00:00:00</div>
+      <button class="tt-punch" id="tt-punch">Start</button>
+      <div class="tt-note-row">
+        <input class="tt-note" id="tt-note" type="text" placeholder="What are you working on? (optional)" maxlength="120" />
+      </div>
+    </div>
+
+    <div class="tt-today">
+      <div class="tt-today-label">Today's total</div>
+      <div class="tt-today-val" id="tt-today-total">0:00</div>
+    </div>
+
+    <div class="tt-today tt-month-strip">
+      <div class="tt-today-label" id="tt-month-strip-label">This month's total</div>
+      <div class="tt-today-val" id="tt-month-strip-total">0:00</div>
+    </div>
+
+    <div class="tt-monthbar">
+      <button class="tt-navbtn" id="tt-prev" aria-label="Previous month">&#8249;</button>
+      <div style="text-align:center;">
+        <div class="tt-monthlabel" id="tt-monthlabel">—</div>
+        <div class="tt-monthtotal" id="tt-monthtotal">0h logged</div>
+      </div>
+      <button class="tt-navbtn" id="tt-next" aria-label="Next month">&#8250;</button>
+    </div>
+
+    <div class="tt-ledger" id="tt-ledger">
+      <div class="tt-row head"><div>Day</div><div class="tt-count">Entries</div><div class="tt-hours">Total</div></div>
+    </div>
+
+    <div class="tt-actions">
+      <button class="tt-btn" id="tt-export">Export to Excel (.xlsx)</button>
+    </div>
+
+    <div class="tt-manage">
+      <button class="tt-manage-toggle" id="tt-manage-toggle">Manage data</button>
+      <div class="tt-manage-panel" id="tt-manage-panel" hidden>
+        <button class="tt-btn danger" id="tt-reset">Clear all data</button>
+      </div>
+    </div>
+
+    <div class="tt-modal-backdrop" id="tt-modal-backdrop" hidden>
+      <div class="tt-modal" role="alertdialog" aria-labelledby="tt-modal-title" aria-describedby="tt-modal-desc">
+        <div class="tt-modal-title" id="tt-modal-title">Delete all data?</div>
+        <div class="tt-modal-desc" id="tt-modal-desc">
+          This permanently removes every logged entry for your account, on every device. It cannot be undone.
+          Export to Excel first if you want to keep a copy.
+        </div>
+        <div class="tt-modal-actions">
+          <button class="tt-btn" id="tt-modal-cancel">Cancel</button>
+          <button class="tt-btn danger" id="tt-modal-confirm">Delete everything</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.</div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, addDoc, deleteDoc, setDoc,
+    onSnapshot, query, orderBy, writeBatch
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ====================================================================
+  // PASTE YOUR FIREBASE PROJECT CONFIG HERE (from Firebase Console >
+  // Project settings > General > Your apps > SDK setup and configuration)
+  // ====================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyAeT_y2hDPoyDIsFkfsQAEjsRR-1bS3qbc",
+    authDomain: "doublet-timetracker.firebaseapp.com",
+    projectId: "doublet-timetracker",
+    storageBucket: "doublet-timetracker.firebasestorage.app",
+    messagingSenderId: "37678010543",
+    appId: "1:37678010543:web:501fb49eb12c814957845a"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let entries = [];
+  let active = null; // { startISO, note }
+  let viewYear, viewMonth;
+  let tickHandle = null;
+  let unsubEntries = null;
+  let unsubActive = null;
+  let currentUid = null;
+  let isSignUpMode = false;
+
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function fmtHM(totalSeconds){
+    const h = Math.floor(totalSeconds/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    return `${h}:${pad(m)}`;
+  }
+  function fmtHMS(totalSeconds){
+    const h = Math.floor(totalSeconds/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    const s = Math.floor(totalSeconds%60);
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+
+  // ---------------- Auth ----------------
+  function friendlyAuthError(err){
+    const code = err && err.code ? err.code : '';
+    if(code.includes('email-already-in-use')) return 'That email already has an account — try signing in instead.';
+    if(code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) return 'Incorrect email or password.';
+    if(code.includes('weak-password')) return 'Password should be at least 6 characters.';
+    if(code.includes('invalid-email')) return 'That email address looks invalid.';
+    return 'Something went wrong. Please try again.';
+  }
+
+  $('tt-auth-switch-btn').addEventListener('click', ()=>{
+    isSignUpMode = !isSignUpMode;
+    $('tt-auth-title').textContent = isSignUpMode ? 'Create account — Double T' : 'Sign in — Double T';
+    $('tt-auth-submit').textContent = isSignUpMode ? 'Create account' : 'Sign in';
+    $('tt-auth-switch-text').textContent = isSignUpMode ? 'Already have an account?' : 'New here?';
+    $('tt-auth-switch-btn').textContent = isSignUpMode ? 'Sign in' : 'Create an account';
+    $('tt-auth-error').textContent = '';
+  });
+
+  $('tt-auth-form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = $('tt-auth-email').value.trim();
+    const password = $('tt-auth-password').value;
+    $('tt-auth-error').textContent = '';
+    $('tt-auth-submit').disabled = true;
+    try{
+      if(isSignUpMode){
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    }catch(err){
+      $('tt-auth-error').textContent = friendlyAuthError(err);
+    }finally{
+      $('tt-auth-submit').disabled = false;
+    }
+  });
+
+  $('tt-signout').addEventListener('click', ()=> signOut(auth));
+
+  onAuthStateChanged(auth, (user)=>{
+    if(user){
+      currentUid = user.uid;
+      $('tt-auth-backdrop').style.display = 'none';
+      $('tt-app-root').style.display = 'block';
+      $('tt-account-email').textContent = user.email;
+      attachListeners(user.uid);
+    } else {
+      currentUid = null;
+      detachListeners();
+      $('tt-app-root').style.display = 'none';
+      $('tt-auth-backdrop').style.display = 'flex';
+    }
+  });
+
+  // ---------------- Firestore sync ----------------
+  function entriesCol(uid){ return collection(db, 'users', uid, 'entries'); }
+  function activeDoc(uid){ return doc(db, 'users', uid, 'meta', 'active'); }
+
+  function attachListeners(uid){
+    detachListeners();
+    initMonthView();
+
+    const q = query(entriesCol(uid), orderBy('startISO'));
+    unsubEntries = onSnapshot(q, (snap)=>{
+      entries = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      render();
+    }, (err)=> console.error('entries listener error', err));
+
+    unsubActive = onSnapshot(activeDoc(uid), (snap)=>{
+      active = snap.exists() ? snap.data() : null;
+      render();
+    }, (err)=> console.error('active listener error', err));
+
+    scheduleTick();
+  }
+
+  function detachListeners(){
+    if(unsubEntries){ unsubEntries(); unsubEntries = null; }
+    if(unsubActive){ unsubActive(); unsubActive = null; }
+    if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
+    entries = [];
+    active = null;
+  }
+
+  // ---------------- App logic ----------------
+  function todaysSeconds(){
+    const key = dateKey(new Date());
+    let total = entries.filter(e=>e.date===key).reduce((s,e)=>s+e.durationSec,0);
+    if(active){
+      total += Math.floor((Date.now() - new Date(active.startISO).getTime())/1000);
+    }
+    return total;
+  }
+
+  function render(){
+    $('tt-today-date').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
+
+    const running = !!active;
+    $('tt-status').classList.toggle('running', running);
+    $('tt-status-text').textContent = running ? 'Running' : 'Idle';
+    $('tt-punch').textContent = running ? 'Stop' : 'Start';
+    $('tt-punch').classList.toggle('stop', running);
+    $('tt-note').disabled = running;
+    if(running) $('tt-note').value = active.note || '';
+
+    const liveSec = running ? Math.floor((Date.now()-new Date(active.startISO).getTime())/1000) : 0;
+    $('tt-digits').textContent = fmtHMS(liveSec);
+    $('tt-today-total').textContent = fmtHM(todaysSeconds());
+
+    renderMonth();
+  }
+
+  function renderMonth(){
+    $('tt-monthlabel').textContent = `${monthNames[viewMonth]} ${viewYear}`;
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    const todayKey = dateKey(new Date());
+
+    let monthTotal = 0;
+    let rows = `<div class="tt-row head"><div>Day</div><div class="tt-count">Entries</div><div class="tt-hours">Total</div></div>`;
+    for(let d=1; d<=daysInMonth; d++){
+      const dt = new Date(viewYear, viewMonth, d);
+      const key = dateKey(dt);
+      const dayEntries = entries.filter(e=>e.date===key);
+      let secs = dayEntries.reduce((s,e)=>s+e.durationSec,0);
+      monthTotal += secs;
+      const isToday = key===todayKey;
+      const weekday = dt.toLocaleDateString(undefined,{weekday:'short'});
+      rows += `<div class="tt-row ${isToday?'today':''} ${secs===0?'empty':''}">
+        <div class="tt-day">${weekday} ${d}</div>
+        <div class="tt-count">${dayEntries.length||''}</div>
+        <div class="tt-hours">${secs>0?fmtHM(secs):'—'}</div>
+      </div>`;
+    }
+    $('tt-ledger').innerHTML = rows;
+
+    let liveMonthSec = 0;
+    if(active){
+      const startDate = new Date(active.startISO);
+      if(startDate.getFullYear()===viewYear && startDate.getMonth()===viewMonth){
+        liveMonthSec = Math.floor((Date.now()-startDate.getTime())/1000);
+      }
+    }
+    const displayMonthTotal = monthTotal + liveMonthSec;
+    $('tt-monthtotal').textContent = `${fmtHM(displayMonthTotal)} logged`;
+
+    const now = new Date();
+    const isCurrentMonth = viewYear===now.getFullYear() && viewMonth===now.getMonth();
+    $('tt-month-strip-label').textContent = isCurrentMonth ? "This month's total" : `${monthNames[viewMonth]} total`;
+    $('tt-month-strip-total').textContent = fmtHM(displayMonthTotal);
+  }
+
+  function updateMonthStripOnly(){
+    if(!active) return;
+    let monthTotal = 0;
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    for(let d=1; d<=daysInMonth; d++){
+      const key = `${viewYear}-${pad(viewMonth+1)}-${pad(d)}`;
+      monthTotal += entries.filter(e=>e.date===key).reduce((s,e)=>s+e.durationSec,0);
+    }
+    const startDate = new Date(active.startISO);
+    if(startDate.getFullYear()===viewYear && startDate.getMonth()===viewMonth){
+      monthTotal += Math.floor((Date.now()-startDate.getTime())/1000);
+    }
+    $('tt-monthtotal').textContent = `${fmtHM(monthTotal)} logged`;
+    $('tt-month-strip-total').textContent = fmtHM(monthTotal);
+  }
+
+  function scheduleTick(){
+    if(tickHandle) clearInterval(tickHandle);
+    tickHandle = setInterval(()=>{
+      if(active){
+        const liveSec = Math.floor((Date.now()-new Date(active.startISO).getTime())/1000);
+        $('tt-digits').textContent = fmtHMS(liveSec);
+        $('tt-today-total').textContent = fmtHM(todaysSeconds());
+        updateMonthStripOnly();
+      }
+    }, 1000);
+  }
+
+  async function handlePunch(){
+    if(!currentUid) return;
+    if(active){
+      const start = new Date(active.startISO);
+      const stop = new Date();
+      const durationSec = Math.max(0, Math.round((stop-start)/1000));
+      try{
+        await addDoc(entriesCol(currentUid), {
+          date: dateKey(start),
+          startISO: active.startISO,
+          stopISO: stop.toISOString(),
+          durationSec,
+          note: active.note || ''
+        });
+        await deleteDoc(activeDoc(currentUid));
+      }catch(err){ console.error('Could not stop timer', err); }
+    } else {
+      try{
+        await setDoc(activeDoc(currentUid), {
+          startISO: new Date().toISOString(),
+          note: $('tt-note').value.trim()
+        });
+      }catch(err){ console.error('Could not start timer', err); }
+    }
+  }
+
+  function buildWorkbook(){
+    const wb = XLSX.utils.book_new();
+    const years = new Set(entries.map(e=> new Date(e.date).getFullYear()));
+    years.add(viewYear);
+    const yearToUse = years.size===1 ? [...years][0] : viewYear;
+
+    for(let m=0;m<12;m++){
+      const daysInMonth = new Date(yearToUse, m+1, 0).getDate();
+      const monthEntries = entries
+        .filter(e=>{ const d=new Date(e.date+'T00:00:00'); return d.getFullYear()===yearToUse && d.getMonth()===m; })
+        .sort((a,b)=> a.startISO.localeCompare(b.startISO));
+
+      const aoa = [['Date','Start','Stop','Duration (h)','Notes']];
+      monthEntries.forEach(e=>{
+        const s = new Date(e.startISO), st = new Date(e.stopISO);
+        aoa.push([
+          e.date,
+          s.toTimeString().slice(0,5),
+          st.toTimeString().slice(0,5),
+          +(e.durationSec/3600).toFixed(2),
+          e.note || ''
+        ]);
+      });
+      aoa.push([]);
+      aoa.push(['Daily summary']);
+      aoa.push(['Date','Total (h)']);
+      let monthTotalSec = 0;
+      for(let d=1; d<=daysInMonth; d++){
+        const key = `${yearToUse}-${pad(m+1)}-${pad(d)}`;
+        const secs = entries.filter(e=>e.date===key).reduce((s,e)=>s+e.durationSec,0);
+        monthTotalSec += secs;
+        aoa.push([key, +(secs/3600).toFixed(2)]);
+      }
+      aoa.push([]);
+      aoa.push(['Month total (h)', +(monthTotalSec/3600).toFixed(2)]);
+
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{wch:12},{wch:8},{wch:8},{wch:12},{wch:30}];
+      XLSX.utils.book_append_sheet(wb, ws, monthNames[m].slice(0,10));
+    }
+    return { wb, yearToUse };
+  }
+
+  function exportXlsx(){
+    const {wb, yearToUse} = buildWorkbook();
+    XLSX.writeFile(wb, `Time_Log_${yearToUse}.xlsx`);
+  }
+
+  async function resetAll(){
+    if(!currentUid) return;
+    try{
+      const snap = await new Promise((resolve, reject)=>{
+        const unsub = onSnapshot(entriesCol(currentUid), (s)=>{ unsub(); resolve(s); }, reject);
+      });
+      const batch = writeBatch(db);
+      snap.docs.forEach(d=> batch.delete(d.ref));
+      await batch.commit();
+      await deleteDoc(activeDoc(currentUid));
+    }catch(err){ console.error('Could not clear data', err); }
+  }
+
+  function openResetModal(){ $('tt-modal-backdrop').hidden = false; }
+  function closeResetModal(){ $('tt-modal-backdrop').hidden = true; }
+
+  function initMonthView(){
+    const now = new Date();
+    viewYear = now.getFullYear();
+    viewMonth = now.getMonth();
+  }
+
+  $('tt-punch').addEventListener('click', handlePunch);
+  $('tt-export').addEventListener('click', exportXlsx);
+  $('tt-reset').addEventListener('click', openResetModal);
+  $('tt-modal-cancel').addEventListener('click', closeResetModal);
+  $('tt-modal-backdrop').addEventListener('click', (e)=>{ if(e.target.id==='tt-modal-backdrop') closeResetModal(); });
+  $('tt-modal-confirm').addEventListener('click', async ()=>{
+    closeResetModal();
+    await resetAll();
+  });
+  $('tt-manage-toggle').addEventListener('click', ()=>{
+    const panel = $('tt-manage-panel');
+    panel.hidden = !panel.hidden;
+    $('tt-manage-toggle').textContent = panel.hidden ? 'Manage data' : 'Hide';
+  });
+  $('tt-prev').addEventListener('click', ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11; viewYear--;} renderMonth(); });
+  $('tt-next').addEventListener('click', ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0; viewYear++;} renderMonth(); });
+</script>
