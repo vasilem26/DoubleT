@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Double T</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231B2733'/%3E%3Ctext x='32' y='44' font-family='Courier New, monospace' font-weight='700' font-size='34' fill='%23E8A33D' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231B2733'/%3E%3Ctext x='32' y='48' font-family='Courier New, monospace' font-weight='700' font-size='46' fill='%23E8A33D' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap');
@@ -139,6 +139,13 @@
   .tt-count{color:var(--paper-dim);font-size:11px;text-align:right;min-width:56px;}
   .tt-hours{font-family:'Space Mono',monospace;text-align:right;min-width:64px;font-variant-numeric:tabular-nums;}
   .tt-row.empty .tt-hours{color:var(--paper-dim);opacity:.4;}
+  .tt-detail-row{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    padding:7px 16px 7px 30px; border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,.02); font-size:12px;
+  }
+  .tt-detail-note{color:var(--paper-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tt-detail-time{color:var(--paper-dim); opacity:.75; font-family:'Space Mono',monospace; white-space:nowrap; font-variant-numeric:tabular-nums;}
 
   .tt-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
   .tt-btn{
@@ -365,6 +372,11 @@
     const s = Math.floor(totalSeconds%60);
     return `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
 
   // ---------------- Auth ----------------
   function friendlyAuthError(err){
@@ -479,6 +491,8 @@
     renderMonth();
   }
 
+  let expandedDay = null;
+
   function renderMonth(){
     $('tt-monthlabel').textContent = `${monthNames[viewMonth]} ${viewYear}`;
     const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
@@ -489,18 +503,39 @@
     for(let d=1; d<=daysInMonth; d++){
       const dt = new Date(viewYear, viewMonth, d);
       const key = dateKey(dt);
-      const dayEntries = entries.filter(e=>e.date===key);
+      const dayEntries = entries.filter(e=>e.date===key).sort((a,b)=>a.startISO.localeCompare(b.startISO));
       let secs = dayEntries.reduce((s,e)=>s+e.durationSec,0);
       monthTotal += secs;
       const isToday = key===todayKey;
       const weekday = dt.toLocaleDateString(undefined,{weekday:'short'});
-      rows += `<div class="tt-row ${isToday?'today':''} ${secs===0?'empty':''}">
+      const hasEntries = dayEntries.length>0;
+      rows += `<div class="tt-row ${isToday?'today':''} ${secs===0?'empty':''}" data-day="${key}" style="${hasEntries?'cursor:pointer;':''}">
         <div class="tt-day">${weekday} ${d}</div>
         <div class="tt-count">${dayEntries.length||''}</div>
         <div class="tt-hours">${secs>0?fmtHM(secs):'—'}</div>
       </div>`;
+      if(expandedDay===key && hasEntries){
+        dayEntries.forEach(e=>{
+          const s = new Date(e.startISO), st = new Date(e.stopISO);
+          const timeRange = `${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}`;
+          const noteText = e.note ? e.note : 'No note';
+          rows += `<div class="tt-detail-row">
+            <div class="tt-detail-note">${escapeHtml(noteText)}</div>
+            <div class="tt-detail-time">${timeRange} · ${fmtHM(e.durationSec)}</div>
+          </div>`;
+        });
+      }
     }
     $('tt-ledger').innerHTML = rows;
+    $('tt-ledger').querySelectorAll('.tt-row:not(.head)').forEach(rowEl=>{
+      rowEl.addEventListener('click', ()=>{
+        const key = rowEl.getAttribute('data-day');
+        const dayEntries = entries.filter(e=>e.date===key);
+        if(dayEntries.length===0) return;
+        expandedDay = (expandedDay===key) ? null : key;
+        renderMonth();
+      });
+    });
 
     let liveMonthSec = 0;
     if(active){
