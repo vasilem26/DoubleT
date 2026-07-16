@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Double T</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231B2733'/%3E%3Ctext x='32' y='44' font-family='Courier New, monospace' font-weight='700' font-size='34' fill='%23E8A33D' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap');
@@ -206,6 +213,8 @@
     .tt-punch{width:104px;height:104px;}
   }
 </style>
+</head>
+<body>
 
 <div class="tt-auth-backdrop" id="tt-auth-backdrop">
   <div class="tt-auth-card">
@@ -650,3 +659,5 @@
   $('tt-prev').addEventListener('click', ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11; viewYear--;} renderMonth(); });
   $('tt-next').addEventListener('click', ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0; viewYear++;} renderMonth(); });
 </script>
+</body>
+</html>
