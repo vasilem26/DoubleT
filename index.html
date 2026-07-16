@@ -6,6 +6,7 @@
 <title>Double T</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231B2733'/%3E%3Ctext x='32' y='48' font-family='Courier New, monospace' font-weight='700' font-size='46' fill='%23E8A33D' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap');
 
@@ -191,6 +192,21 @@
   .tt-modal-actions .tt-btn{margin:0;}
 
   .tt-foot{margin-top:14px;font-size:11px;color:var(--paper-dim);opacity:.55;text-align:center;}
+  .tt-import-help{
+    margin-top:8px; font-size:11px; color:var(--paper-dim); opacity:.7; text-align:center; line-height:1.6;
+  }
+  .tt-import-help code{background:var(--panel-2); padding:1px 5px; border-radius:3px; font-family:'Space Mono',monospace;}
+  .tt-import-help button{
+    background:none; border:none; color:var(--amber); text-decoration:underline;
+    font-size:11px; cursor:pointer; padding:0; margin-left:4px;
+  }
+  .tt-import-result{
+    margin-top:10px; padding:10px 14px; border-radius:5px; font-size:12px; line-height:1.6;
+    background:var(--panel); border:1px solid var(--line);
+  }
+  .tt-import-result.error{border-color:var(--stop-dim); color:#E7A29D;}
+  .tt-import-result.success{border-color:var(--amber-dim);}
+  .tt-import-result ul{margin:6px 0 0; padding-left:18px;}
 
   /* auth screen */
   .tt-auth-backdrop{
@@ -292,7 +308,14 @@
 
     <div class="tt-actions">
       <button class="tt-btn" id="tt-export">Export to Excel (.xlsx)</button>
+      <button class="tt-btn" id="tt-import-btn">Import from CSV</button>
+      <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
     </div>
+    <div class="tt-import-help">
+      CSV columns: <code>date</code> (YYYY-MM-DD), <code>start</code> (HH:MM), <code>stop</code> (HH:MM), <code>notes</code> (optional).
+      <button type="button" id="tt-template-link">Download template</button>
+    </div>
+    <div id="tt-import-result" class="tt-import-result" hidden></div>
 
     <div class="tt-manage">
       <button class="tt-manage-toggle" id="tt-manage-toggle">Manage data</button>
@@ -676,6 +699,107 @@
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
   }
+
+  function downloadTemplate(){
+    const csv = 'date,start,stop,notes\n2026-07-01,09:00,17:30,Example entry\n2026-07-02,09:15,12:00,Half day - merchant calls\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'time_entries_template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function parseDate(str){
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((str||'').trim());
+    if(!m) return null;
+    const y=+m[1], mo=+m[2], d=+m[3];
+    if(mo<1||mo>12||d<1||d>31) return null;
+    return {y,mo,d};
+  }
+  function parseTime(str){
+    const m = /^(\d{1,2}):(\d{2})$/.exec((str||'').trim());
+    if(!m) return null;
+    const h=+m[1], min=+m[2];
+    if(h<0||h>23||min<0||min>59) return null;
+    return {h,min};
+  }
+
+  async function handleCsvImport(file){
+    const resultEl = $('tt-import-result');
+    resultEl.hidden = false;
+    resultEl.className = 'tt-import-result';
+    resultEl.innerHTML = 'Importing…';
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (res)=>{
+        const rows = res.data;
+        let imported = 0;
+        const errors = [];
+
+        for(let i=0;i<rows.length;i++){
+          const row = rows[i];
+          const dateRaw = row.date ?? row.Date;
+          const startRaw = row.start ?? row.Start;
+          const stopRaw = row.stop ?? row.Stop;
+          const notes = (row.notes ?? row.Notes ?? '').trim();
+          const rowNum = i+2; // account for header row
+
+          const d = parseDate(dateRaw);
+          const st = parseTime(startRaw);
+          const sp = parseTime(stopRaw);
+
+          if(!d){ errors.push(`Row ${rowNum}: bad or missing date "${dateRaw||''}"`); continue; }
+          if(!st){ errors.push(`Row ${rowNum}: bad or missing start time "${startRaw||''}"`); continue; }
+          if(!sp){ errors.push(`Row ${rowNum}: bad or missing stop time "${stopRaw||''}"`); continue; }
+
+          const startDT = new Date(d.y, d.mo-1, d.d, st.h, st.min, 0);
+          const stopDT = new Date(d.y, d.mo-1, d.d, sp.h, sp.min, 0);
+          if(stopDT <= startDT){ errors.push(`Row ${rowNum}: stop time is not after start time`); continue; }
+
+          const durationSec = Math.round((stopDT-startDT)/1000);
+          try{
+            await addDoc(entriesCol(currentUid), {
+              date: `${d.y}-${pad(d.mo)}-${pad(d.d)}`,
+              startISO: startDT.toISOString(),
+              stopISO: stopDT.toISOString(),
+              durationSec,
+              note: notes
+            });
+            imported++;
+          }catch(err){
+            errors.push(`Row ${rowNum}: could not save (${err.message||'unknown error'})`);
+          }
+        }
+
+        if(imported===0 && errors.length>0){
+          resultEl.className = 'tt-import-result error';
+          resultEl.innerHTML = `Imported 0 entries. ${errors.length} row(s) had problems:<ul>${errors.slice(0,10).map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul>`;
+        } else {
+          resultEl.className = 'tt-import-result success';
+          let html = `Imported ${imported} entr${imported===1?'y':'ies'}.`;
+          if(errors.length>0){
+            html += ` ${errors.length} row(s) skipped:<ul>${errors.slice(0,10).map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul>`;
+          }
+          resultEl.innerHTML = html;
+        }
+      },
+      error: (err)=>{
+        resultEl.className = 'tt-import-result error';
+        resultEl.innerHTML = `Could not read that file: ${escapeHtml(err.message||'unknown error')}`;
+      }
+    });
+  }
+
+  $('tt-template-link').addEventListener('click', downloadTemplate);
+  $('tt-import-btn').addEventListener('click', ()=> $('tt-import-input').click());
+  $('tt-import-input').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(file) handleCsvImport(file);
+    e.target.value = '';
+  });
 
   $('tt-punch').addEventListener('click', handlePunch);
   $('tt-export').addEventListener('click', exportXlsx);
