@@ -576,12 +576,15 @@
               somewhere else before you started using Double T. Your existing entries are never
               touched; imported rows are simply added alongside them.
             </div>
+            <div class="tt-menu-desc" style="margin-top:-6px;">
+              Your file needs exactly these column names (first row) — <code style="background:var(--panel-2);padding:1px 5px;border-radius:3px;">start</code>/<code style="background:var(--panel-2);padding:1px 5px;border-radius:3px;">stop</code> are the clock times a work session began and ended.
+            </div>
 
             <div class="tt-csv-columns">
-              <div class="tt-csv-col"><code>date</code><span>YYYY-MM-DD</span></div>
-              <div class="tt-csv-col"><code>start</code><span>HH:MM</span></div>
-              <div class="tt-csv-col"><code>stop</code><span>HH:MM</span></div>
-              <div class="tt-csv-col"><code>notes</code><span>optional</span></div>
+              <div class="tt-csv-col"><code>date</code><span>Day of the entry — YYYY-MM-DD</span></div>
+              <div class="tt-csv-col"><code>start</code><span>Session start time — HH:MM</span></div>
+              <div class="tt-csv-col"><code>stop</code><span>Session end time — HH:MM</span></div>
+              <div class="tt-csv-col"><code>notes</code><span>Project/description — optional</span></div>
             </div>
 
             <button type="button" class="tt-btn tt-menu-bigbtn" id="tt-template-link">&#8595; Download template</button>
@@ -661,7 +664,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.020</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.021</div>
   </div>
 </div>
 
@@ -1586,6 +1589,12 @@
         ctx.textAlign = 'center';
         ctx.fillText(String(labels[i]), x+barWidth/2, chartBottom+18);
       }
+      if(n<=14 && v>0){
+        ctx.fillStyle = '#EDE7DD';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(fmtHM(Math.round(v*3600))+'h', x+barWidth/2, y-6);
+      }
     });
 
     // y-axis max label
@@ -1602,23 +1611,35 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const typeLabel = (exportView==='chart') ? 'Chart' : (exportType==='detailed' ? 'Detailed' : 'Summary');
+    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
 
     // branded header bar
     doc.setFillColor(27,39,51);
     doc.rect(0, 0, pageWidth, 24, 'F');
     doc.setTextColor(232,163,61);
-    doc.setFontSize(14);
+    doc.setFontSize(15);
     doc.text('Double T', 14, 15);
     doc.setTextColor(255,255,255);
     doc.setFontSize(10);
     doc.text('Time Report', pageWidth-14, 15, { align:'right' });
 
-    doc.setTextColor(90,90,90);
-    doc.setFontSize(10);
-    const typeLabel = (exportView==='chart') ? 'Chart' : (exportType==='detailed' ? 'Detailed' : 'Summary');
-    doc.text(`${typeLabel} · ${label}`, 14, 33);
+    // clear label/value info strip (Period · Type · Total)
+    const infoY1 = 33, infoY2 = 40;
+    const cols = [14, 14 + (pageWidth-28)/3, 14 + 2*(pageWidth-28)/3];
+    const infoItems = [ ['PERIOD', label], ['TYPE', typeLabel], ['TOTAL', fmtHM(totalSec)+'h'] ];
+    infoItems.forEach(([lbl,val], i)=>{
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(lbl, cols[i], infoY1);
+      doc.setFontSize(12);
+      doc.setTextColor(30);
+      doc.text(String(val), cols[i], infoY2);
+    });
+    doc.setDrawColor(230);
+    doc.line(14, infoY2+4, pageWidth-14, infoY2+4);
 
-    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
+    const contentStartY = infoY2 + 12;
 
     function addFooter(){
       const pageCount = doc.internal.getNumberOfPages();
@@ -1638,10 +1659,23 @@
       const chartDataUrl = renderChartPNG(dates, exportPeriod);
       const imgWidth = pageWidth - 28;
       const imgHeight = imgWidth * (440/960);
-      doc.addImage(chartDataUrl, 'PNG', 14, 40, imgWidth, imgHeight);
-      doc.setFontSize(11);
-      doc.setTextColor(30);
-      doc.text(`Total: ${fmtHM(totalSec)}h`, 14, 40 + imgHeight + 12);
+      doc.addImage(chartDataUrl, 'PNG', 14, contentStartY, imgWidth, imgHeight);
+
+      // exact values table below the chart, so the numbers are always available as real text
+      const tableHeaders = exportPeriod==='year' ? ['Month','Total (h)','Total (s)'] : ['Date','Total (h)','Total (s)'];
+      const tableRows = buildSummaryRows(dates, exportPeriod);
+      doc.setFontSize(10);
+      doc.setTextColor(90);
+      doc.text('Exact values', 14, contentStartY + imgHeight + 12);
+      doc.autoTable({
+        head: [tableHeaders],
+        body: tableRows,
+        startY: contentStartY + imgHeight + 16,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
+        alternateRowStyles: { fillColor: [245,245,245] }
+      });
+
       addFooter();
       doc.save(`Double_T_chart_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
       return;
@@ -1655,15 +1689,11 @@
     doc.autoTable({
       head: [headers],
       body: rows,
-      startY: 38,
+      startY: contentStartY,
       styles: { fontSize: 9 },
       headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
       alternateRowStyles: { fillColor: [245,245,245] }
     });
-    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 38;
-    doc.setFontSize(11);
-    doc.setTextColor(30);
-    doc.text(`Total: ${fmtHM(totalSec)}h`, 14, finalY + 10);
 
     addFooter();
     doc.save(`Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
