@@ -668,7 +668,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.023</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.024</div>
   </div>
 </div>
 
@@ -1433,7 +1433,7 @@
       .sort((a,b)=>a.startISO.localeCompare(b.startISO))
       .map(e=>{
         const s = new Date(e.startISO), st = new Date(e.stopISO);
-        return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), e.durationSec, e.note||''];
+        return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec), e.note||''];
       });
   }
 
@@ -1445,13 +1445,13 @@
         const days = new Date(y, m+1, 0).getDate();
         let sec = 0;
         for(let d=1; d<=days; d++) sec += secondsForDate(new Date(y, m, d));
-        rows.push([monthNames[m], +(sec/3600).toFixed(2), sec]);
+        rows.push([monthNames[m], +(sec/3600).toFixed(2), fmtHMS(sec)]);
       }
       return rows;
     }
     return dates.map(d=>{
       const sec = secondsForDate(d);
-      return [dateKey(d), +(sec/3600).toFixed(2), sec];
+      return [dateKey(d), +(sec/3600).toFixed(2), fmtHMS(sec)];
     });
   }
 
@@ -1492,8 +1492,8 @@
   function doExportXlsx(dates, label){
     const wb = XLSX.utils.book_new();
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (s)','Notes']
-      : (exportPeriod==='year' ? ['Month','Total (h)','Total (s)'] : ['Date','Total (h)','Total (s)']);
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
     const typeLabel = exportType==='detailed' ? 'Detailed' : 'Summary';
@@ -1504,7 +1504,7 @@
       headers,
       ...rows,
       [],
-      ['Total (h)', +(totalSec/3600).toFixed(2), totalSec]
+      ['Total (h)', +(totalSec/3600).toFixed(2), fmtHMS(totalSec)]
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = exportType==='detailed'
@@ -1531,8 +1531,8 @@
 
   function doExportCsv(dates, label){
     const headers = exportType==='detailed'
-      ? ['date','start','stop','duration_h','duration_s','notes']
-      : (exportPeriod==='year' ? ['month','total_h','total_s'] : ['date','total_h','total_s']);
+      ? ['date','start','stop','duration_h','duration_hms','notes']
+      : (exportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const csvLines = [headers.join(',')];
     rows.forEach(r=>{
@@ -1665,7 +1665,7 @@
       doc.addImage(chartDataUrl, 'PNG', 14, contentStartY, imgWidth, imgHeight);
 
       // exact values table below the chart, so the numbers are always available as real text
-      const tableHeaders = exportPeriod==='year' ? ['Month','Total (h)','Total (s)'] : ['Date','Total (h)','Total (s)'];
+      const tableHeaders = exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)'];
       const tableRows = buildSummaryRows(dates, exportPeriod);
       doc.setFontSize(10);
       doc.setTextColor(90);
@@ -1685,8 +1685,8 @@
     }
 
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (s)','Notes']
-      : (exportPeriod==='year' ? ['Month','Total (h)','Total (s)'] : ['Date','Total (h)','Total (s)']);
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
 
     doc.autoTable({
