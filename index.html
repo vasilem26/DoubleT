@@ -7,6 +7,8 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231B2733'/%3E%3Ctext x='32' y='48' font-family='Courier New, monospace' font-weight='700' font-size='46' fill='%23E8A33D' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap');
 
@@ -90,6 +92,8 @@
     color:var(--paper-dim); font-size:13px; padding:9px 11px;
   }
   .tt-menu-label{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
+  .tt-menu-desc{font-size:12.5px; line-height:1.6; color:var(--paper-dim); margin-bottom:14px;}
+  .tt-menu-bigbtn{width:100%; font-size:14px; padding:14px 16px;}
   .tt-menu-row{display:flex; gap:8px;}
   .tt-menu-input{
     flex:1; width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
@@ -102,13 +106,14 @@
   .tt-menu-msg.success{color:var(--amber);}
 
   .tt-preset-manager-row{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:7px 0; font-size:12px; color:var(--paper-dim); border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:12px 2px; font-size:15px; font-weight:600; color:var(--paper); border-bottom:1px solid var(--line);
   }
+  .tt-preset-manager-row span{word-break:break-word; line-height:1.35;}
   .tt-preset-manager-row:last-child{border-bottom:none;}
-  .tt-preset-remove{background:none; border:none; color:var(--paper-dim); opacity:.6; cursor:pointer; font-size:14px; padding:0 4px;}
+  .tt-preset-remove{background:none; border:none; color:var(--paper-dim); opacity:.6; cursor:pointer; font-size:20px; padding:0 4px; flex-shrink:0;}
   .tt-preset-remove:hover{opacity:1; color:#E7A29D;}
-  .tt-preset-empty{font-size:11px; color:var(--paper-dim); opacity:.6; padding:6px 0;}
+  .tt-preset-empty{font-size:13px; color:var(--paper-dim); opacity:.6; padding:6px 0;}
 
   .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
   .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
@@ -121,6 +126,10 @@
   .tt-segment button:last-child{border-right:none;}
   .tt-segment button:hover{background:var(--panel-2);}
   .tt-segment button.active{background:var(--amber); color:var(--ink);}
+  .tt-segment button:focus-visible{outline:none; box-shadow:inset 0 0 0 2px var(--amber);}
+  .tt-segment button:disabled{opacity:.3; cursor:not-allowed;}
+  .tt-export-segment{width:100%;}
+  .tt-export-segment button{flex:1; text-align:center; padding:9px 8px;}
 
   /* punch clock face */
   .tt-clock{
@@ -213,6 +222,7 @@
   }
   .tt-navbtn:hover{background:var(--panel-2); border-color:var(--amber-dim);}
   .tt-navbtn:active{transform:scale(.92);}
+  .tt-navbtn:focus-visible{outline:none; box-shadow:0 0 0 2px var(--amber);}
   .tt-monthlabel{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper);}
   .tt-monthtotal{font-size:12px;color:var(--paper-dim);}
 
@@ -517,14 +527,42 @@
 
         <div class="tt-menu-screen" id="tt-menu-screen-exports" hidden>
           <div class="tt-menu-section">
-            <button class="tt-btn" id="tt-menu-export" style="width:100%;">Export to Excel (.xlsx)</button>
+            <div class="tt-menu-label">Format</div>
+            <div class="tt-segment tt-export-segment" id="tt-export-format">
+              <button data-val="xlsx" class="active">Excel</button><button data-val="csv">CSV</button><button data-val="pdf">PDF</button>
+            </div>
+          </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Report type</div>
+            <div class="tt-segment tt-export-segment" id="tt-export-type">
+              <button data-val="detailed" class="active">Detailed</button><button data-val="summary">Summary</button>
+            </div>
+            <div class="tt-menu-desc" style="margin-top:8px; margin-bottom:0;">
+              Detailed lists every start/stop entry with notes. Summary lists just the totals per day
+              (or per month, for a Year report).
+            </div>
+          </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Period</div>
+            <div class="tt-segment tt-export-segment" id="tt-export-period">
+              <button data-val="day">Day</button><button data-val="week">Week</button><button data-val="month" class="active">Month</button><button data-val="year">Year</button>
+            </div>
+            <div class="tt-menu-desc" id="tt-export-preview" style="margin-top:8px; margin-bottom:0;"></div>
+          </div>
+          <div class="tt-menu-section">
+            <button class="tt-btn primary tt-menu-bigbtn" id="tt-menu-export">Export</button>
           </div>
         </div>
 
         <div class="tt-menu-screen" id="tt-menu-screen-data" hidden>
           <div class="tt-menu-section">
             <div class="tt-menu-label">Import from CSV</div>
-            <button class="tt-btn" id="tt-import-btn" style="width:100%;">Import from CSV</button>
+            <div class="tt-menu-desc">
+              Bring in older time entries in bulk from a spreadsheet — for example, hours logged
+              somewhere else before you started using Double T. Your existing entries are never
+              touched; imported rows are simply added alongside them.
+            </div>
+            <button class="tt-btn primary tt-menu-bigbtn" id="tt-import-btn">&#8593; Import from CSV</button>
             <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
             <div class="tt-import-help">
               CSV columns: <code>date</code> (YYYY-MM-DD), <code>start</code> (HH:MM), <code>stop</code> (HH:MM), <code>notes</code> (optional).
@@ -534,7 +572,12 @@
           </div>
           <div class="tt-menu-section">
             <div class="tt-menu-label">Delete data</div>
-            <button class="tt-btn danger" id="tt-reset" style="width:100%;">Clear all data</button>
+            <div class="tt-menu-desc">
+              Permanently erases every time entry on this account — every project, every day,
+              on every device you've signed into. There is no undo. If you might want a backup,
+              use Export first.
+            </div>
+            <button class="tt-btn danger tt-menu-bigbtn" id="tt-reset">&#10005; Clear all data</button>
           </div>
         </div>
       </div>
@@ -599,7 +642,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.012</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.013</div>
   </div>
 </div>
 
@@ -857,6 +900,11 @@
     });
     $('tt-menu-title').textContent = MENU_SCREEN_TITLES[name] || 'Account';
     $('tt-menu-back').hidden = (name==='root');
+    if(name==='exports'){
+      exportPeriod = (granularity==='day' || granularity==='week') ? granularity : 'month';
+      setActiveTab('tt-export-period', exportPeriod);
+      updateExportPreview();
+    }
   }
 
   function openMenu(){
@@ -1181,6 +1229,7 @@
         setActiveTab('tt-granularity-tabs', 'day');
         viewMode = 'list';
         setActiveTab('tt-viewmode-tabs', 'list');
+        updateGranularityAvailability();
         renderCurrentView();
       });
     });
@@ -1216,9 +1265,20 @@
     });
   }
 
+  function updateGranularityAvailability(){
+    const dayBtn = document.querySelector('#tt-granularity-tabs button[data-g="day"]');
+    const calendarActive = viewMode==='calendar';
+    dayBtn.disabled = calendarActive;
+    dayBtn.classList.toggle('disabled', calendarActive);
+    if(calendarActive && granularity==='day'){
+      granularity = 'week';
+      setActiveTab('tt-granularity-tabs', 'week');
+    }
+  }
+
   $('tt-granularity-tabs').addEventListener('click', (e)=>{
     const btn = e.target.closest('button[data-g]');
-    if(!btn) return;
+    if(!btn || btn.disabled) return;
     granularity = btn.dataset.g;
     setActiveTab('tt-granularity-tabs', granularity);
     expandedDay = null;
@@ -1229,6 +1289,7 @@
     if(!btn) return;
     viewMode = btn.dataset.v;
     setActiveTab('tt-viewmode-tabs', viewMode);
+    updateGranularityAvailability();
     renderCurrentView();
   });
 
@@ -1271,53 +1332,175 @@
     }
   }
 
-  function buildWorkbook(){
-    const wb = XLSX.utils.book_new();
-    const years = new Set(entries.map(e=> new Date(e.date).getFullYear()));
-    years.add(anchorDate.getFullYear());
-    const yearToUse = years.size===1 ? [...years][0] : anchorDate.getFullYear();
+  // ---------------- Exports ----------------
+  let exportFormat = 'xlsx';
+  let exportType = 'detailed';
+  let exportPeriod = 'month';
 
-    for(let m=0;m<12;m++){
-      const daysInMonth = new Date(yearToUse, m+1, 0).getDate();
-      const monthEntries = entries
-        .filter(e=>{ const d=new Date(e.date+'T00:00:00'); return d.getFullYear()===yearToUse && d.getMonth()===m; })
-        .sort((a,b)=> a.startISO.localeCompare(b.startISO));
-
-      const aoa = [['Date','Start','Stop','Duration (h)','Notes']];
-      monthEntries.forEach(e=>{
-        const s = new Date(e.startISO), st = new Date(e.stopISO);
-        aoa.push([
-          e.date,
-          s.toTimeString().slice(0,5),
-          st.toTimeString().slice(0,5),
-          +(e.durationSec/3600).toFixed(2),
-          e.note || ''
-        ]);
-      });
-      aoa.push([]);
-      aoa.push(['Daily summary']);
-      aoa.push(['Date','Total (h)']);
-      let monthTotalSec = 0;
-      for(let d=1; d<=daysInMonth; d++){
-        const key = `${yearToUse}-${pad(m+1)}-${pad(d)}`;
-        const secs = entries.filter(e=>e.date===key).reduce((s,e)=>s+e.durationSec,0);
-        monthTotalSec += secs;
-        aoa.push([key, +(secs/3600).toFixed(2)]);
-      }
-      aoa.push([]);
-      aoa.push(['Month total (h)', +(monthTotalSec/3600).toFixed(2)]);
-
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!cols'] = [{wch:12},{wch:8},{wch:8},{wch:12},{wch:30}];
-      XLSX.utils.book_append_sheet(wb, ws, monthNames[m].slice(0,10));
+  function getExportDates(period){
+    if(period==='day') return [new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate())];
+    if(period==='week'){
+      const start = new Date(anchorDate);
+      start.setDate(start.getDate() - mondayIndex(start));
+      const out = [];
+      for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
+      return out;
     }
-    return { wb, yearToUse };
+    if(period==='year'){
+      const y = anchorDate.getFullYear();
+      const out = [];
+      for(let m=0;m<12;m++){
+        const days = new Date(y, m+1, 0).getDate();
+        for(let d=1; d<=days; d++) out.push(new Date(y, m, d));
+      }
+      return out;
+    }
+    // month
+    const y = anchorDate.getFullYear(), m = anchorDate.getMonth();
+    const days = new Date(y, m+1, 0).getDate();
+    const out = [];
+    for(let d=1; d<=days; d++) out.push(new Date(y, m, d));
+    return out;
   }
 
-  function exportXlsx(){
-    const {wb, yearToUse} = buildWorkbook();
-    XLSX.writeFile(wb, `Time_Log_${yearToUse}.xlsx`);
+  function getExportLabel(period){
+    const dates = getExportDates(period);
+    if(period==='day') return dates[0].toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
+    if(period==='week'){
+      return `${dates[0].toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${dates[6].toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
+    }
+    if(period==='year') return `${anchorDate.getFullYear()}`;
+    return `${monthNames[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
   }
+
+  function buildDetailedRows(dates){
+    const keys = new Set(dates.map(dateKey));
+    return entries
+      .filter(e=>keys.has(e.date))
+      .sort((a,b)=>a.startISO.localeCompare(b.startISO))
+      .map(e=>{
+        const s = new Date(e.startISO), st = new Date(e.stopISO);
+        return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), e.note||''];
+      });
+  }
+
+  function buildSummaryRows(dates, period){
+    if(period==='year'){
+      const y = anchorDate.getFullYear();
+      const rows = [];
+      for(let m=0;m<12;m++){
+        const days = new Date(y, m+1, 0).getDate();
+        let sec = 0;
+        for(let d=1; d<=days; d++) sec += secondsForDate(new Date(y, m, d));
+        rows.push([monthNames[m], +(sec/3600).toFixed(2)]);
+      }
+      return rows;
+    }
+    return dates.map(d=>[dateKey(d), +(secondsForDate(d)/3600).toFixed(2)]);
+  }
+
+  function updateExportPreview(){
+    const dates = getExportDates(exportPeriod);
+    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
+    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
+    const noun = exportType==='detailed' ? 'entries' : (exportPeriod==='year' ? 'months' : 'days');
+    $('tt-export-preview').textContent =
+      `${getExportLabel(exportPeriod)} — ${rows.length} ${noun}, ${fmtHM(totalSec)} total.`;
+  }
+
+  function triggerDownloadBlob(content, filename, mime){
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function doExportXlsx(dates, label){
+    const wb = XLSX.utils.book_new();
+    const headers = exportType==='detailed'
+      ? ['Date','Start','Stop','Duration (h)','Notes']
+      : (exportPeriod==='year' ? ['Month','Total (h)'] : ['Date','Total (h)']);
+    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
+    const aoa = [headers, ...rows];
+    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
+    aoa.push([]);
+    aoa.push(['Total (h)', +(totalSec/3600).toFixed(2)]);
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = exportType==='detailed'
+      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:30}]
+      : [{wch:14},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Report');
+    XLSX.writeFile(wb, `Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.xlsx`);
+  }
+
+  function doExportCsv(dates, label){
+    const headers = exportType==='detailed'
+      ? ['date','start','stop','duration_h','notes']
+      : (exportPeriod==='year' ? ['month','total_h'] : ['date','total_h']);
+    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
+    const csvLines = [headers.join(',')];
+    rows.forEach(r=>{
+      csvLines.push(r.map(v=>{
+        const s = String(v);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+      }).join(','));
+    });
+    triggerDownloadBlob(csvLines.join('\n'), `Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.csv`, 'text/csv');
+  }
+
+  function doExportPdf(dates, label){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('Double T — Time Report', 14, 16);
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    const typeLabel = exportType==='detailed' ? 'Detailed' : 'Summary';
+    doc.text(`${typeLabel} · ${label}`, 14, 23);
+
+    const headers = exportType==='detailed'
+      ? ['Date','Start','Stop','Duration (h)','Notes']
+      : (exportPeriod==='year' ? ['Month','Total (h)'] : ['Date','Total (h)']);
+    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
+    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
+
+    doc.autoTable({
+      head: [headers],
+      body: rows,
+      startY: 28,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [232,163,61], textColor: [27,39,51] }
+    });
+    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 28;
+    doc.setFontSize(10);
+    doc.setTextColor(30);
+    doc.text(`Total: ${fmtHM(totalSec)}`, 14, finalY + 10);
+
+    doc.save(`Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
+  }
+
+  function runExport(){
+    const dates = getExportDates(exportPeriod);
+    const label = getExportLabel(exportPeriod);
+    if(exportFormat==='xlsx') doExportXlsx(dates, label);
+    else if(exportFormat==='csv') doExportCsv(dates, label);
+    else doExportPdf(dates, label);
+  }
+
+  ['tt-export-format','tt-export-type','tt-export-period'].forEach(id=>{
+    $(id).addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-val]');
+      if(!btn) return;
+      setActiveTab(id, btn.dataset.val);
+      if(id==='tt-export-format') exportFormat = btn.dataset.val;
+      else if(id==='tt-export-type') exportType = btn.dataset.val;
+      else exportPeriod = btn.dataset.val;
+      updateExportPreview();
+    });
+  });
+
 
   async function resetAll(){
     if(!currentUid) return;
@@ -1341,6 +1524,7 @@
     viewMode = 'calendar';
     setActiveTab('tt-granularity-tabs', 'month');
     setActiveTab('tt-viewmode-tabs', 'calendar');
+    updateGranularityAvailability();
   }
 
   function downloadTemplate(){
@@ -1445,7 +1629,7 @@
   });
 
   $('tt-punch').addEventListener('click', handlePunch);
-  $('tt-menu-export').addEventListener('click', exportXlsx);
+  $('tt-menu-export').addEventListener('click', runExport);
   $('tt-reset').addEventListener('click', openResetModal);
   $('tt-modal-cancel').addEventListener('click', closeResetModal);
   $('tt-modal-backdrop').addEventListener('click', (e)=>{ if(e.target.id==='tt-modal-backdrop') closeResetModal(); });
