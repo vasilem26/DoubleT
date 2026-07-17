@@ -62,17 +62,29 @@
     display:flex; justify-content:space-between; align-items:center;
     font-family:'Space Mono',monospace; font-size:13px; letter-spacing:.1em; text-transform:uppercase;
     color:var(--paper-dim); margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--line);
+    gap:8px;
   }
-  .tt-menu-close{background:none; border:none; color:var(--paper-dim); font-size:20px; cursor:pointer; line-height:1; padding:0;}
+  .tt-menu-back{
+    background:none; border:none; color:var(--paper-dim); font-size:22px; cursor:pointer; line-height:1; padding:0;
+    flex-shrink:0; transition:color .15s ease;
+  }
+  .tt-menu-back:hover{color:var(--amber);}
+  .tt-menu-back[hidden]{display:none;}
+  .tt-menu-header span{flex:1; text-align:left;}
+  .tt-menu-close{background:none; border:none; color:var(--paper-dim); font-size:20px; cursor:pointer; line-height:1; padding:0; flex-shrink:0;}
   .tt-menu-close:hover{color:var(--paper);}
   .tt-menu-section{margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line);}
   .tt-menu-section:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
-  .tt-menu-group{margin-bottom:26px;}
-  .tt-menu-group:last-child{margin-bottom:0;}
-  .tt-menu-group-title{
-    font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--amber); opacity:.85; margin-bottom:14px;
+  .tt-menu-screen[hidden]{display:none;}
+  .tt-menu-navrow{
+    width:100%; display:flex; justify-content:space-between; align-items:center;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
+    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; font-weight:600;
+    padding:13px 14px; margin-bottom:10px; cursor:pointer; transition:background .15s ease, border-color .15s ease;
   }
+  .tt-menu-navrow:hover{background:var(--panel); border-color:var(--amber-dim);}
+  .tt-menu-chevron{color:var(--paper-dim); font-size:16px;}
+  .tt-menu-root-signout{margin-top:20px; padding-top:20px; border-top:1px solid var(--line);}
   .tt-menu-static-value{
     background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
     color:var(--paper-dim); font-size:13px; padding:9px 11px;
@@ -293,16 +305,6 @@
   .tt-btn.primary:hover{background:#f0b258;}
   .tt-btn:disabled{opacity:.5;cursor:not-allowed;}
 
-  .tt-manage{margin-top:10px;text-align:center;}
-  .tt-manage-toggle{
-    background:none;border:none;color:var(--paper-dim);opacity:.55;
-    font-family:'Work Sans',sans-serif;font-size:11px;letter-spacing:.04em;
-    cursor:pointer;padding:6px 10px;
-  }
-  .tt-manage-toggle:hover{opacity:.85;}
-  .tt-manage-toggle:focus-visible{outline:2px solid var(--amber);opacity:1;}
-  .tt-manage-panel{margin-top:8px;}
-
   .tt-modal-backdrop{
     position:fixed; inset:0; background:rgba(10,14,18,.72);
     display:flex; align-items:center; justify-content:center; padding:20px;
@@ -458,18 +460,26 @@
     <div class="tt-menu-overlay" id="tt-menu-overlay" hidden>
       <div class="tt-menu-panel" id="tt-menu-panel">
         <div class="tt-menu-header">
-          <span>Account</span>
+          <button id="tt-menu-back" class="tt-menu-back" type="button" aria-label="Back" hidden>&#8249;</button>
+          <span id="tt-menu-title">Account</span>
           <button id="tt-menu-close" class="tt-menu-close" type="button" aria-label="Close menu">&times;</button>
         </div>
 
-        <div class="tt-menu-group">
-          <div class="tt-menu-group-title">User</div>
+        <div class="tt-menu-screen" id="tt-menu-screen-root">
+          <button type="button" class="tt-menu-navrow" data-screen="user">User <span class="tt-menu-chevron">&#8250;</span></button>
+          <button type="button" class="tt-menu-navrow" data-screen="projects">Projects <span class="tt-menu-chevron">&#8250;</span></button>
+          <button type="button" class="tt-menu-navrow" data-screen="exports">Exports <span class="tt-menu-chevron">&#8250;</span></button>
+          <button type="button" class="tt-menu-navrow" data-screen="data">Manage data <span class="tt-menu-chevron">&#8250;</span></button>
+          <div class="tt-menu-root-signout">
+            <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
+          </div>
+        </div>
 
+        <div class="tt-menu-screen" id="tt-menu-screen-user" hidden>
           <div class="tt-menu-section">
             <div class="tt-menu-label">Email</div>
             <div class="tt-menu-static-value" id="tt-menu-email"></div>
           </div>
-
           <div class="tt-menu-section">
             <div class="tt-menu-label">Username</div>
             <div class="tt-menu-row">
@@ -478,7 +488,6 @@
             </div>
             <div class="tt-menu-msg" id="tt-name-msg"></div>
           </div>
-
           <div class="tt-menu-section">
             <div class="tt-menu-label">Change password</div>
             <input type="password" id="tt-menu-password" class="tt-menu-input" placeholder="New password" autocomplete="new-password" />
@@ -493,28 +502,39 @@
             <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-password" style="margin-top:10px; width:100%;">Update password</button>
             <div class="tt-menu-msg" id="tt-password-msg"></div>
           </div>
+        </div>
 
+        <div class="tt-menu-screen" id="tt-menu-screen-projects" hidden>
           <div class="tt-menu-section">
-            <div class="tt-menu-label">Projects</div>
+            <div class="tt-menu-label">Your projects</div>
             <div id="tt-preset-manager"></div>
-            <div class="tt-menu-row">
+            <div class="tt-menu-row" style="margin-top:10px;">
               <input type="text" id="tt-new-preset" class="tt-menu-input" placeholder="e.g. FNRGW - Support" maxlength="60" />
               <button class="tt-btn tt-menu-btn-inline" id="tt-add-preset">Add</button>
             </div>
           </div>
         </div>
 
-        <div class="tt-menu-group">
-          <div class="tt-menu-group-title">Exports</div>
+        <div class="tt-menu-screen" id="tt-menu-screen-exports" hidden>
           <div class="tt-menu-section">
             <button class="tt-btn" id="tt-menu-export" style="width:100%;">Export to Excel (.xlsx)</button>
           </div>
         </div>
 
-        <div class="tt-menu-group">
-          <div class="tt-menu-group-title">Log out</div>
+        <div class="tt-menu-screen" id="tt-menu-screen-data" hidden>
           <div class="tt-menu-section">
-            <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
+            <div class="tt-menu-label">Import from CSV</div>
+            <button class="tt-btn" id="tt-import-btn" style="width:100%;">Import from CSV</button>
+            <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
+            <div class="tt-import-help">
+              CSV columns: <code>date</code> (YYYY-MM-DD), <code>start</code> (HH:MM), <code>stop</code> (HH:MM), <code>notes</code> (optional).
+              <button type="button" id="tt-template-link">Download template</button>
+            </div>
+            <div id="tt-import-result" class="tt-import-result" hidden></div>
+          </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Delete data</div>
+            <button class="tt-btn danger" id="tt-reset" style="width:100%;">Clear all data</button>
           </div>
         </div>
       </div>
@@ -546,7 +566,7 @@
         <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
       </div>
       <div class="tt-segment" id="tt-viewmode-tabs">
-        <button data-v="list" class="active">List</button><button data-v="calendar">Calendar</button><button data-v="chart">Chart</button>
+        <button data-v="list">List</button><button data-v="calendar" class="active">Calendar</button><button data-v="chart">Chart</button>
       </div>
     </div>
 
@@ -565,23 +585,6 @@
     <div class="tt-calendar" id="tt-calendar" hidden></div>
     <div class="tt-chart" id="tt-chart" hidden></div>
 
-    <div class="tt-actions">
-      <button class="tt-btn" id="tt-import-btn">Import from CSV</button>
-      <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
-    </div>
-    <div class="tt-import-help">
-      CSV columns: <code>date</code> (YYYY-MM-DD), <code>start</code> (HH:MM), <code>stop</code> (HH:MM), <code>notes</code> (optional).
-      <button type="button" id="tt-template-link">Download template</button>
-    </div>
-    <div id="tt-import-result" class="tt-import-result" hidden></div>
-
-    <div class="tt-manage">
-      <button class="tt-manage-toggle" id="tt-manage-toggle">Manage data</button>
-      <div class="tt-manage-panel" id="tt-manage-panel" hidden>
-        <button class="tt-btn danger" id="tt-reset">Clear all data</button>
-      </div>
-    </div>
-
     <div class="tt-modal-backdrop" id="tt-modal-backdrop" hidden>
       <div class="tt-modal" role="alertdialog" aria-labelledby="tt-modal-title" aria-describedby="tt-modal-desc">
         <div class="tt-modal-title" id="tt-modal-title">Delete all data?</div>
@@ -596,7 +599,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.011</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.012</div>
   </div>
 </div>
 
@@ -633,7 +636,7 @@
   let active = null; // { startISO, note }
   let anchorDate = new Date(); // representative date for whatever range is being browsed
   let granularity = 'month'; // 'day' | 'week' | 'month'
-  let viewMode = 'list'; // 'list' | 'calendar' | 'chart'
+  let viewMode = 'calendar'; // 'list' | 'calendar' | 'chart'
   let tickHandle = null;
   let unsubEntries = null;
   let unsubActive = null;
@@ -846,6 +849,16 @@
     return user.providerData.some(p=>p.providerId==='password');
   }
 
+  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data' };
+
+  function showMenuScreen(name){
+    document.querySelectorAll('.tt-menu-screen').forEach(el=>{
+      el.hidden = (el.id !== `tt-menu-screen-${name}`);
+    });
+    $('tt-menu-title').textContent = MENU_SCREEN_TITLES[name] || 'Account';
+    $('tt-menu-back').hidden = (name==='root');
+  }
+
   function openMenu(){
     const user = auth.currentUser;
     if(!user) return;
@@ -858,13 +871,18 @@
     $('tt-password-msg').textContent = '';
     $('tt-password-msg').className = 'tt-menu-msg';
     updateChecklistIn('tt-menu-pw-checklist', '');
+    showMenuScreen('root');
     $('tt-menu-overlay').hidden = false;
   }
   function closeMenu(){ $('tt-menu-overlay').hidden = true; }
 
   $('tt-menu-btn').addEventListener('click', openMenu);
   $('tt-menu-close').addEventListener('click', closeMenu);
+  $('tt-menu-back').addEventListener('click', ()=> showMenuScreen('root'));
   $('tt-menu-overlay').addEventListener('click', (e)=>{ if(e.target.id==='tt-menu-overlay') closeMenu(); });
+  document.querySelectorAll('.tt-menu-navrow').forEach(btn=>{
+    btn.addEventListener('click', ()=> showMenuScreen(btn.getAttribute('data-screen')));
+  });
 
   $('tt-save-name').addEventListener('click', async ()=>{
     const newName = $('tt-menu-name').value.trim();
@@ -1320,9 +1338,9 @@
   function initMonthView(){
     anchorDate = new Date();
     granularity = 'month';
-    viewMode = 'list';
+    viewMode = 'calendar';
     setActiveTab('tt-granularity-tabs', 'month');
-    setActiveTab('tt-viewmode-tabs', 'list');
+    setActiveTab('tt-viewmode-tabs', 'calendar');
   }
 
   function downloadTemplate(){
@@ -1434,11 +1452,6 @@
   $('tt-modal-confirm').addEventListener('click', async ()=>{
     closeResetModal();
     await resetAll();
-  });
-  $('tt-manage-toggle').addEventListener('click', ()=>{
-    const panel = $('tt-manage-panel');
-    panel.hidden = !panel.hidden;
-    $('tt-manage-toggle').textContent = panel.hidden ? 'Manage data' : 'Hide';
   });
   $('tt-prev').addEventListener('click', ()=> navShift(-1));
   $('tt-next').addEventListener('click', ()=> navShift(1));
