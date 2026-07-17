@@ -67,13 +67,15 @@
     color:var(--paper-dim); margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--line);
     gap:8px;
   }
+  .tt-menu-titlebar{display:flex; align-items:center; gap:8px; flex:1; cursor:pointer;}
   .tt-menu-back{
     background:none; border:none; color:var(--paper-dim); font-size:22px; cursor:pointer; line-height:1; padding:0;
     flex-shrink:0; transition:color .15s ease;
   }
-  .tt-menu-back:hover{color:var(--amber);}
   .tt-menu-back[hidden]{display:none;}
-  .tt-menu-header span{flex:1; text-align:left; cursor:pointer;}
+  .tt-menu-header span{text-align:left; transition:color .15s ease;}
+  .tt-menu-titlebar:hover .tt-menu-back,
+  .tt-menu-titlebar:hover span{color:var(--amber);}
   .tt-menu-close{background:none; border:none; color:var(--paper-dim); font-size:20px; cursor:pointer; line-height:1; padding:0; flex-shrink:0;}
   .tt-menu-close:hover{color:var(--paper);}
   .tt-menu-section{margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line);}
@@ -474,8 +476,10 @@
     <div class="tt-menu-overlay" id="tt-menu-overlay" hidden>
       <div class="tt-menu-panel" id="tt-menu-panel">
         <div class="tt-menu-header">
-          <button id="tt-menu-back" class="tt-menu-back" type="button" aria-label="Back" hidden>&#8249;</button>
-          <span id="tt-menu-title">Account</span>
+          <div class="tt-menu-titlebar" id="tt-menu-titlebar">
+            <button id="tt-menu-back" class="tt-menu-back" type="button" aria-label="Back" hidden>&#8249;</button>
+            <span id="tt-menu-title">Account</span>
+          </div>
           <button id="tt-menu-close" class="tt-menu-close" type="button" aria-label="Close menu">&times;</button>
         </div>
 
@@ -664,7 +668,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.021</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.022</div>
   </div>
 </div>
 
@@ -951,8 +955,7 @@
 
   $('tt-menu-btn').addEventListener('click', openMenu);
   $('tt-menu-close').addEventListener('click', closeMenu);
-  $('tt-menu-back').addEventListener('click', ()=> showMenuScreen('root'));
-  $('tt-menu-title').addEventListener('click', ()=>{
+  $('tt-menu-titlebar').addEventListener('click', ()=>{
     if(!$('tt-menu-back').hidden) showMenuScreen('root');
   });
   $('tt-menu-overlay').addEventListener('click', (e)=>{ if(e.target.id==='tt-menu-overlay') closeMenu(); });
