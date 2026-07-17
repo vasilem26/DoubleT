@@ -38,6 +38,26 @@
   .tt-sub{font-size:12px;color:var(--paper-dim);opacity:.7;}
   .tt-account{font-size:11px;color:var(--paper-dim);opacity:.7;text-align:right;}
   .tt-account button{background:none;border:none;color:var(--amber);opacity:.85;cursor:pointer;font-size:11px;padding:0;margin-left:6px;text-decoration:underline;}
+  .tt-info-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:14px; height:14px; border-radius:50%; border:1px solid var(--paper-dim) !important;
+    color:var(--paper-dim) !important; opacity:.7 !important; text-decoration:none !important;
+    font-family:'Space Mono',monospace; font-size:10px !important; font-style:italic; padding:0 !important;
+    margin-left:6px !important; vertical-align:middle;
+  }
+  .tt-info-btn:hover{opacity:1 !important; border-color:var(--amber) !important; color:var(--amber) !important;}
+  .tt-account-email-reveal{color:var(--paper-dim); font-size:11px; opacity:.8; margin-left:4px;}
+
+  .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
+  .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
+  .tt-segment button{
+    background:var(--panel); border:none; color:var(--paper-dim);
+    font-family:'Work Sans',sans-serif; font-size:11px; font-weight:600;
+    padding:6px 12px; cursor:pointer; border-right:1px solid var(--line);
+  }
+  .tt-segment button:last-child{border-right:none;}
+  .tt-segment button:hover{background:var(--panel-2);}
+  .tt-segment button.active{background:var(--amber); color:var(--ink);}
 
   /* punch clock face */
   .tt-clock{
@@ -117,7 +137,7 @@
   .tt-month-strip .tt-today-val{color:var(--paper-dim);}
 
   /* month nav */
-  .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:30px 0 12px;}
+  .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 12px;}
   .tt-navbtn{
     background:none;border:1px solid var(--line);color:var(--paper);
     width:32px;height:32px;border-radius:4px;cursor:pointer;font-size:15px;
@@ -147,6 +167,35 @@
   }
   .tt-detail-note{color:var(--paper-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .tt-detail-time{color:var(--paper-dim); opacity:.75; font-family:'Space Mono',monospace; white-space:nowrap; font-variant-numeric:tabular-nums;}
+
+  .tt-calendar{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px;
+    display:grid; grid-template-columns:repeat(7,1fr); gap:5px;
+  }
+  .tt-cal-dow{font-family:'Space Mono',monospace; font-size:10px; text-transform:uppercase; color:var(--paper-dim); text-align:center; padding-bottom:4px; letter-spacing:.06em;}
+  .tt-cal-cell{
+    aspect-ratio:1; border-radius:4px; padding:6px 4px; background:var(--panel-2);
+    display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;
+    border:1px solid transparent;
+  }
+  .tt-cal-cell:hover{border-color:var(--amber-dim);}
+  .tt-cal-cell.outside{opacity:.28; cursor:default;}
+  .tt-cal-cell.today{border-color:var(--amber);}
+  .tt-cal-cell.has-time{background:rgba(232,163,61,.14);}
+  .tt-cal-daynum{font-size:11px; color:var(--paper-dim); font-family:'Space Mono',monospace;}
+  .tt-cal-hours{font-size:11px; font-weight:700; color:var(--amber); font-family:'Space Mono',monospace; font-variant-numeric:tabular-nums; text-align:right;}
+  .tt-cal-cell.week-mode{aspect-ratio:auto; min-height:70px;}
+
+  .tt-chart{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:16px 12px 8px; overflow-x:auto;
+  }
+  .tt-chart-bars{display:flex; align-items:flex-end; gap:4px; height:160px; min-width:min-content;}
+  .tt-chart-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:16px; flex:1;}
+  .tt-chart-bar{width:100%; max-width:26px; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px;}
+  .tt-chart-bar.today{background:#fff;}
+  .tt-chart-label{font-size:9px; color:var(--paper-dim); margin-top:6px; font-family:'Space Mono',monospace; white-space:nowrap;}
+  .tt-chart-val{font-size:9px; color:var(--paper-dim); opacity:.8; margin-bottom:3px; font-family:'Space Mono',monospace;}
 
   .tt-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
   .tt-btn{
@@ -313,7 +362,12 @@
       <div class="tt-title">Double T</div>
       <div style="text-align:right;">
         <div class="tt-sub" id="tt-today-date"></div>
-        <div class="tt-account"><span id="tt-account-email"></span><button id="tt-signout">Sign out</button></div>
+        <div class="tt-account">
+          <span id="tt-account-name"></span>
+          <button id="tt-email-info" class="tt-info-btn" type="button" aria-label="Show email" title="Show email">i</button>
+          <span id="tt-account-email" class="tt-account-email-reveal" hidden></span>
+          <button id="tt-signout">Sign out</button>
+        </div>
       </div>
     </div>
 
@@ -336,18 +390,29 @@
       <div class="tt-today-val" id="tt-month-strip-total">0:00</div>
     </div>
 
-    <div class="tt-monthbar">
-      <button class="tt-navbtn" id="tt-prev" aria-label="Previous month">&#8249;</button>
-      <div style="text-align:center;">
-        <div class="tt-monthlabel" id="tt-monthlabel">—</div>
-        <div class="tt-monthtotal" id="tt-monthtotal">0h logged</div>
+    <div class="tt-viewbar">
+      <div class="tt-segment" id="tt-granularity-tabs">
+        <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
       </div>
-      <button class="tt-navbtn" id="tt-next" aria-label="Next month">&#8250;</button>
+      <div class="tt-segment" id="tt-viewmode-tabs">
+        <button data-v="list" class="active">List</button><button data-v="calendar">Calendar</button><button data-v="chart">Chart</button>
+      </div>
+    </div>
+
+    <div class="tt-monthbar">
+      <button class="tt-navbtn" id="tt-prev" aria-label="Previous">&#8249;</button>
+      <div style="text-align:center;">
+        <div class="tt-monthlabel" id="tt-rangelabel">—</div>
+        <div class="tt-monthtotal" id="tt-rangetotal">0h logged</div>
+      </div>
+      <button class="tt-navbtn" id="tt-next" aria-label="Next">&#8250;</button>
     </div>
 
     <div class="tt-ledger" id="tt-ledger">
       <div class="tt-row head"><div>Day</div><div class="tt-count">Entries</div><div class="tt-hours">Total</div></div>
     </div>
+    <div class="tt-calendar" id="tt-calendar" hidden></div>
+    <div class="tt-chart" id="tt-chart" hidden></div>
 
     <div class="tt-actions">
       <button class="tt-btn" id="tt-export">Export to Excel (.xlsx)</button>
@@ -416,7 +481,9 @@
 
   let entries = [];
   let active = null; // { startISO, note }
-  let viewYear, viewMonth;
+  let anchorDate = new Date(); // representative date for whatever range is being browsed
+  let granularity = 'month'; // 'day' | 'week' | 'month'
+  let viewMode = 'list'; // 'list' | 'calendar' | 'chart'
   let tickHandle = null;
   let unsubEntries = null;
   let unsubActive = null;
@@ -427,6 +494,54 @@
   const pad = n => String(n).padStart(2,'0');
   const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dowShort = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  // Monday-first day-of-week index (0=Mon .. 6=Sun)
+  function mondayIndex(date){ return (date.getDay()+6)%7; }
+
+  function getRangeDates(){
+    // returns array of Date objects (one per day) for the currently selected range
+    if(granularity==='day'){
+      return [new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate())];
+    }
+    if(granularity==='week'){
+      const start = new Date(anchorDate);
+      start.setDate(start.getDate() - mondayIndex(start));
+      const out = [];
+      for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
+      return out;
+    }
+    // month
+    const y = anchorDate.getFullYear(), m = anchorDate.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const out = [];
+    for(let d=1; d<=daysInMonth; d++) out.push(new Date(y, m, d));
+    return out;
+  }
+
+  function getRangeLabel(){
+    const dates = getRangeDates();
+    if(granularity==='day'){
+      return dates[0].toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+    }
+    if(granularity==='week'){
+      const s = dates[0], e = dates[6];
+      const sameMonth = s.getMonth()===e.getMonth();
+      const sFmt = s.toLocaleDateString(undefined,{month:'short', day:'numeric'});
+      const eFmt = e.toLocaleDateString(undefined, sameMonth ? {day:'numeric', year:'numeric'} : {month:'short', day:'numeric', year:'numeric'});
+      return `${sFmt} – ${eFmt}`;
+    }
+    return `${monthNames[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
+  }
+
+  function navShift(delta){
+    const d = new Date(anchorDate);
+    if(granularity==='day') d.setDate(d.getDate()+delta);
+    else if(granularity==='week') d.setDate(d.getDate()+delta*7);
+    else d.setMonth(d.getMonth()+delta);
+    anchorDate = d;
+    renderCurrentView();
+  }
 
   function fmtHM(totalSeconds){
     const h = Math.floor(totalSeconds/3600);
@@ -564,10 +679,17 @@
   function showApp(user){
     $('tt-auth-backdrop').style.display = 'none';
     $('tt-app-root').style.display = 'block';
-    $('tt-account-email').textContent = user.displayName ? `${user.displayName} — ${user.email}` : user.email;
+    $('tt-account-name').textContent = user.displayName || user.email;
+    $('tt-account-email').textContent = user.email;
+    $('tt-account-email').hidden = true;
     currentUid = user.uid;
     attachListeners(user.uid);
   }
+
+  $('tt-email-info').addEventListener('click', ()=>{
+    const el = $('tt-account-email');
+    el.hidden = !el.hidden;
+  });
 
   onAuthStateChanged(auth, (user)=>{
     if(user){
@@ -610,12 +732,21 @@
   }
 
   // ---------------- App logic ----------------
-  function todaysSeconds(){
-    const key = dateKey(new Date());
+  function secondsForDate(dateObj){
+    const key = dateKey(dateObj);
     let total = entries.filter(e=>e.date===key).reduce((s,e)=>s+e.durationSec,0);
-    if(active){
+    if(active && dateKey(new Date(active.startISO))===key){
       total += Math.floor((Date.now() - new Date(active.startISO).getTime())/1000);
     }
+    return total;
+  }
+  function todaysSeconds(){ return secondsForDate(new Date()); }
+
+  function thisMonthSeconds(){
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    let total = 0;
+    for(let d=1; d<=daysInMonth; d++) total += secondsForDate(new Date(now.getFullYear(), now.getMonth(), d));
     return total;
   }
 
@@ -633,30 +764,40 @@
     const liveSec = running ? Math.floor((Date.now()-new Date(active.startISO).getTime())/1000) : 0;
     $('tt-digits').textContent = fmtHMS(liveSec);
     $('tt-today-total').textContent = fmtHM(todaysSeconds());
+    $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds());
 
-    renderMonth();
+    renderCurrentView();
   }
 
   let expandedDay = null;
 
-  function renderMonth(){
-    $('tt-monthlabel').textContent = `${monthNames[viewMonth]} ${viewYear}`;
-    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
-    const todayKey = dateKey(new Date());
+  function renderCurrentView(){
+    const dates = getRangeDates();
+    $('tt-rangelabel').textContent = getRangeLabel();
+    const rangeTotal = dates.reduce((s,d)=>s+secondsForDate(d), 0);
+    $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} logged`;
 
-    let monthTotal = 0;
+    $('tt-ledger').hidden = viewMode!=='list';
+    $('tt-calendar').hidden = viewMode!=='calendar';
+    $('tt-chart').hidden = viewMode!=='chart';
+
+    if(viewMode==='list') renderListView(dates);
+    else if(viewMode==='calendar') renderCalendarView(dates);
+    else renderChartView(dates);
+  }
+
+  function renderListView(dates){
+    const todayKey = dateKey(new Date());
     let rows = `<div class="tt-row head"><div>Day</div><div class="tt-count">Entries</div><div class="tt-hours">Total</div></div>`;
-    for(let d=1; d<=daysInMonth; d++){
-      const dt = new Date(viewYear, viewMonth, d);
+    dates.forEach(dt=>{
       const key = dateKey(dt);
       const dayEntries = entries.filter(e=>e.date===key).sort((a,b)=>a.startISO.localeCompare(b.startISO));
-      let secs = dayEntries.reduce((s,e)=>s+e.durationSec,0);
-      monthTotal += secs;
+      const secs = secondsForDate(dt);
       const isToday = key===todayKey;
       const weekday = dt.toLocaleDateString(undefined,{weekday:'short'});
       const hasEntries = dayEntries.length>0;
       rows += `<div class="tt-row ${isToday?'today':''} ${secs===0?'empty':''}" data-day="${key}" style="${hasEntries?'cursor:pointer;':''}">
-        <div class="tt-day">${weekday} ${d}</div>
+        <div class="tt-day">${weekday} ${dt.getDate()}</div>
         <div class="tt-count">${dayEntries.length||''}</div>
         <div class="tt-hours">${secs>0?fmtHM(secs):'—'}</div>
       </div>`;
@@ -671,7 +812,7 @@
           </div>`;
         });
       }
-    }
+    });
     $('tt-ledger').innerHTML = rows;
     $('tt-ledger').querySelectorAll('.tt-row:not(.head)').forEach(rowEl=>{
       rowEl.addEventListener('click', ()=>{
@@ -679,41 +820,100 @@
         const dayEntries = entries.filter(e=>e.date===key);
         if(dayEntries.length===0) return;
         expandedDay = (expandedDay===key) ? null : key;
-        renderMonth();
+        renderListView(dates);
       });
     });
+  }
 
-    let liveMonthSec = 0;
-    if(active){
-      const startDate = new Date(active.startISO);
-      if(startDate.getFullYear()===viewYear && startDate.getMonth()===viewMonth){
-        liveMonthSec = Math.floor((Date.now()-startDate.getTime())/1000);
+  function renderCalendarView(dates){
+    const todayKey = dateKey(new Date());
+    let html = '';
+    let leadDates = [];
+    if(granularity==='month'){
+      const first = dates[0];
+      const leadCount = mondayIndex(first);
+      for(let i=leadCount; i>0; i--){ const d=new Date(first); d.setDate(first.getDate()-i); leadDates.push(d); }
+    }
+    dowShort.forEach(d=> html += `<div class="tt-cal-dow">${d}</div>`);
+
+    const cellClass = granularity==='week' ? 'tt-cal-cell week-mode' : 'tt-cal-cell';
+    leadDates.forEach(d=>{
+      html += `<div class="${cellClass} outside"><div class="tt-cal-daynum">${d.getDate()}</div><div></div></div>`;
+    });
+    dates.forEach(dt=>{
+      const key = dateKey(dt);
+      const secs = secondsForDate(dt);
+      const isToday = key===todayKey;
+      html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" data-day="${key}">
+        <div class="tt-cal-daynum">${dt.getDate()}</div>
+        <div class="tt-cal-hours">${secs>0?fmtHM(secs):''}</div>
+      </div>`;
+    });
+    if(granularity==='month'){
+      const totalCells = leadDates.length + dates.length;
+      const trailCount = (7 - (totalCells % 7)) % 7;
+      const last = dates[dates.length-1];
+      for(let i=1; i<=trailCount; i++){
+        const d = new Date(last); d.setDate(last.getDate()+i);
+        html += `<div class="${cellClass} outside"><div class="tt-cal-daynum">${d.getDate()}</div><div></div></div>`;
       }
     }
-    const displayMonthTotal = monthTotal + liveMonthSec;
-    $('tt-monthtotal').textContent = `${fmtHM(displayMonthTotal)} logged`;
-
-    const now = new Date();
-    const isCurrentMonth = viewYear===now.getFullYear() && viewMonth===now.getMonth();
-    $('tt-month-strip-label').textContent = isCurrentMonth ? "This month's total" : `${monthNames[viewMonth]} total`;
-    $('tt-month-strip-total').textContent = fmtHM(displayMonthTotal);
+    $('tt-calendar').innerHTML = html;
+    $('tt-calendar').querySelectorAll('.tt-cal-cell[data-day]').forEach(cellEl=>{
+      cellEl.addEventListener('click', ()=>{
+        const key = cellEl.getAttribute('data-day');
+        const [y,m,d] = key.split('-').map(Number);
+        anchorDate = new Date(y, m-1, d);
+        granularity = 'day';
+        setActiveTab('tt-granularity-tabs', 'day');
+        viewMode = 'list';
+        setActiveTab('tt-viewmode-tabs', 'list');
+        renderCurrentView();
+      });
+    });
   }
 
-  function updateMonthStripOnly(){
-    if(!active) return;
-    let monthTotal = 0;
-    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
-    for(let d=1; d<=daysInMonth; d++){
-      const key = `${viewYear}-${pad(viewMonth+1)}-${pad(d)}`;
-      monthTotal += entries.filter(e=>e.date===key).reduce((s,e)=>s+e.durationSec,0);
-    }
-    const startDate = new Date(active.startISO);
-    if(startDate.getFullYear()===viewYear && startDate.getMonth()===viewMonth){
-      monthTotal += Math.floor((Date.now()-startDate.getTime())/1000);
-    }
-    $('tt-monthtotal').textContent = `${fmtHM(monthTotal)} logged`;
-    $('tt-month-strip-total').textContent = fmtHM(monthTotal);
+  function renderChartView(dates){
+    const todayKey = dateKey(new Date());
+    const secsArr = dates.map(secondsForDate);
+    const maxSec = Math.max(...secsArr, 3600); // at least 1h scale so bars aren't all maxed on light days
+    let cols = '';
+    dates.forEach((dt,i)=>{
+      const secs = secsArr[i];
+      const heightPct = Math.max(2, Math.round((secs/maxSec)*100));
+      const isToday = dateKey(dt)===todayKey;
+      const label = granularity==='month' ? dt.getDate() : dt.toLocaleDateString(undefined,{weekday:'short'});
+      cols += `<div class="tt-chart-col">
+        <div class="tt-chart-val">${secs>0?fmtHM(secs):''}</div>
+        <div class="tt-chart-bar ${isToday?'today':''}" style="height:${heightPct}%"></div>
+        <div class="tt-chart-label">${label}</div>
+      </div>`;
+    });
+    $('tt-chart').innerHTML = `<div class="tt-chart-bars">${cols}</div>`;
   }
+
+  function setActiveTab(containerId, value){
+    document.querySelectorAll(`#${containerId} button`).forEach(btn=>{
+      const isMatch = (btn.dataset.g===value) || (btn.dataset.v===value);
+      btn.classList.toggle('active', isMatch);
+    });
+  }
+
+  $('tt-granularity-tabs').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-g]');
+    if(!btn) return;
+    granularity = btn.dataset.g;
+    setActiveTab('tt-granularity-tabs', granularity);
+    expandedDay = null;
+    renderCurrentView();
+  });
+  $('tt-viewmode-tabs').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-v]');
+    if(!btn) return;
+    viewMode = btn.dataset.v;
+    setActiveTab('tt-viewmode-tabs', viewMode);
+    renderCurrentView();
+  });
 
   function scheduleTick(){
     if(tickHandle) clearInterval(tickHandle);
@@ -722,7 +922,8 @@
         const liveSec = Math.floor((Date.now()-new Date(active.startISO).getTime())/1000);
         $('tt-digits').textContent = fmtHMS(liveSec);
         $('tt-today-total').textContent = fmtHM(todaysSeconds());
-        updateMonthStripOnly();
+        $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds());
+        $('tt-rangetotal').textContent = `${fmtHM(getRangeDates().reduce((s,d)=>s+secondsForDate(d),0))} logged`;
       }
     }, 1000);
   }
@@ -756,8 +957,8 @@
   function buildWorkbook(){
     const wb = XLSX.utils.book_new();
     const years = new Set(entries.map(e=> new Date(e.date).getFullYear()));
-    years.add(viewYear);
-    const yearToUse = years.size===1 ? [...years][0] : viewYear;
+    years.add(anchorDate.getFullYear());
+    const yearToUse = years.size===1 ? [...years][0] : anchorDate.getFullYear();
 
     for(let m=0;m<12;m++){
       const daysInMonth = new Date(yearToUse, m+1, 0).getDate();
@@ -818,9 +1019,11 @@
   function closeResetModal(){ $('tt-modal-backdrop').hidden = true; }
 
   function initMonthView(){
-    const now = new Date();
-    viewYear = now.getFullYear();
-    viewMonth = now.getMonth();
+    anchorDate = new Date();
+    granularity = 'month';
+    viewMode = 'list';
+    setActiveTab('tt-granularity-tabs', 'month');
+    setActiveTab('tt-viewmode-tabs', 'list');
   }
 
   function downloadTemplate(){
@@ -938,8 +1141,8 @@
     panel.hidden = !panel.hidden;
     $('tt-manage-toggle').textContent = panel.hidden ? 'Manage data' : 'Hide';
   });
-  $('tt-prev').addEventListener('click', ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11; viewYear--;} renderMonth(); });
-  $('tt-next').addEventListener('click', ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0; viewYear++;} renderMonth(); });
+  $('tt-prev').addEventListener('click', ()=> navShift(-1));
+  $('tt-next').addEventListener('click', ()=> navShift(1));
 </script>
 </body>
 </html>
