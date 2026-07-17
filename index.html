@@ -241,6 +241,7 @@
   .tt-auth-divider::before, .tt-auth-divider::after{content:''; flex:1; height:1px; background:var(--line);}
 
   .tt-pw-checklist{margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px 10px;}
+  .tt-pw-checklist[hidden]{display:none;}
   .tt-pw-rule{font-size:11px; color:var(--paper-dim); opacity:.6; position:relative; padding-left:14px;}
   .tt-pw-rule::before{content:'○'; position:absolute; left:0; font-size:9px; top:1px;}
   .tt-pw-rule.met{color:var(--amber); opacity:1;}
@@ -389,7 +390,7 @@
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
     onAuthStateChanged, signOut, updateProfile,
-    GoogleAuthProvider, signInWithPopup
+    GoogleAuthProvider, signInWithRedirect, getRedirectResult
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, doc, addDoc, deleteDoc, setDoc,
@@ -453,6 +454,7 @@
     if(code.includes('invalid-email')) return 'That email address looks invalid.';
     if(code.includes('popup-closed-by-user')) return 'Google sign-in was closed before finishing.';
     if(code.includes('too-many-requests')) return 'Too many attempts. Please wait a bit and try again.';
+    if(code.includes('unauthorized-domain')) return "This website's domain isn't authorized in Firebase yet. Add it under Authentication → Settings → Authorized domains.";
     return 'Something went wrong. Please try again.';
   }
 
@@ -485,6 +487,15 @@
     $('tt-auth-password-confirm').required = visible;
   }
 
+  function clearAuthFields(){
+    $('tt-auth-name').value = '';
+    $('tt-auth-email').value = '';
+    $('tt-auth-email-confirm').value = '';
+    $('tt-auth-password').value = '';
+    $('tt-auth-password-confirm').value = '';
+    updatePasswordChecklist();
+  }
+
   $('tt-auth-switch-btn').addEventListener('click', ()=>{
     isSignUpMode = !isSignUpMode;
     $('tt-auth-title').textContent = isSignUpMode ? 'Create account — Double T' : 'Sign in — Double T';
@@ -493,7 +504,7 @@
     $('tt-auth-switch-btn').textContent = isSignUpMode ? 'Sign in' : 'Create an account';
     $('tt-auth-error').textContent = '';
     setSignUpFieldsVisible(isSignUpMode);
-    if(isSignUpMode) updatePasswordChecklist();
+    clearAuthFields();
   });
 
   $('tt-auth-form').addEventListener('submit', async (e)=>{
@@ -537,10 +548,15 @@
   $('tt-google-btn').addEventListener('click', async ()=>{
     $('tt-auth-error').textContent = '';
     try{
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      await signInWithRedirect(auth, new GoogleAuthProvider());
+      // page navigates away here; onAuthStateChanged picks up the result after returning
     }catch(err){
       $('tt-auth-error').textContent = friendlyAuthError(err);
     }
+  });
+
+  getRedirectResult(auth).catch(err=>{
+    $('tt-auth-error').textContent = friendlyAuthError(err);
   });
 
   $('tt-signout').addEventListener('click', ()=> signOut(auth));
@@ -548,6 +564,7 @@
   function showAuthScreen(){
     $('tt-auth-backdrop').style.display = 'flex';
     $('tt-app-root').style.display = 'none';
+    clearAuthFields();
   }
   function showApp(user){
     $('tt-auth-backdrop').style.display = 'none';
