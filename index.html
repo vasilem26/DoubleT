@@ -643,7 +643,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.015</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.016</div>
   </div>
 </div>
 
@@ -1100,8 +1100,8 @@
 
     const liveSec = running ? Math.floor((Date.now()-new Date(active.startISO).getTime())/1000) : 0;
     $('tt-digits').textContent = fmtHMS(liveSec);
-    $('tt-today-total').textContent = fmtHM(todaysSeconds());
-    $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds());
+    $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
+    $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
 
     renderCurrentView();
   }
@@ -1300,8 +1300,8 @@
       if(active){
         const liveSec = Math.floor((Date.now()-new Date(active.startISO).getTime())/1000);
         $('tt-digits').textContent = fmtHMS(liveSec);
-        $('tt-today-total').textContent = fmtHM(todaysSeconds());
-        $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds());
+        $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
+        $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
         $('tt-rangetotal').textContent = `${fmtHM(getRangeDates().reduce((s,d)=>s+secondsForDate(d),0))} logged`;
       }
     }, 1000);
