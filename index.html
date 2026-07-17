@@ -643,7 +643,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.014</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.015</div>
   </div>
 </div>
 
@@ -1261,8 +1261,8 @@
 
   function setActiveTab(containerId, value){
     document.querySelectorAll(`#${containerId} button`).forEach(btn=>{
-      const isMatch = (btn.dataset.g===value) || (btn.dataset.v===value);
-      btn.classList.toggle('active', isMatch);
+      const btnVal = btn.dataset.g ?? btn.dataset.v ?? btn.dataset.val;
+      btn.classList.toggle('active', btnVal===value);
     });
   }
 
