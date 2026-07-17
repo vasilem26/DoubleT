@@ -48,6 +48,55 @@
   .tt-info-btn:hover{opacity:1 !important; border-color:var(--amber) !important; color:var(--amber) !important;}
   .tt-account-email-reveal{color:var(--paper-dim); font-size:11px; opacity:.8; margin-left:4px;}
 
+  .tt-menu-btn{
+    width:32px; height:32px; border-radius:5px; border:1px solid var(--line); background:var(--panel);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    cursor:pointer; transition:background .15s ease, border-color .15s ease; flex-shrink:0;
+  }
+  .tt-menu-btn:hover{background:var(--panel-2); border-color:var(--amber-dim);}
+  .tt-menu-btn span{width:15px; height:2px; background:var(--paper-dim); border-radius:1px;}
+
+  .tt-menu-overlay{
+    position:fixed; inset:0; z-index:900; background:rgba(10,14,18,.55);
+    display:flex; justify-content:flex-end;
+  }
+  .tt-menu-overlay[hidden]{display:none;}
+  .tt-menu-panel{
+    width:100%; max-width:340px; height:100%; background:var(--panel);
+    border-left:1px solid var(--line); padding:20px; overflow-y:auto;
+    animation:tt-slidein .2s ease;
+  }
+  @keyframes tt-slidein{ from{transform:translateX(24px); opacity:0;} to{transform:translateX(0); opacity:1;} }
+  .tt-menu-header{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Space Mono',monospace; font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--paper-dim); margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--line);
+  }
+  .tt-menu-close{background:none; border:none; color:var(--paper-dim); font-size:20px; cursor:pointer; line-height:1; padding:0;}
+  .tt-menu-close:hover{color:var(--paper);}
+  .tt-menu-section{margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line);}
+  .tt-menu-section:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
+  .tt-menu-label{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
+  .tt-menu-row{display:flex; gap:8px;}
+  .tt-menu-input{
+    flex:1; width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; padding:9px 11px;
+  }
+  .tt-menu-input:focus-visible{outline:2px solid var(--amber);}
+  .tt-menu-btn-inline{flex-shrink:0; min-width:0; width:auto; padding:9px 14px;}
+  .tt-menu-msg{font-size:11px; margin-top:6px; min-height:14px; color:var(--paper-dim);}
+  .tt-menu-msg.error{color:#E7A29D;}
+  .tt-menu-msg.success{color:var(--amber);}
+
+  .tt-preset-manager-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0; font-size:12px; color:var(--paper-dim); border-bottom:1px solid var(--line);
+  }
+  .tt-preset-manager-row:last-child{border-bottom:none;}
+  .tt-preset-remove{background:none; border:none; color:var(--paper-dim); opacity:.6; cursor:pointer; font-size:14px; padding:0 4px;}
+  .tt-preset-remove:hover{opacity:1; color:#E7A29D;}
+  .tt-preset-empty{font-size:11px; color:var(--paper-dim); opacity:.6; padding:6px 0;}
+
   .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
   .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
   .tt-segment button{
@@ -125,6 +174,15 @@
   }
   .tt-note::placeholder{color:var(--paper-dim);opacity:.6;}
   .tt-note:focus-visible{outline:2px solid var(--amber);}
+
+  .tt-presets-row{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:10px;}
+  .tt-preset-chip{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--paper-dim);
+    font-family:'Work Sans',sans-serif; font-size:11px; padding:5px 11px; border-radius:14px;
+    cursor:pointer; transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .tt-preset-chip:hover{background:var(--panel); border-color:var(--amber-dim); color:var(--paper);}
+  .tt-preset-chip:disabled{opacity:.4; cursor:not-allowed;}
 
   /* today strip */
   .tt-today{
@@ -207,8 +265,10 @@
   }
   .tt-chart-bars{display:flex; align-items:flex-end; gap:4px; height:160px; min-width:min-content;}
   .tt-chart-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:16px; flex:1;}
-  .tt-chart-bar{width:100%; max-width:26px; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px; transition:height .35s cubic-bezier(.2,.8,.2,1);}
+  .tt-chart-bar{width:100%; max-width:26px; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px; transition:height .35s cubic-bezier(.2,.8,.2,1), filter .15s ease, transform .15s ease; cursor:default;}
   .tt-chart-bar.today{background:#fff;}
+  .tt-chart-col:hover .tt-chart-bar{filter:brightness(1.3); transform:scaleX(1.15);}
+  .tt-chart-col:hover .tt-chart-val{color:var(--amber); opacity:1;}
   .tt-chart-label{font-size:9px; color:var(--paper-dim); margin-top:6px; font-family:'Space Mono',monospace; white-space:nowrap;}
   .tt-chart-val{font-size:9px; color:var(--paper-dim); opacity:.8; margin-bottom:3px; font-family:'Space Mono',monospace;}
 
@@ -378,13 +438,67 @@
   <div class="tt-wrap">
     <div class="tt-header">
       <div class="tt-title">Double T</div>
-      <div style="text-align:right;">
-        <div class="tt-sub" id="tt-today-date"></div>
-        <div class="tt-account">
-          <span id="tt-account-name"></span>
-          <button id="tt-email-info" class="tt-info-btn" type="button" aria-label="Show email" title="Show email">i</button>
-          <span id="tt-account-email" class="tt-account-email-reveal" hidden></span>
-          <button id="tt-signout">Sign out</button>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="text-align:right;">
+          <div class="tt-sub" id="tt-today-date"></div>
+          <div class="tt-account">
+            <span id="tt-account-name"></span>
+            <button id="tt-email-info" class="tt-info-btn" type="button" aria-label="Show email" title="Show email">i</button>
+            <span id="tt-account-email" class="tt-account-email-reveal" hidden></span>
+          </div>
+        </div>
+        <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="tt-menu-overlay" id="tt-menu-overlay" hidden>
+      <div class="tt-menu-panel" id="tt-menu-panel">
+        <div class="tt-menu-header">
+          <span>Account</span>
+          <button id="tt-menu-close" class="tt-menu-close" type="button" aria-label="Close menu">&times;</button>
+        </div>
+
+        <div class="tt-menu-section">
+          <div class="tt-menu-label">Username</div>
+          <div class="tt-menu-row">
+            <input type="text" id="tt-menu-name" class="tt-menu-input" maxlength="60" />
+            <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-name">Save</button>
+          </div>
+          <div class="tt-menu-msg" id="tt-name-msg"></div>
+        </div>
+
+        <div class="tt-menu-section">
+          <div class="tt-menu-label">Change password</div>
+          <input type="password" id="tt-menu-password" class="tt-menu-input" placeholder="New password" autocomplete="new-password" />
+          <div class="tt-pw-checklist" id="tt-menu-pw-checklist">
+            <div class="tt-pw-rule" data-rule="len">8+ characters</div>
+            <div class="tt-pw-rule" data-rule="upper">Uppercase letter</div>
+            <div class="tt-pw-rule" data-rule="lower">Lowercase letter</div>
+            <div class="tt-pw-rule" data-rule="num">Number</div>
+            <div class="tt-pw-rule" data-rule="special">Special character</div>
+          </div>
+          <input type="password" id="tt-menu-password-confirm" class="tt-menu-input" placeholder="Confirm new password" autocomplete="new-password" style="margin-top:8px;" />
+          <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-password" style="margin-top:10px; width:100%;">Update password</button>
+          <div class="tt-menu-msg" id="tt-password-msg"></div>
+        </div>
+
+        <div class="tt-menu-section">
+          <div class="tt-menu-label">Presets</div>
+          <div id="tt-preset-manager"></div>
+          <div class="tt-menu-row">
+            <input type="text" id="tt-new-preset" class="tt-menu-input" placeholder="e.g. FNRGW - Support" maxlength="60" />
+            <button class="tt-btn tt-menu-btn-inline" id="tt-add-preset">Add</button>
+          </div>
+        </div>
+
+        <div class="tt-menu-section">
+          <button class="tt-btn" id="tt-menu-export" style="width:100%;">Export to Excel (.xlsx)</button>
+        </div>
+
+        <div class="tt-menu-section">
+          <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
         </div>
       </div>
     </div>
@@ -396,6 +510,7 @@
       <div class="tt-note-row">
         <input class="tt-note" id="tt-note" type="text" placeholder="What are you working on? (optional)" maxlength="120" />
       </div>
+      <div class="tt-presets-row" id="tt-presets-row"></div>
     </div>
 
     <div class="tt-today">
@@ -433,7 +548,6 @@
     <div class="tt-chart" id="tt-chart" hidden></div>
 
     <div class="tt-actions">
-      <button class="tt-btn" id="tt-export">Export to Excel (.xlsx)</button>
       <button class="tt-btn" id="tt-import-btn">Import from CSV</button>
       <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
     </div>
@@ -472,7 +586,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    onAuthStateChanged, signOut, updateProfile,
+    onAuthStateChanged, signOut, updateProfile, updatePassword,
     GoogleAuthProvider, signInWithPopup
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
@@ -505,6 +619,8 @@
   let tickHandle = null;
   let unsubEntries = null;
   let unsubActive = null;
+  let unsubPresets = null;
+  let presets = [];
   let currentUid = null;
   let isSignUpMode = false;
 
@@ -601,14 +717,19 @@
   function passwordMeetsPolicy(pw){
     return Object.values(PW_RULES).every(fn=>fn(pw));
   }
-  function updatePasswordChecklist(){
-    const pw = $('tt-auth-password').value;
+  function updateChecklistIn(containerId, pw){
     Object.entries(PW_RULES).forEach(([rule, fn])=>{
-      const el = document.querySelector(`.tt-pw-rule[data-rule="${rule}"]`);
+      const el = document.querySelector(`#${containerId} .tt-pw-rule[data-rule="${rule}"]`);
       if(el) el.classList.toggle('met', fn(pw));
     });
   }
+  function updatePasswordChecklist(){
+    updateChecklistIn('tt-pw-checklist', $('tt-auth-password').value);
+  }
   $('tt-auth-password').addEventListener('input', ()=>{ if(isSignUpMode) updatePasswordChecklist(); });
+  $('tt-menu-password').addEventListener('input', ()=>{
+    updateChecklistIn('tt-menu-pw-checklist', $('tt-menu-password').value);
+  });
 
   function setSignUpFieldsVisible(visible){
     $('tt-field-name').hidden = !visible;
@@ -687,7 +808,7 @@
     }
   });
 
-  $('tt-signout').addEventListener('click', ()=> signOut(auth));
+  // sign-out button is wired inside the menu section below
 
   function showAuthScreen(){
     $('tt-auth-backdrop').style.display = 'flex';
@@ -709,6 +830,114 @@
     el.hidden = !el.hidden;
   });
 
+  // ---------------- Account menu ----------------
+  function isEmailPasswordUser(user){
+    return user.providerData.some(p=>p.providerId==='password');
+  }
+
+  function openMenu(){
+    const user = auth.currentUser;
+    if(!user) return;
+    $('tt-menu-name').value = user.displayName || '';
+    $('tt-menu-password').value = '';
+    $('tt-menu-password-confirm').value = '';
+    $('tt-name-msg').textContent = '';
+    $('tt-name-msg').className = 'tt-menu-msg';
+    $('tt-password-msg').textContent = '';
+    $('tt-password-msg').className = 'tt-menu-msg';
+    updateChecklistIn('tt-menu-pw-checklist', '');
+    $('tt-menu-overlay').hidden = false;
+  }
+  function closeMenu(){ $('tt-menu-overlay').hidden = true; }
+
+  $('tt-menu-btn').addEventListener('click', openMenu);
+  $('tt-menu-close').addEventListener('click', closeMenu);
+  $('tt-menu-overlay').addEventListener('click', (e)=>{ if(e.target.id==='tt-menu-overlay') closeMenu(); });
+
+  $('tt-save-name').addEventListener('click', async ()=>{
+    const newName = $('tt-menu-name').value.trim();
+    const msg = $('tt-name-msg');
+    msg.className = 'tt-menu-msg';
+    if(!newName){ msg.textContent = 'Name cannot be empty.'; msg.classList.add('error'); return; }
+    try{
+      await updateProfile(auth.currentUser, { displayName: newName });
+      $('tt-account-name').textContent = newName;
+      msg.textContent = 'Saved.';
+      msg.classList.add('success');
+    }catch(err){
+      msg.textContent = friendlyAuthError(err);
+      msg.classList.add('error');
+    }
+  });
+
+  $('tt-save-password').addEventListener('click', async ()=>{
+    const pw = $('tt-menu-password').value;
+    const pwConfirm = $('tt-menu-password-confirm').value;
+    const msg = $('tt-password-msg');
+    msg.className = 'tt-menu-msg';
+
+    if(!isEmailPasswordUser(auth.currentUser)){
+      msg.textContent = "This account signed in with Google and doesn't use a password here.";
+      msg.classList.add('error');
+      return;
+    }
+    if(!passwordMeetsPolicy(pw)){ msg.textContent = 'Password does not meet all requirements above.'; msg.classList.add('error'); return; }
+    if(pw !== pwConfirm){ msg.textContent = 'Passwords do not match.'; msg.classList.add('error'); return; }
+
+    try{
+      await updatePassword(auth.currentUser, pw);
+      $('tt-menu-password').value = '';
+      $('tt-menu-password-confirm').value = '';
+      updateChecklistIn('tt-menu-pw-checklist', '');
+      msg.textContent = 'Password updated.';
+      msg.classList.add('success');
+    }catch(err){
+      if((err.code||'').includes('requires-recent-login')){
+        msg.textContent = "For security, please sign out and sign back in, then try again.";
+      } else {
+        msg.textContent = friendlyAuthError(err);
+      }
+      msg.classList.add('error');
+    }
+  });
+
+  $('tt-menu-signout').addEventListener('click', ()=>{ closeMenu(); signOut(auth); });
+
+  // ---------------- Presets ----------------
+  function renderPresetManager(){
+    const el = $('tt-preset-manager');
+    if(!el) return;
+    if(presets.length===0){
+      el.innerHTML = '<div class="tt-preset-empty">No presets yet — add one below.</div>';
+      return;
+    }
+    el.innerHTML = presets.map((p,i)=>
+      `<div class="tt-preset-manager-row"><span>${escapeHtml(p)}</span><button type="button" class="tt-preset-remove" data-index="${i}" aria-label="Remove preset">&times;</button></div>`
+    ).join('');
+    el.querySelectorAll('.tt-preset-remove').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const idx = +btn.getAttribute('data-index');
+        const updated = presets.filter((_,i)=>i!==idx);
+        try{ await setDoc(presetsDoc(currentUid), { list: updated }); }
+        catch(err){ console.error('Could not remove preset', err); }
+      });
+    });
+  }
+
+  $('tt-add-preset').addEventListener('click', async ()=>{
+    const input = $('tt-new-preset');
+    const val = input.value.trim();
+    if(!val) return;
+    if(presets.includes(val)){ input.value=''; return; }
+    try{
+      await setDoc(presetsDoc(currentUid), { list: [...presets, val] });
+      input.value = '';
+    }catch(err){ console.error('Could not add preset', err); }
+  });
+  $('tt-new-preset').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); $('tt-add-preset').click(); }
+  });
+
   onAuthStateChanged(auth, (user)=>{
     if(user){
       showApp(user);
@@ -722,6 +951,7 @@
   // ---------------- Firestore sync ----------------
   function entriesCol(uid){ return collection(db, 'users', uid, 'entries'); }
   function activeDoc(uid){ return doc(db, 'users', uid, 'meta', 'active'); }
+  function presetsDoc(uid){ return doc(db, 'users', uid, 'meta', 'presets'); }
 
   function attachListeners(uid){
     detachListeners();
@@ -738,15 +968,23 @@
       render();
     }, (err)=> console.error('active listener error', err));
 
+    unsubPresets = onSnapshot(presetsDoc(uid), (snap)=>{
+      presets = (snap.exists() && Array.isArray(snap.data().list)) ? snap.data().list : [];
+      renderPresetChips();
+      renderPresetManager();
+    }, (err)=> console.error('presets listener error', err));
+
     scheduleTick();
   }
 
   function detachListeners(){
     if(unsubEntries){ unsubEntries(); unsubEntries = null; }
     if(unsubActive){ unsubActive(); unsubActive = null; }
+    if(unsubPresets){ unsubPresets(); unsubPresets = null; }
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
+    presets = [];
   }
 
   // ---------------- App logic ----------------
@@ -784,7 +1022,22 @@
     $('tt-today-total').textContent = fmtHM(todaysSeconds());
     $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds());
 
+    renderPresetChips();
     renderCurrentView();
+  }
+
+  function renderPresetChips(){
+    const running = !!active;
+    if(presets.length===0){ $('tt-presets-row').innerHTML = ''; return; }
+    $('tt-presets-row').innerHTML = presets.map(p=>
+      `<button type="button" class="tt-preset-chip" data-preset="${escapeHtml(p)}" ${running?'disabled':''}>${escapeHtml(p)}</button>`
+    ).join('');
+    $('tt-presets-row').querySelectorAll('.tt-preset-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        $('tt-note').value = chip.getAttribute('data-preset');
+        $('tt-note').focus();
+      });
+    });
   }
 
   let expandedDay = null;
@@ -1156,7 +1409,7 @@
   });
 
   $('tt-punch').addEventListener('click', handlePunch);
-  $('tt-export').addEventListener('click', exportXlsx);
+  $('tt-menu-export').addEventListener('click', exportXlsx);
   $('tt-reset').addEventListener('click', openResetModal);
   $('tt-modal-cancel').addEventListener('click', closeResetModal);
   $('tt-modal-backdrop').addEventListener('click', (e)=>{ if(e.target.id==='tt-modal-backdrop') closeResetModal(); });
