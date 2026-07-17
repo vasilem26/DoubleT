@@ -390,7 +390,7 @@
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
     onAuthStateChanged, signOut, updateProfile,
-    GoogleAuthProvider, signInWithRedirect, getRedirectResult
+    GoogleAuthProvider, signInWithPopup
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, doc, addDoc, deleteDoc, setDoc,
@@ -454,7 +454,7 @@
     if(code.includes('invalid-email')) return 'That email address looks invalid.';
     if(code.includes('popup-closed-by-user')) return 'Google sign-in was closed before finishing.';
     if(code.includes('too-many-requests')) return 'Too many attempts. Please wait a bit and try again.';
-    if(code.includes('unauthorized-domain')) return "This website's domain isn't authorized in Firebase yet. Add it under Authentication → Settings → Authorized domains.";
+    if(code.includes('unauthorized-domain')) return "Sign-in isn't set up for this website yet.";
     return 'Something went wrong. Please try again.';
   }
 
@@ -548,15 +548,10 @@
   $('tt-google-btn').addEventListener('click', async ()=>{
     $('tt-auth-error').textContent = '';
     try{
-      await signInWithRedirect(auth, new GoogleAuthProvider());
-      // page navigates away here; onAuthStateChanged picks up the result after returning
+      await signInWithPopup(auth, new GoogleAuthProvider());
     }catch(err){
       $('tt-auth-error').textContent = friendlyAuthError(err);
     }
-  });
-
-  getRedirectResult(auth).catch(err=>{
-    $('tt-auth-error').textContent = friendlyAuthError(err);
   });
 
   $('tt-signout').addEventListener('click', ()=> signOut(auth));
