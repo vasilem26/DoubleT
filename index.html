@@ -536,7 +536,17 @@
               <button data-val="xlsx" class="active">Excel</button><button data-val="csv">CSV</button><button data-val="pdf">PDF</button>
             </div>
           </div>
-          <div class="tt-menu-section">
+          <div class="tt-menu-section" id="tt-export-view-section" hidden>
+            <div class="tt-menu-label">View</div>
+            <div class="tt-segment tt-export-segment" id="tt-export-view">
+              <button data-val="list" class="active">List</button><button data-val="chart">Chart</button>
+            </div>
+            <div class="tt-menu-desc" style="margin-top:8px; margin-bottom:0;">
+              Chart renders a visual bar chart into the PDF instead of a table. Only available for PDF —
+              Excel and CSV are raw data formats.
+            </div>
+          </div>
+          <div class="tt-menu-section" id="tt-export-type-section">
             <div class="tt-menu-label">Report type</div>
             <div class="tt-segment tt-export-segment" id="tt-export-type">
               <button data-val="detailed" class="active">Detailed</button><button data-val="summary">Summary</button>
@@ -651,7 +661,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.017</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.018</div>
   </div>
 </div>
 
@@ -912,6 +922,7 @@
     if(name==='exports'){
       exportPeriod = (granularity==='day' || granularity==='week') ? granularity : 'month';
       setActiveTab('tt-export-period', exportPeriod);
+      updateExportControlsAvailability();
       updateExportPreview();
     }
   }
@@ -1345,6 +1356,7 @@
   let exportFormat = 'xlsx';
   let exportType = 'detailed';
   let exportPeriod = 'month';
+  let exportView = 'list'; // 'list' | 'chart' — chart only applies to PDF
 
   function getExportDates(period){
     if(period==='day') return [new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate())];
@@ -1410,11 +1422,27 @@
 
   function updateExportPreview(){
     const dates = getExportDates(exportPeriod);
-    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
+    if(exportFormat==='pdf' && exportView==='chart'){
+      $('tt-export-preview').textContent =
+        `${getExportLabel(exportPeriod)} — bar chart, ${fmtHM(totalSec)} total.`;
+      return;
+    }
+    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const noun = exportType==='detailed' ? 'entries' : (exportPeriod==='year' ? 'months' : 'days');
     $('tt-export-preview').textContent =
       `${getExportLabel(exportPeriod)} — ${rows.length} ${noun}, ${fmtHM(totalSec)} total.`;
+  }
+
+  function updateExportControlsAvailability(){
+    const isPdf = exportFormat==='pdf';
+    $('tt-export-view-section').hidden = !isPdf;
+    if(!isPdf && exportView==='chart'){
+      exportView = 'list';
+      setActiveTab('tt-export-view', 'list');
+    }
+    const showTypeSection = !(isPdf && exportView==='chart');
+    $('tt-export-type-section').hidden = !showTypeSection;
   }
 
   function triggerDownloadBlob(content, filename, mime){
@@ -1432,14 +1460,36 @@
       ? ['Date','Start','Stop','Duration (h)','Notes']
       : (exportPeriod==='year' ? ['Month','Total (h)'] : ['Date','Total (h)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
-    const aoa = [headers, ...rows];
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
-    aoa.push([]);
-    aoa.push(['Total (h)', +(totalSec/3600).toFixed(2)]);
+    const typeLabel = exportType==='detailed' ? 'Detailed' : 'Summary';
+
+    const aoa = [
+      [`Double T — Time Report (${typeLabel} · ${label})`],
+      [],
+      headers,
+      ...rows,
+      [],
+      ['Total (h)', +(totalSec/3600).toFixed(2)]
+    ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = exportType==='detailed'
       ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:30}]
       : [{wch:14},{wch:10}];
+    ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:headers.length-1} }];
+
+    const titleCell = ws['A1'];
+    if(titleCell) titleCell.s = { font:{ bold:true, sz:13, color:{rgb:'1B2733'} } };
+    headers.forEach((_,ci)=>{
+      const addr = XLSX.utils.encode_cell({r:2, c:ci});
+      if(ws[addr]) ws[addr].s = { font:{ bold:true, color:{rgb:'FFFFFF'} }, fill:{ fgColor:{rgb:'E8A33D'} } };
+    });
+    const totalRow = 3 + rows.length + 1;
+    const totalLabelAddr = XLSX.utils.encode_cell({r:totalRow, c:0});
+    if(ws[totalLabelAddr]) ws[totalLabelAddr].s = { font:{ bold:true } };
+    const totalValAddr = XLSX.utils.encode_cell({r:totalRow, c:1});
+    if(ws[totalValAddr]) ws[totalValAddr].s = { font:{ bold:true, color:{rgb:'B87A1E'} } };
+
+    ws['!freeze'] = { xSplit:0, ySplit:3 };
     XLSX.utils.book_append_sheet(wb, ws, 'Report');
     XLSX.writeFile(wb, `Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.xlsx`);
   }
@@ -1456,37 +1506,137 @@
         return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
       }).join(','));
     });
-    triggerDownloadBlob(csvLines.join('\n'), `Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.csv`, 'text/csv');
+    // Leading BOM so Excel opens special characters (e.g. accented notes) correctly
+    triggerDownloadBlob('\uFEFF'+csvLines.join('\n'), `Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.csv`, 'text/csv;charset=utf-8');
+  }
+
+  function renderChartPNG(dates, period){
+    const width = 960, height = 440;
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#1B2733';
+    ctx.fillRect(0, 0, width, height);
+
+    let labels, values;
+    if(period==='year'){
+      const rows = buildSummaryRows(dates, 'year');
+      labels = rows.map(r=>r[0].slice(0,3));
+      values = rows.map(r=>r[1]);
+    } else {
+      values = dates.map(d=> secondsForDate(d)/3600);
+      labels = dates.map(d=> period==='month' ? String(d.getDate()) : d.toLocaleDateString(undefined,{weekday:'short'}));
+    }
+
+    const maxVal = Math.max(...values, 1);
+    const chartTop = 30, chartBottom = height - 70, chartLeft = 60, chartRight = width - 30;
+    const n = values.length;
+    const gap = 6;
+    const barWidth = Math.max(3, (chartRight - chartLeft - gap*(n-1)) / n);
+
+    // gridlines
+    ctx.strokeStyle = '#2C3A4C';
+    ctx.lineWidth = 1;
+    for(let g=0; g<=4; g++){
+      const gy = chartTop + (g/4)*(chartBottom-chartTop);
+      ctx.beginPath(); ctx.moveTo(chartLeft, gy); ctx.lineTo(chartRight, gy); ctx.stroke();
+    }
+    ctx.strokeStyle = '#3A4A5C';
+    ctx.beginPath(); ctx.moveTo(chartLeft, chartBottom); ctx.lineTo(chartRight, chartBottom); ctx.stroke();
+
+    values.forEach((v,i)=>{
+      const x = chartLeft + i*(barWidth+gap);
+      const h = (v/maxVal) * (chartBottom-chartTop);
+      const y = chartBottom - h;
+      ctx.fillStyle = v>0 ? '#E8A33D' : '#3A4A5C';
+      ctx.fillRect(x, y, barWidth, Math.max(h, 2));
+      if(n<=12 || i%5===0 || i===n-1){
+        ctx.fillStyle = '#B9C2CC';
+        ctx.font = '11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(labels[i]), x+barWidth/2, chartBottom+18);
+      }
+    });
+
+    // y-axis max label
+    ctx.fillStyle = '#B9C2CC';
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(maxVal.toFixed(1)+'h', chartLeft-8, chartTop+4);
+    ctx.fillText('0h', chartLeft-8, chartBottom+4);
+
+    return canvas.toDataURL('image/png');
   }
 
   function doExportPdf(dates, label){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // branded header bar
+    doc.setFillColor(27,39,51);
+    doc.rect(0, 0, pageWidth, 24, 'F');
+    doc.setTextColor(232,163,61);
     doc.setFontSize(14);
-    doc.text('Double T — Time Report', 14, 16);
+    doc.text('Double T', 14, 15);
+    doc.setTextColor(255,255,255);
     doc.setFontSize(10);
-    doc.setTextColor(120);
-    const typeLabel = exportType==='detailed' ? 'Detailed' : 'Summary';
-    doc.text(`${typeLabel} · ${label}`, 14, 23);
+    doc.text('Time Report', pageWidth-14, 15, { align:'right' });
+
+    doc.setTextColor(90,90,90);
+    doc.setFontSize(10);
+    const typeLabel = (exportView==='chart') ? 'Chart' : (exportType==='detailed' ? 'Detailed' : 'Summary');
+    doc.text(`${typeLabel} · ${label}`, 14, 33);
+
+    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
+
+    function addFooter(){
+      const pageCount = doc.internal.getNumberOfPages();
+      for(let i=1; i<=pageCount; i++){
+        doc.setPage(i);
+        const h = doc.internal.pageSize.getHeight();
+        doc.setDrawColor(220);
+        doc.line(14, h-14, pageWidth-14, h-14);
+        doc.setFontSize(8);
+        doc.setTextColor(140);
+        doc.text(`Generated ${new Date().toLocaleDateString()}`, 14, h-8);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth-14, h-8, { align:'right' });
+      }
+    }
+
+    if(exportView==='chart'){
+      const chartDataUrl = renderChartPNG(dates, exportPeriod);
+      const imgWidth = pageWidth - 28;
+      const imgHeight = imgWidth * (440/960);
+      doc.addImage(chartDataUrl, 'PNG', 14, 40, imgWidth, imgHeight);
+      doc.setFontSize(11);
+      doc.setTextColor(30);
+      doc.text(`Total: ${fmtHM(totalSec)}`, 14, 40 + imgHeight + 12);
+      addFooter();
+      doc.save(`Double_T_chart_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
+      return;
+    }
 
     const headers = exportType==='detailed'
       ? ['Date','Start','Stop','Duration (h)','Notes']
       : (exportPeriod==='year' ? ['Month','Total (h)'] : ['Date','Total (h)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
-    const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
 
     doc.autoTable({
       head: [headers],
       body: rows,
-      startY: 28,
+      startY: 38,
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [232,163,61], textColor: [27,39,51] }
+      headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
+      alternateRowStyles: { fillColor: [245,245,245] }
     });
-    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 28;
-    doc.setFontSize(10);
+    const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 38;
+    doc.setFontSize(11);
     doc.setTextColor(30);
     doc.text(`Total: ${fmtHM(totalSec)}`, 14, finalY + 10);
 
+    addFooter();
     doc.save(`Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
   }
 
@@ -1498,14 +1648,16 @@
     else doExportPdf(dates, label);
   }
 
-  ['tt-export-format','tt-export-type','tt-export-period'].forEach(id=>{
+  ['tt-export-format','tt-export-view','tt-export-type','tt-export-period'].forEach(id=>{
     $(id).addEventListener('click', (e)=>{
       const btn = e.target.closest('button[data-val]');
       if(!btn) return;
       setActiveTab(id, btn.dataset.val);
       if(id==='tt-export-format') exportFormat = btn.dataset.val;
+      else if(id==='tt-export-view') exportView = btn.dataset.val;
       else if(id==='tt-export-type') exportType = btn.dataset.val;
       else exportPeriod = btn.dataset.val;
+      updateExportControlsAvailability();
       updateExportPreview();
     });
   });
