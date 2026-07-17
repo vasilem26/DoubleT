@@ -336,14 +336,17 @@
   .tt-modal-actions .tt-btn{margin:0;}
 
   .tt-foot{margin-top:14px;font-size:11px;color:var(--paper-dim);opacity:.55;text-align:center;}
-  .tt-import-help{
-    margin-top:8px; font-size:11px; color:var(--paper-dim); opacity:.7; text-align:center; line-height:1.6;
+  .tt-csv-columns{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;
   }
-  .tt-import-help code{background:var(--panel-2); padding:1px 5px; border-radius:3px; font-family:'Space Mono',monospace;}
-  .tt-import-help button{
-    background:none; border:none; color:var(--amber); text-decoration:underline;
-    font-size:11px; cursor:pointer; padding:0; margin-left:4px;
+  .tt-csv-col{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
+    padding:9px 11px; display:flex; flex-direction:column; gap:3px;
   }
+  .tt-csv-col code{
+    font-family:'Space Mono',monospace; font-size:13px; font-weight:700; color:var(--amber);
+  }
+  .tt-csv-col span{font-size:11px; color:var(--paper-dim);}
   .tt-import-result{
     margin-top:10px; padding:10px 14px; border-radius:5px; font-size:12px; line-height:1.6;
     background:var(--panel); border:1px solid var(--line);
@@ -563,12 +566,17 @@
               somewhere else before you started using Double T. Your existing entries are never
               touched; imported rows are simply added alongside them.
             </div>
-            <button class="tt-btn primary tt-menu-bigbtn" id="tt-import-btn">&#8593; Import from CSV</button>
-            <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
-            <div class="tt-import-help">
-              CSV columns: <code>date</code> (YYYY-MM-DD), <code>start</code> (HH:MM), <code>stop</code> (HH:MM), <code>notes</code> (optional).
-              <button type="button" id="tt-template-link">Download template</button>
+
+            <div class="tt-csv-columns">
+              <div class="tt-csv-col"><code>date</code><span>YYYY-MM-DD</span></div>
+              <div class="tt-csv-col"><code>start</code><span>HH:MM</span></div>
+              <div class="tt-csv-col"><code>stop</code><span>HH:MM</span></div>
+              <div class="tt-csv-col"><code>notes</code><span>optional</span></div>
             </div>
+
+            <button type="button" class="tt-btn tt-menu-bigbtn" id="tt-template-link">&#8595; Download template</button>
+            <button class="tt-btn primary tt-menu-bigbtn" id="tt-import-btn" style="margin-top:8px;">&#8593; Import from CSV</button>
+            <input type="file" id="tt-import-input" accept=".csv" style="display:none;" />
             <div id="tt-import-result" class="tt-import-result" hidden></div>
           </div>
           <div class="tt-menu-section">
@@ -643,7 +651,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.016</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.017</div>
   </div>
 </div>
 
