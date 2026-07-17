@@ -54,6 +54,7 @@
     background:var(--panel); border:none; color:var(--paper-dim);
     font-family:'Work Sans',sans-serif; font-size:11px; font-weight:600;
     padding:6px 12px; cursor:pointer; border-right:1px solid var(--line);
+    transition:background .18s ease, color .18s ease;
   }
   .tt-segment button:last-child{border-right:none;}
   .tt-segment button:hover{background:var(--panel-2);}
@@ -142,8 +143,10 @@
     background:none;border:1px solid var(--line);color:var(--paper);
     width:32px;height:32px;border-radius:4px;cursor:pointer;font-size:15px;
     display:flex;align-items:center;justify-content:center;
+    transition:background .15s ease, border-color .15s ease, transform .1s ease;
   }
-  .tt-navbtn:hover{background:var(--panel-2);}
+  .tt-navbtn:hover{background:var(--panel-2); border-color:var(--amber-dim);}
+  .tt-navbtn:active{transform:scale(.92);}
   .tt-monthlabel{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper);}
   .tt-monthtotal{font-size:12px;color:var(--paper-dim);}
 
@@ -172,16 +175,28 @@
     background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px;
     display:grid; grid-template-columns:repeat(7,1fr); gap:5px;
   }
+  .tt-calendar[hidden]{display:none;}
   .tt-cal-dow{font-family:'Space Mono',monospace; font-size:10px; text-transform:uppercase; color:var(--paper-dim); text-align:center; padding-bottom:4px; letter-spacing:.06em;}
   .tt-cal-cell{
     aspect-ratio:1; border-radius:4px; padding:6px 4px; background:var(--panel-2);
     display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;
-    border:1px solid transparent;
+    border:1px solid transparent; transition:background .15s ease, border-color .15s ease, transform .15s ease;
+    position:relative;
   }
-  .tt-cal-cell:hover{border-color:var(--amber-dim);}
+  .tt-cal-cell:hover{border-color:var(--amber-dim); transform:translateY(-1px);}
   .tt-cal-cell.outside{opacity:.28; cursor:default;}
-  .tt-cal-cell.today{border-color:var(--amber);}
+  .tt-cal-cell.outside:hover{transform:none; border-color:transparent;}
   .tt-cal-cell.has-time{background:rgba(232,163,61,.14);}
+  .tt-cal-cell.today{
+    background:var(--amber); border-color:var(--amber);
+    box-shadow:0 0 0 3px rgba(232,163,61,.28);
+  }
+  .tt-cal-cell.today .tt-cal-daynum{color:var(--ink); font-weight:700;}
+  .tt-cal-cell.today .tt-cal-hours{color:var(--ink);}
+  .tt-cal-cell.today::before{
+    content:'TODAY'; position:absolute; top:3px; right:4px;
+    font-size:7px; font-weight:700; letter-spacing:.05em; color:var(--ink); opacity:.65;
+  }
   .tt-cal-daynum{font-size:11px; color:var(--paper-dim); font-family:'Space Mono',monospace;}
   .tt-cal-hours{font-size:11px; font-weight:700; color:var(--amber); font-family:'Space Mono',monospace; font-variant-numeric:tabular-nums; text-align:right;}
   .tt-cal-cell.week-mode{aspect-ratio:auto; min-height:70px;}
@@ -192,10 +207,13 @@
   }
   .tt-chart-bars{display:flex; align-items:flex-end; gap:4px; height:160px; min-width:min-content;}
   .tt-chart-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:16px; flex:1;}
-  .tt-chart-bar{width:100%; max-width:26px; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px;}
+  .tt-chart-bar{width:100%; max-width:26px; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px; transition:height .35s cubic-bezier(.2,.8,.2,1);}
   .tt-chart-bar.today{background:#fff;}
   .tt-chart-label{font-size:9px; color:var(--paper-dim); margin-top:6px; font-family:'Space Mono',monospace; white-space:nowrap;}
   .tt-chart-val{font-size:9px; color:var(--paper-dim); opacity:.8; margin-bottom:3px; font-family:'Space Mono',monospace;}
+
+  @keyframes tt-fadein{ from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);} }
+  .tt-fade-in{animation:tt-fadein .22s ease;}
 
   .tt-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
   .tt-btn{
@@ -446,7 +464,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.008</div>
   </div>
 </div>
 
@@ -777,6 +795,11 @@
     const rangeTotal = dates.reduce((s,d)=>s+secondsForDate(d), 0);
     $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} logged`;
 
+    const labelWrap = $('tt-rangelabel').parentElement;
+    labelWrap.classList.remove('tt-fade-in');
+    void labelWrap.offsetWidth;
+    labelWrap.classList.add('tt-fade-in');
+
     $('tt-ledger').hidden = viewMode!=='list';
     $('tt-calendar').hidden = viewMode!=='calendar';
     $('tt-chart').hidden = viewMode!=='chart';
@@ -784,6 +807,11 @@
     if(viewMode==='list') renderListView(dates);
     else if(viewMode==='calendar') renderCalendarView(dates);
     else renderChartView(dates);
+
+    const activeEl = viewMode==='list' ? $('tt-ledger') : viewMode==='calendar' ? $('tt-calendar') : $('tt-chart');
+    activeEl.classList.remove('tt-fade-in');
+    void activeEl.offsetWidth; // force reflow so the animation replays
+    activeEl.classList.add('tt-fade-in');
   }
 
   function renderListView(dates){
