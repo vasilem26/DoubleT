@@ -73,7 +73,7 @@
   }
   .tt-menu-back:hover{color:var(--amber);}
   .tt-menu-back[hidden]{display:none;}
-  .tt-menu-header span{flex:1; text-align:left;}
+  .tt-menu-header span{flex:1; text-align:left; cursor:pointer;}
   .tt-menu-close{background:none; border:none; color:var(--paper-dim); font-size:20px; cursor:pointer; line-height:1; padding:0; flex-shrink:0;}
   .tt-menu-close:hover{color:var(--paper);}
   .tt-menu-section{margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line);}
@@ -661,7 +661,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.018</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.020</div>
   </div>
 </div>
 
@@ -703,7 +703,9 @@
   let unsubEntries = null;
   let unsubActive = null;
   let unsubPresets = null;
+  let unsubPrefs = null;
   let presets = [];
+  let lastProjectPref = '';
   let currentUid = null;
   let isSignUpMode = false;
 
@@ -947,6 +949,9 @@
   $('tt-menu-btn').addEventListener('click', openMenu);
   $('tt-menu-close').addEventListener('click', closeMenu);
   $('tt-menu-back').addEventListener('click', ()=> showMenuScreen('root'));
+  $('tt-menu-title').addEventListener('click', ()=>{
+    if(!$('tt-menu-back').hidden) showMenuScreen('root');
+  });
   $('tt-menu-overlay').addEventListener('click', (e)=>{ if(e.target.id==='tt-menu-overlay') closeMenu(); });
   document.querySelectorAll('.tt-menu-navrow').forEach(btn=>{
     btn.addEventListener('click', ()=> showMenuScreen(btn.getAttribute('data-screen')));
@@ -1050,6 +1055,7 @@
   function entriesCol(uid){ return collection(db, 'users', uid, 'entries'); }
   function activeDoc(uid){ return doc(db, 'users', uid, 'meta', 'active'); }
   function presetsDoc(uid){ return doc(db, 'users', uid, 'meta', 'presets'); }
+  function prefsDoc(uid){ return doc(db, 'users', uid, 'meta', 'prefs'); }
 
   function attachListeners(uid){
     detachListeners();
@@ -1072,6 +1078,11 @@
       renderPresetManager();
     }, (err)=> console.error('presets listener error', err));
 
+    unsubPrefs = onSnapshot(prefsDoc(uid), (snap)=>{
+      lastProjectPref = (snap.exists() && snap.data().lastProject) || '';
+      renderProjectSelect();
+    }, (err)=> console.error('prefs listener error', err));
+
     scheduleTick();
   }
 
@@ -1079,10 +1090,13 @@
     if(unsubEntries){ unsubEntries(); unsubEntries = null; }
     if(unsubActive){ unsubActive(); unsubActive = null; }
     if(unsubPresets){ unsubPresets(); unsubPresets = null; }
+    if(unsubPrefs){ unsubPrefs(); unsubPrefs = null; }
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
     presets = [];
+    lastProjectPref = '';
+    delete $('tt-note').dataset.touched;
   }
 
   // ---------------- App logic ----------------
@@ -1128,7 +1142,9 @@
   function renderProjectSelect(){
     const sel = $('tt-note');
     const running = !!active;
-    const currentVal = running ? (active.note || '') : sel.value;
+    const currentVal = running
+      ? (active.note || '')
+      : (sel.dataset.touched ? sel.value : lastProjectPref);
 
     // build option list from presets, plus the current value if it's no longer a saved preset
     // (e.g. a project that was later removed, or a legacy free-text note on an active timer)
@@ -1140,13 +1156,23 @@
     sel.value = currentVal;
   }
 
+  $('tt-note').addEventListener('change', ()=>{
+    const sel = $('tt-note');
+    sel.dataset.touched = '1';
+    if(currentUid){
+      setDoc(prefsDoc(currentUid), { lastProject: sel.value }).catch(err=>{
+        console.error('Could not save project preference', err);
+      });
+    }
+  });
+
   let expandedDay = null;
 
   function renderCurrentView(){
     const dates = getRangeDates();
     $('tt-rangelabel').textContent = getRangeLabel();
     const rangeTotal = dates.reduce((s,d)=>s+secondsForDate(d), 0);
-    $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} logged`;
+    $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} h logged`;
 
     const labelWrap = $('tt-rangelabel').parentElement;
     labelWrap.classList.remove('tt-fade-in');
@@ -1180,7 +1206,7 @@
       rows += `<div class="tt-row ${isToday?'today':''} ${secs===0?'empty':''}" data-day="${key}" style="${hasEntries?'cursor:pointer;':''}">
         <div class="tt-day">${weekday} ${dt.getDate()}</div>
         <div class="tt-count">${dayEntries.length||''}</div>
-        <div class="tt-hours">${secs>0?fmtHM(secs):'—'}</div>
+        <div class="tt-hours">${secs>0?fmtHM(secs)+'h':'—'}</div>
       </div>`;
       if(expandedDay===key && hasEntries){
         dayEntries.forEach(e=>{
@@ -1189,7 +1215,7 @@
           const noteText = e.note ? e.note : 'No note';
           rows += `<div class="tt-detail-row">
             <div class="tt-detail-note">${escapeHtml(noteText)}</div>
-            <div class="tt-detail-time">${timeRange} · ${fmtHM(e.durationSec)}</div>
+            <div class="tt-detail-time">${timeRange} · ${fmtHM(e.durationSec)}h</div>
           </div>`;
         });
       }
@@ -1227,7 +1253,7 @@
       const isToday = key===todayKey;
       html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" data-day="${key}">
         <div class="tt-cal-daynum">${dt.getDate()}</div>
-        <div class="tt-cal-hours">${secs>0?fmtHM(secs):''}</div>
+        <div class="tt-cal-hours">${secs>0?fmtHM(secs)+'h':''}</div>
       </div>`;
     });
     if(granularity==='month'){
@@ -1269,8 +1295,8 @@
       const heightPct = isEmpty ? 3 : Math.max(4, Math.round((secs/maxSec)*100));
       const isToday = dateKey(dt)===todayKey;
       const label = isMonth ? dt.getDate() : dt.toLocaleDateString(undefined,{weekday:'short'});
-      cols += `<div class="tt-chart-col" title="${dt.toLocaleDateString(undefined,{month:'short',day:'numeric'})}: ${fmtHM(secs)}">
-        <div class="tt-chart-val">${secs>0?fmtHM(secs):''}</div>
+      cols += `<div class="tt-chart-col" title="${dt.toLocaleDateString(undefined,{month:'short',day:'numeric'})}: ${fmtHM(secs)}h">
+        <div class="tt-chart-val">${secs>0?fmtHM(secs)+'h':''}</div>
         <div class="tt-chart-bar ${isToday?'today':''} ${isEmpty?'empty':''}" style="height:${heightPct}%"></div>
         <div class="tt-chart-label ${showLabel(i)?'':'dim'}">${showLabel(i)?label:'·'}</div>
       </div>`;
@@ -1321,7 +1347,7 @@
         $('tt-digits').textContent = fmtHMS(liveSec);
         $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
         $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
-        $('tt-rangetotal').textContent = `${fmtHM(getRangeDates().reduce((s,d)=>s+secondsForDate(d),0))} logged`;
+        $('tt-rangetotal').textContent = `${fmtHM(getRangeDates().reduce((s,d)=>s+secondsForDate(d),0))} h logged`;
       }
     }, 1000);
   }
@@ -1401,7 +1427,7 @@
       .sort((a,b)=>a.startISO.localeCompare(b.startISO))
       .map(e=>{
         const s = new Date(e.startISO), st = new Date(e.stopISO);
-        return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), e.note||''];
+        return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), e.durationSec, e.note||''];
       });
   }
 
@@ -1413,11 +1439,14 @@
         const days = new Date(y, m+1, 0).getDate();
         let sec = 0;
         for(let d=1; d<=days; d++) sec += secondsForDate(new Date(y, m, d));
-        rows.push([monthNames[m], +(sec/3600).toFixed(2)]);
+        rows.push([monthNames[m], +(sec/3600).toFixed(2), sec]);
       }
       return rows;
     }
-    return dates.map(d=>[dateKey(d), +(secondsForDate(d)/3600).toFixed(2)]);
+    return dates.map(d=>{
+      const sec = secondsForDate(d);
+      return [dateKey(d), +(sec/3600).toFixed(2), sec];
+    });
   }
 
   function updateExportPreview(){
@@ -1425,13 +1454,13 @@
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
     if(exportFormat==='pdf' && exportView==='chart'){
       $('tt-export-preview').textContent =
-        `${getExportLabel(exportPeriod)} — bar chart, ${fmtHM(totalSec)} total.`;
+        `${getExportLabel(exportPeriod)} — bar chart, ${fmtHM(totalSec)}h total.`;
       return;
     }
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const noun = exportType==='detailed' ? 'entries' : (exportPeriod==='year' ? 'months' : 'days');
     $('tt-export-preview').textContent =
-      `${getExportLabel(exportPeriod)} — ${rows.length} ${noun}, ${fmtHM(totalSec)} total.`;
+      `${getExportLabel(exportPeriod)} — ${rows.length} ${noun}, ${fmtHM(totalSec)}h total.`;
   }
 
   function updateExportControlsAvailability(){
@@ -1457,8 +1486,8 @@
   function doExportXlsx(dates, label){
     const wb = XLSX.utils.book_new();
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Notes']
-      : (exportPeriod==='year' ? ['Month','Total (h)'] : ['Date','Total (h)']);
+      ? ['Date','Start','Stop','Duration (h)','Duration (s)','Notes']
+      : (exportPeriod==='year' ? ['Month','Total (h)','Total (s)'] : ['Date','Total (h)','Total (s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
     const typeLabel = exportType==='detailed' ? 'Detailed' : 'Summary';
@@ -1469,12 +1498,12 @@
       headers,
       ...rows,
       [],
-      ['Total (h)', +(totalSec/3600).toFixed(2)]
+      ['Total (h)', +(totalSec/3600).toFixed(2), totalSec]
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = exportType==='detailed'
-      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:30}]
-      : [{wch:14},{wch:10}];
+      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}]
+      : [{wch:14},{wch:10},{wch:10}];
     ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:headers.length-1} }];
 
     const titleCell = ws['A1'];
@@ -1496,8 +1525,8 @@
 
   function doExportCsv(dates, label){
     const headers = exportType==='detailed'
-      ? ['date','start','stop','duration_h','notes']
-      : (exportPeriod==='year' ? ['month','total_h'] : ['date','total_h']);
+      ? ['date','start','stop','duration_h','duration_s','notes']
+      : (exportPeriod==='year' ? ['month','total_h','total_s'] : ['date','total_h','total_s']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const csvLines = [headers.join(',')];
     rows.forEach(r=>{
@@ -1612,15 +1641,15 @@
       doc.addImage(chartDataUrl, 'PNG', 14, 40, imgWidth, imgHeight);
       doc.setFontSize(11);
       doc.setTextColor(30);
-      doc.text(`Total: ${fmtHM(totalSec)}`, 14, 40 + imgHeight + 12);
+      doc.text(`Total: ${fmtHM(totalSec)}h`, 14, 40 + imgHeight + 12);
       addFooter();
       doc.save(`Double_T_chart_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
       return;
     }
 
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Notes']
-      : (exportPeriod==='year' ? ['Month','Total (h)'] : ['Date','Total (h)']);
+      ? ['Date','Start','Stop','Duration (h)','Duration (s)','Notes']
+      : (exportPeriod==='year' ? ['Month','Total (h)','Total (s)'] : ['Date','Total (h)','Total (s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
 
     doc.autoTable({
@@ -1634,7 +1663,7 @@
     const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 38;
     doc.setFontSize(11);
     doc.setTextColor(30);
-    doc.text(`Total: ${fmtHM(totalSec)}`, 14, finalY + 10);
+    doc.text(`Total: ${fmtHM(totalSec)}h`, 14, finalY + 10);
 
     addFooter();
     doc.save(`Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.pdf`);
