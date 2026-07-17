@@ -38,15 +38,6 @@
   .tt-sub{font-size:12px;color:var(--paper-dim);opacity:.7;}
   .tt-account{font-size:11px;color:var(--paper-dim);opacity:.7;text-align:right;}
   .tt-account button{background:none;border:none;color:var(--amber);opacity:.85;cursor:pointer;font-size:11px;padding:0;margin-left:6px;text-decoration:underline;}
-  .tt-info-btn{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:14px; height:14px; border-radius:50%; border:1px solid var(--paper-dim) !important;
-    color:var(--paper-dim) !important; opacity:.7 !important; text-decoration:none !important;
-    font-family:'Space Mono',monospace; font-size:10px !important; font-style:italic; padding:0 !important;
-    margin-left:6px !important; vertical-align:middle;
-  }
-  .tt-info-btn:hover{opacity:1 !important; border-color:var(--amber) !important; color:var(--amber) !important;}
-  .tt-account-email-reveal{color:var(--paper-dim); font-size:11px; opacity:.8; margin-left:4px;}
 
   .tt-menu-btn{
     width:32px; height:32px; border-radius:5px; border:1px solid var(--line); background:var(--panel);
@@ -76,6 +67,16 @@
   .tt-menu-close:hover{color:var(--paper);}
   .tt-menu-section{margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line);}
   .tt-menu-section:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
+  .tt-menu-group{margin-bottom:26px;}
+  .tt-menu-group:last-child{margin-bottom:0;}
+  .tt-menu-group-title{
+    font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--amber); opacity:.85; margin-bottom:14px;
+  }
+  .tt-menu-static-value{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper-dim); font-size:13px; padding:9px 11px;
+  }
   .tt-menu-label{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
   .tt-menu-row{display:flex; gap:8px;}
   .tt-menu-input{
@@ -170,19 +171,14 @@
     width:100%; max-width:360px;
     background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
     color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px;
-    padding:9px 11px;
+    padding:9px 32px 9px 11px; cursor:pointer;
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23B9C2CC' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; background-size:11px;
   }
-  .tt-note::placeholder{color:var(--paper-dim);opacity:.6;}
   .tt-note:focus-visible{outline:2px solid var(--amber);}
-
-  .tt-presets-row{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:10px;}
-  .tt-preset-chip{
-    background:var(--panel-2); border:1px solid var(--line); color:var(--paper-dim);
-    font-family:'Work Sans',sans-serif; font-size:11px; padding:5px 11px; border-radius:14px;
-    cursor:pointer; transition:background .15s ease, border-color .15s ease, color .15s ease;
-  }
-  .tt-preset-chip:hover{background:var(--panel); border-color:var(--amber-dim); color:var(--paper);}
-  .tt-preset-chip:disabled{opacity:.4; cursor:not-allowed;}
+  .tt-note:disabled{cursor:not-allowed; opacity:.7;}
+  .tt-note option{background:var(--panel-2); color:var(--paper);}
 
   /* today strip */
   .tt-today{
@@ -261,16 +257,24 @@
 
   .tt-chart{
     background:var(--panel); border:1px solid var(--line); border-radius:6px;
-    padding:16px 12px 8px; overflow-x:auto;
+    padding:16px 14px 10px;
   }
-  .tt-chart-bars{display:flex; align-items:flex-end; gap:4px; height:160px; min-width:min-content;}
-  .tt-chart-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:16px; flex:1;}
-  .tt-chart-bar{width:100%; max-width:26px; background:var(--amber); border-radius:2px 2px 0 0; min-height:2px; transition:height .35s cubic-bezier(.2,.8,.2,1), filter .15s ease, transform .15s ease; cursor:default;}
+  .tt-chart-bars{
+    display:flex; align-items:flex-end; gap:3px; height:150px;
+    border-bottom:1px solid var(--line); padding-bottom:1px;
+  }
+  .tt-chart-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; flex:1; min-width:0;}
+  .tt-chart-bar{
+    width:100%; max-width:28px; background:var(--amber); border-radius:3px 3px 0 0; min-height:3px;
+    transition:height .35s cubic-bezier(.2,.8,.2,1), filter .15s ease, transform .15s ease; cursor:default;
+  }
   .tt-chart-bar.today{background:#fff;}
-  .tt-chart-col:hover .tt-chart-bar{filter:brightness(1.3); transform:scaleX(1.15);}
+  .tt-chart-bar.empty{background:var(--line); max-width:10px; min-height:2px; opacity:.6;}
+  .tt-chart-col:hover .tt-chart-bar:not(.empty){filter:brightness(1.3); transform:scaleX(1.15);}
   .tt-chart-col:hover .tt-chart-val{color:var(--amber); opacity:1;}
   .tt-chart-label{font-size:9px; color:var(--paper-dim); margin-top:6px; font-family:'Space Mono',monospace; white-space:nowrap;}
-  .tt-chart-val{font-size:9px; color:var(--paper-dim); opacity:.8; margin-bottom:3px; font-family:'Space Mono',monospace;}
+  .tt-chart-label.dim{opacity:.35;}
+  .tt-chart-val{font-size:9px; color:var(--paper-dim); opacity:.8; margin-bottom:3px; font-family:'Space Mono',monospace; min-height:11px;}
 
   @keyframes tt-fadein{ from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);} }
   .tt-fade-in{animation:tt-fadein .22s ease;}
@@ -443,8 +447,6 @@
           <div class="tt-sub" id="tt-today-date"></div>
           <div class="tt-account">
             <span id="tt-account-name"></span>
-            <button id="tt-email-info" class="tt-info-btn" type="button" aria-label="Show email" title="Show email">i</button>
-            <span id="tt-account-email" class="tt-account-email-reveal" hidden></span>
           </div>
         </div>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
@@ -460,45 +462,60 @@
           <button id="tt-menu-close" class="tt-menu-close" type="button" aria-label="Close menu">&times;</button>
         </div>
 
-        <div class="tt-menu-section">
-          <div class="tt-menu-label">Username</div>
-          <div class="tt-menu-row">
-            <input type="text" id="tt-menu-name" class="tt-menu-input" maxlength="60" />
-            <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-name">Save</button>
+        <div class="tt-menu-group">
+          <div class="tt-menu-group-title">User</div>
+
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Email</div>
+            <div class="tt-menu-static-value" id="tt-menu-email"></div>
           </div>
-          <div class="tt-menu-msg" id="tt-name-msg"></div>
-        </div>
 
-        <div class="tt-menu-section">
-          <div class="tt-menu-label">Change password</div>
-          <input type="password" id="tt-menu-password" class="tt-menu-input" placeholder="New password" autocomplete="new-password" />
-          <div class="tt-pw-checklist" id="tt-menu-pw-checklist">
-            <div class="tt-pw-rule" data-rule="len">8+ characters</div>
-            <div class="tt-pw-rule" data-rule="upper">Uppercase letter</div>
-            <div class="tt-pw-rule" data-rule="lower">Lowercase letter</div>
-            <div class="tt-pw-rule" data-rule="num">Number</div>
-            <div class="tt-pw-rule" data-rule="special">Special character</div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Username</div>
+            <div class="tt-menu-row">
+              <input type="text" id="tt-menu-name" class="tt-menu-input" maxlength="60" />
+              <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-name">Save</button>
+            </div>
+            <div class="tt-menu-msg" id="tt-name-msg"></div>
           </div>
-          <input type="password" id="tt-menu-password-confirm" class="tt-menu-input" placeholder="Confirm new password" autocomplete="new-password" style="margin-top:8px;" />
-          <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-password" style="margin-top:10px; width:100%;">Update password</button>
-          <div class="tt-menu-msg" id="tt-password-msg"></div>
-        </div>
 
-        <div class="tt-menu-section">
-          <div class="tt-menu-label">Presets</div>
-          <div id="tt-preset-manager"></div>
-          <div class="tt-menu-row">
-            <input type="text" id="tt-new-preset" class="tt-menu-input" placeholder="e.g. FNRGW - Support" maxlength="60" />
-            <button class="tt-btn tt-menu-btn-inline" id="tt-add-preset">Add</button>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Change password</div>
+            <input type="password" id="tt-menu-password" class="tt-menu-input" placeholder="New password" autocomplete="new-password" />
+            <div class="tt-pw-checklist" id="tt-menu-pw-checklist">
+              <div class="tt-pw-rule" data-rule="len">8+ characters</div>
+              <div class="tt-pw-rule" data-rule="upper">Uppercase letter</div>
+              <div class="tt-pw-rule" data-rule="lower">Lowercase letter</div>
+              <div class="tt-pw-rule" data-rule="num">Number</div>
+              <div class="tt-pw-rule" data-rule="special">Special character</div>
+            </div>
+            <input type="password" id="tt-menu-password-confirm" class="tt-menu-input" placeholder="Confirm new password" autocomplete="new-password" style="margin-top:8px;" />
+            <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-password" style="margin-top:10px; width:100%;">Update password</button>
+            <div class="tt-menu-msg" id="tt-password-msg"></div>
+          </div>
+
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Projects</div>
+            <div id="tt-preset-manager"></div>
+            <div class="tt-menu-row">
+              <input type="text" id="tt-new-preset" class="tt-menu-input" placeholder="e.g. FNRGW - Support" maxlength="60" />
+              <button class="tt-btn tt-menu-btn-inline" id="tt-add-preset">Add</button>
+            </div>
           </div>
         </div>
 
-        <div class="tt-menu-section">
-          <button class="tt-btn" id="tt-menu-export" style="width:100%;">Export to Excel (.xlsx)</button>
+        <div class="tt-menu-group">
+          <div class="tt-menu-group-title">Exports</div>
+          <div class="tt-menu-section">
+            <button class="tt-btn" id="tt-menu-export" style="width:100%;">Export to Excel (.xlsx)</button>
+          </div>
         </div>
 
-        <div class="tt-menu-section">
-          <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
+        <div class="tt-menu-group">
+          <div class="tt-menu-group-title">Log out</div>
+          <div class="tt-menu-section">
+            <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
+          </div>
         </div>
       </div>
     </div>
@@ -508,9 +525,10 @@
       <div class="tt-digits" id="tt-digits">00:00:00</div>
       <button class="tt-punch" id="tt-punch">Start</button>
       <div class="tt-note-row">
-        <input class="tt-note" id="tt-note" type="text" placeholder="What are you working on? (optional)" maxlength="120" />
+        <select class="tt-note" id="tt-note">
+          <option value="">No project</option>
+        </select>
       </div>
-      <div class="tt-presets-row" id="tt-presets-row"></div>
     </div>
 
     <div class="tt-today">
@@ -578,7 +596,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.008</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.011</div>
   </div>
 </div>
 
@@ -819,16 +837,9 @@
     $('tt-auth-backdrop').style.display = 'none';
     $('tt-app-root').style.display = 'block';
     $('tt-account-name').textContent = user.displayName || user.email;
-    $('tt-account-email').textContent = user.email;
-    $('tt-account-email').hidden = true;
     currentUid = user.uid;
     attachListeners(user.uid);
   }
-
-  $('tt-email-info').addEventListener('click', ()=>{
-    const el = $('tt-account-email');
-    el.hidden = !el.hidden;
-  });
 
   // ---------------- Account menu ----------------
   function isEmailPasswordUser(user){
@@ -838,6 +849,7 @@
   function openMenu(){
     const user = auth.currentUser;
     if(!user) return;
+    $('tt-menu-email').textContent = user.email;
     $('tt-menu-name').value = user.displayName || '';
     $('tt-menu-password').value = '';
     $('tt-menu-password-confirm').value = '';
@@ -970,7 +982,7 @@
 
     unsubPresets = onSnapshot(presetsDoc(uid), (snap)=>{
       presets = (snap.exists() && Array.isArray(snap.data().list)) ? snap.data().list : [];
-      renderPresetChips();
+      renderProjectSelect();
       renderPresetManager();
     }, (err)=> console.error('presets listener error', err));
 
@@ -1014,6 +1026,8 @@
     $('tt-status-text').textContent = running ? 'Running' : 'Idle';
     $('tt-punch').textContent = running ? 'Stop' : 'Start';
     $('tt-punch').classList.toggle('stop', running);
+
+    renderProjectSelect();
     $('tt-note').disabled = running;
     if(running) $('tt-note').value = active.note || '';
 
@@ -1022,22 +1036,22 @@
     $('tt-today-total').textContent = fmtHM(todaysSeconds());
     $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds());
 
-    renderPresetChips();
     renderCurrentView();
   }
 
-  function renderPresetChips(){
+  function renderProjectSelect(){
+    const sel = $('tt-note');
     const running = !!active;
-    if(presets.length===0){ $('tt-presets-row').innerHTML = ''; return; }
-    $('tt-presets-row').innerHTML = presets.map(p=>
-      `<button type="button" class="tt-preset-chip" data-preset="${escapeHtml(p)}" ${running?'disabled':''}>${escapeHtml(p)}</button>`
-    ).join('');
-    $('tt-presets-row').querySelectorAll('.tt-preset-chip').forEach(chip=>{
-      chip.addEventListener('click', ()=>{
-        $('tt-note').value = chip.getAttribute('data-preset');
-        $('tt-note').focus();
-      });
-    });
+    const currentVal = running ? (active.note || '') : sel.value;
+
+    // build option list from presets, plus the current value if it's no longer a saved preset
+    // (e.g. a project that was later removed, or a legacy free-text note on an active timer)
+    const optionValues = [...presets];
+    if(currentVal && !optionValues.includes(currentVal)) optionValues.push(currentVal);
+
+    sel.innerHTML = '<option value="">No project</option>' +
+      optionValues.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+    sel.value = currentVal;
   }
 
   let expandedDay = null;
@@ -1158,16 +1172,20 @@
     const todayKey = dateKey(new Date());
     const secsArr = dates.map(secondsForDate);
     const maxSec = Math.max(...secsArr, 3600); // at least 1h scale so bars aren't all maxed on light days
+    const isMonth = granularity==='month';
+    // avoid label clutter on month view: show every 5th day, plus the 1st and last
+    const showLabel = (i)=> !isMonth || i===0 || i===dates.length-1 || (dates[i].getDate()%5===0);
     let cols = '';
     dates.forEach((dt,i)=>{
       const secs = secsArr[i];
-      const heightPct = Math.max(2, Math.round((secs/maxSec)*100));
+      const isEmpty = secs===0;
+      const heightPct = isEmpty ? 3 : Math.max(4, Math.round((secs/maxSec)*100));
       const isToday = dateKey(dt)===todayKey;
-      const label = granularity==='month' ? dt.getDate() : dt.toLocaleDateString(undefined,{weekday:'short'});
-      cols += `<div class="tt-chart-col">
+      const label = isMonth ? dt.getDate() : dt.toLocaleDateString(undefined,{weekday:'short'});
+      cols += `<div class="tt-chart-col" title="${dt.toLocaleDateString(undefined,{month:'short',day:'numeric'})}: ${fmtHM(secs)}">
         <div class="tt-chart-val">${secs>0?fmtHM(secs):''}</div>
-        <div class="tt-chart-bar ${isToday?'today':''}" style="height:${heightPct}%"></div>
-        <div class="tt-chart-label">${label}</div>
+        <div class="tt-chart-bar ${isToday?'today':''} ${isEmpty?'empty':''}" style="height:${heightPct}%"></div>
+        <div class="tt-chart-label ${showLabel(i)?'':'dim'}">${showLabel(i)?label:'·'}</div>
       </div>`;
     });
     $('tt-chart').innerHTML = `<div class="tt-chart-bars">${cols}</div>`;
