@@ -581,7 +581,7 @@
               touched; imported rows are simply added alongside them.
             </div>
             <div class="tt-menu-desc" style="margin-top:-6px;">
-              Your file needs exactly these column names (first row) — <code style="background:var(--panel-2);padding:1px 5px;border-radius:3px;">start</code>/<code style="background:var(--panel-2);padding:1px 5px;border-radius:3px;">stop</code> are the clock times a work session began and ended.
+              Your file needs exactly these column names (first row):
             </div>
 
             <div class="tt-csv-columns">
@@ -668,7 +668,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.022</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.023</div>
   </div>
 </div>
 
@@ -1460,7 +1460,7 @@
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
     if(exportFormat==='pdf' && exportView==='chart'){
       $('tt-export-preview').textContent =
-        `${getExportLabel(exportPeriod)} — bar chart, ${fmtHM(totalSec)}h total.`;
+        `${getExportLabel(exportPeriod)} — chart, ${fmtHM(totalSec)}h total.`;
       return;
     }
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
