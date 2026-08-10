@@ -139,6 +139,22 @@
   .tt-admin-entry-note{color:var(--paper); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .tt-admin-entry-time{font-family:'Space Mono',monospace; font-size:11px; opacity:.8;}
   .tt-admin-entry-delete{flex:0 0 auto; padding:6px 12px; font-size:12px; width:auto; min-width:0;}
+  .tt-admin-entry-actions{display:flex; gap:6px; flex-shrink:0;}
+  .tt-admin-entry-edit{flex:0 0 auto; padding:6px 12px; font-size:12px; width:auto; min-width:0;}
+  .tt-admin-entry-editing{display:block; padding:12px 4px;}
+  .tt-admin-edit-form{display:flex; flex-direction:column; gap:8px;}
+  .tt-admin-edit-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .tt-admin-edit-label{font-size:12px; color:var(--paper-dim);}
+  .tt-admin-edit-time{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Space Mono',monospace; font-size:13px; padding:6px 9px;
+  }
+  .tt-admin-edit-actions{display:flex; gap:8px;}
+  .tt-admin-edit-actions .tt-btn{flex:0 0 auto; width:auto; min-width:0; padding:7px 14px; font-size:12px;}
+  .tt-admin-edit-error{font-size:11px; color:#E7A29D; min-height:14px;}
+  .tt-admin-danger-zone{
+    margin-top:22px; padding-top:18px; border-top:1px solid var(--line);
+  }
 
   .tt-admin-page{
     position:fixed; inset:0; background:var(--ink); z-index:3000;
@@ -737,6 +753,16 @@
 
           <div class="tt-admin-summary" id="tt-admin-manage-summary"></div>
           <div id="tt-admin-manage-entries-list" class="tt-admin-entries-list"></div>
+
+          <div class="tt-admin-danger-zone">
+            <div class="tt-menu-label">Danger zone</div>
+            <div class="tt-menu-desc">
+              Permanently erases every entry, project, and setting for this user — a full reset.
+              This does <strong>not</strong> delete their login/account; they could sign back in
+              afterward to a completely empty account. There is no undo.
+            </div>
+            <button class="tt-btn danger tt-menu-bigbtn" id="tt-admin-wipe-user-btn">Delete all data for this user</button>
+          </div>
         </div>
 
         <div class="tt-admin-page-screen" id="tt-admin-page-export-users" hidden>
@@ -834,7 +860,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.036</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.037</div>
   </div>
 </div>
 
@@ -1333,6 +1359,8 @@
     );
   }
 
+  let adminEditingRefId = null;
+
   function renderAdminManageEntriesList(){
     const listEl = $('tt-admin-manage-entries-list');
     const filtered = getManageFilteredEntries();
@@ -1345,17 +1373,86 @@
       return;
     }
     listEl.innerHTML = filtered.map((e)=>{
+      const refId = e.ref.path||e.ref.id||'';
       const s = e.startISO ? new Date(e.startISO) : null;
       const st = e.stopISO ? new Date(e.stopISO) : null;
       const timeRange = (s && st) ? `${e.date} · ${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : (e.date||'');
-      return `<div class="tt-admin-entry-row" data-ref-id="${escapeHtml(e.ref.path||e.ref.id||'')}">
+
+      if(adminEditingRefId===refId){
+        const stopVal = st ? st.toTimeString().slice(0,5) : '';
+        return `<div class="tt-admin-entry-row tt-admin-entry-editing" data-ref-id="${escapeHtml(refId)}">
+          <div class="tt-admin-edit-form">
+            <div class="tt-admin-entry-note">${escapeHtml(e.note || 'No note')}</div>
+            <div class="tt-admin-edit-row">
+              <span class="tt-admin-edit-label">Started ${s ? s.toTimeString().slice(0,5) : '—'} on ${escapeHtml(e.date||'')}. New end time:</span>
+              <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-input-${escapeHtml(refId)}" value="${stopVal}" />
+            </div>
+            <div class="tt-admin-edit-actions">
+              <button type="button" class="tt-btn tt-menu-btn-inline tt-admin-edit-cancel" data-ref-id="${escapeHtml(refId)}">Cancel</button>
+              <button type="button" class="tt-btn primary tt-menu-btn-inline tt-admin-edit-save" data-ref-id="${escapeHtml(refId)}">Save</button>
+            </div>
+            <div class="tt-admin-edit-error" id="tt-admin-edit-error-${escapeHtml(refId)}"></div>
+          </div>
+        </div>`;
+      }
+
+      return `<div class="tt-admin-entry-row" data-ref-id="${escapeHtml(refId)}">
         <div class="tt-admin-entry-info">
           <div class="tt-admin-entry-note">${escapeHtml(e.note || 'No note')}</div>
           <div class="tt-admin-entry-time">${escapeHtml(timeRange)} · ${fmtHM(e.durationSec||0)}h</div>
         </div>
-        <button type="button" class="tt-btn danger tt-admin-entry-delete" data-ref-id="${escapeHtml(e.ref.path||e.ref.id||'')}" aria-label="Delete entry">Delete</button>
+        <div class="tt-admin-entry-actions">
+          <button type="button" class="tt-btn tt-admin-entry-edit" data-ref-id="${escapeHtml(refId)}" aria-label="Edit end time">Edit</button>
+          <button type="button" class="tt-btn danger tt-admin-entry-delete" data-ref-id="${escapeHtml(refId)}" aria-label="Delete entry">Delete</button>
+        </div>
       </div>`;
     }).join('');
+
+    listEl.querySelectorAll('.tt-admin-entry-edit').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        adminEditingRefId = btn.getAttribute('data-ref-id');
+        renderAdminManageEntriesList();
+      });
+    });
+    listEl.querySelectorAll('.tt-admin-edit-cancel').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        adminEditingRefId = null;
+        renderAdminManageEntriesList();
+      });
+    });
+    listEl.querySelectorAll('.tt-admin-edit-save').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const refId = btn.getAttribute('data-ref-id');
+        const entry = filtered.find(e=> (e.ref.path||e.ref.id||'')===refId);
+        if(!entry) return;
+        const errEl = $(`tt-admin-edit-error-${refId}`);
+        const timeVal = $(`tt-admin-edit-input-${refId}`).value; // "HH:MM"
+        if(!timeVal){ errEl.textContent = 'Please choose an end time.'; return; }
+        const startDT = new Date(entry.startISO);
+        const [hh, mm] = timeVal.split(':').map(Number);
+        const newStopDT = new Date(startDT.getFullYear(), startDT.getMonth(), startDT.getDate(), hh, mm, 0);
+        if(newStopDT <= startDT){ errEl.textContent = 'End time must be after the start time.'; return; }
+        const newDurationSec = Math.round((newStopDT - startDT)/1000);
+        try{
+          const updated = {
+            date: entry.date,
+            startISO: entry.startISO,
+            stopISO: newStopDT.toISOString(),
+            durationSec: newDurationSec,
+            note: entry.note || '',
+            uid: entry.uid
+          };
+          await setDoc(entry.ref, updated);
+          Object.assign(entry, updated);
+          adminEditingRefId = null;
+          renderAdminManageEntriesList();
+        }catch(err){
+          console.error('Could not update entry', err);
+          errEl.textContent = 'Could not save. Please try again.';
+        }
+      });
+    });
+
     listEl.querySelectorAll('.tt-admin-entry-delete').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const refId = btn.getAttribute('data-ref-id');
@@ -1413,6 +1510,36 @@
       listEl.innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
     }
   }
+
+  $('tt-admin-wipe-user-btn').addEventListener('click', ()=>{
+    if(!adminSelectedUser) return;
+    const label = adminSelectedUser.displayName || adminSelectedUser.email;
+    openConfirmModal({
+      title: 'Delete all data for this user?',
+      desc: `This permanently erases every entry, project, and setting for ${label}. Their login stays active — they could sign back in to a completely empty account. This cannot be undone.`,
+      confirmLabel: 'Delete all their data',
+      onConfirm: async ()=>{
+        const uid = adminSelectedUser.uid;
+        try{
+          const batch = writeBatch(db);
+          const toDelete = (adminAllEntriesCache||[]).filter(e=>e.uid===uid);
+          toDelete.forEach(e=> batch.delete(e.ref));
+          batch.delete(doc(db, 'users', uid, 'meta', 'presets'));
+          batch.delete(doc(db, 'users', uid, 'meta', 'prefs'));
+          batch.delete(doc(db, 'users', uid, 'meta', 'active'));
+          batch.delete(doc(db, 'directory', uid));
+          await batch.commit();
+          adminAllEntriesCache = (adminAllEntriesCache||[]).filter(e=>e.uid!==uid);
+          adminEntries = [];
+          renderAdminManageEntriesList();
+          showAdminScreen('manage-users');
+          loadUsersInto('tt-admin-manage-users-list', selectUserForManage);
+        }catch(err){
+          console.error('Could not wipe user data', err);
+        }
+      }
+    });
+  });
 
   // ---- Export data flow ----
   $('tt-admin-export-back-users').addEventListener('click', ()=> showAdminScreen('export-users'));
