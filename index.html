@@ -140,6 +140,33 @@
   .tt-admin-entry-delete{background:none; border:none; color:var(--paper-dim); opacity:.6; cursor:pointer; font-size:16px; padding:0 4px; flex-shrink:0;}
   .tt-admin-entry-delete:hover{opacity:1; color:#E7A29D;}
 
+  .tt-admin-page{
+    position:fixed; inset:0; background:var(--ink); z-index:3000;
+    overflow-y:auto; padding:28px 20px 48px;
+  }
+  .tt-admin-page[hidden]{display:none;}
+  .tt-admin-page-inner{max-width:640px; margin:0 auto;}
+  .tt-admin-page-header{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Space Mono',monospace; font-size:15px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--paper-dim); margin-bottom:26px; padding-bottom:16px; border-bottom:1px solid var(--line);
+  }
+  .tt-admin-page-header #tt-admin-page-title{color:var(--amber);}
+  .tt-admin-page-screen[hidden]{display:none;}
+  .tt-admin-bigcard{
+    display:block; width:100%; text-align:left;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:20px; margin-bottom:14px; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, transform .12s ease;
+  }
+  .tt-admin-bigcard:hover{background:var(--panel-2); border-color:var(--amber-dim); transform:translateY(-1px);}
+  .tt-admin-bigcard-title{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Space Mono',monospace; font-size:15px; font-weight:700; color:var(--paper); margin-bottom:8px;
+  }
+  .tt-admin-bigcard-desc{font-size:13px; color:var(--paper-dim); line-height:1.5;}
+  .tt-admin-analytics{display:flex; flex-direction:column; gap:10px;}
+
   .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
   .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
   .tt-segment button{
@@ -519,7 +546,7 @@
           <button type="button" class="tt-menu-navrow" data-screen="projects">Projects <span class="tt-menu-chevron">&#8250;</span></button>
           <button type="button" class="tt-menu-navrow" data-screen="exports">Exports <span class="tt-menu-chevron">&#8250;</span></button>
           <button type="button" class="tt-menu-navrow" data-screen="data">Manage data <span class="tt-menu-chevron">&#8250;</span></button>
-          <button type="button" class="tt-menu-navrow" id="tt-admin-navrow" data-screen="admin" hidden>Admin <span class="tt-menu-chevron">&#8250;</span></button>
+          <button type="button" class="tt-menu-navrow" id="tt-admin-navrow" hidden>Admin <span class="tt-menu-chevron">&#8250;</span></button>
           <div class="tt-menu-root-signout">
             <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
           </div>
@@ -639,23 +666,53 @@
           </div>
         </div>
 
-        <div class="tt-menu-screen" id="tt-menu-screen-admin" hidden>
-          <div class="tt-menu-section">
-            <div class="tt-menu-label">Users</div>
-            <div class="tt-menu-desc">
-              View, export, or delete any user's time entries. You cannot edit usernames, passwords,
-              or projects here — only entries.
-            </div>
-            <div id="tt-admin-users" class="tt-admin-users"></div>
+      </div>
+    </div>
+
+    <div class="tt-admin-page" id="tt-admin-page" hidden>
+      <div class="tt-admin-page-inner">
+        <div class="tt-admin-page-header">
+          <div class="tt-menu-titlebar" id="tt-admin-page-titlebar">
+            <button id="tt-admin-page-back" class="tt-menu-back" type="button" aria-label="Back" hidden>&#8249;</button>
+            <span id="tt-admin-page-title">Admin</span>
           </div>
-          <div class="tt-menu-section" id="tt-admin-entries-section" hidden>
-            <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <div class="tt-menu-label" id="tt-admin-entries-label" style="margin:0;">Entries</div>
-              <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-back-to-users">&#8249; Users</button>
-            </div>
-            <button class="tt-btn tt-menu-bigbtn" id="tt-admin-export" style="margin-bottom:10px;">&#8595; Export this user's entries (.xlsx)</button>
-            <div id="tt-admin-entries-list" class="tt-admin-entries-list"></div>
+          <button id="tt-admin-page-close" class="tt-menu-close" type="button" aria-label="Close admin">&times;</button>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-root">
+          <button type="button" class="tt-admin-bigcard" data-adminscreen="manage">
+            <div class="tt-admin-bigcard-title">Manage data <span class="tt-menu-chevron">&#8250;</span></div>
+            <div class="tt-admin-bigcard-desc">View any user's time entries and permanently delete individual entries.</div>
+          </button>
+          <button type="button" class="tt-admin-bigcard" data-adminscreen="export">
+            <div class="tt-admin-bigcard-title">Export data <span class="tt-menu-chevron">&#8250;</span></div>
+            <div class="tt-admin-bigcard-desc">See usage analytics for any user and export their entries to Excel.</div>
+          </button>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-manage-users" hidden>
+          <div id="tt-admin-manage-users-list" class="tt-admin-users"></div>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-manage-entries" hidden>
+          <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div class="tt-menu-label" id="tt-admin-manage-entries-label" style="margin:0;">Entries</div>
+            <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-manage-back-users">&#8249; Users</button>
           </div>
+          <div id="tt-admin-manage-entries-list" class="tt-admin-entries-list"></div>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-export-users" hidden>
+          <div id="tt-admin-export-users-list" class="tt-admin-users"></div>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-export-entries" hidden>
+          <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div class="tt-menu-label" id="tt-admin-export-entries-label" style="margin:0;">Analytics</div>
+            <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-export-back-users">&#8249; Users</button>
+          </div>
+          <div id="tt-admin-analytics" class="tt-admin-analytics"></div>
+          <button class="tt-btn primary tt-menu-bigbtn" id="tt-admin-export-btn" style="margin-top:16px;">&#8595; Export this user's entries (.xlsx)</button>
         </div>
       </div>
     </div>
@@ -719,7 +776,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.032</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.033</div>
   </div>
 </div>
 
@@ -978,7 +1035,7 @@
     return user.providerData.some(p=>p.providerId==='password');
   }
 
-  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data', admin:'Admin' };
+  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data' };
 
   function showMenuScreen(name){
     document.querySelectorAll('.tt-menu-screen').forEach(el=>{
@@ -991,10 +1048,6 @@
       setActiveTab('tt-export-period', exportPeriod);
       updateExportControlsAvailability();
       updateExportPreview();
-    }
-    if(name==='admin' && isAdmin){
-      $('tt-admin-entries-section').hidden = true;
-      loadAdminUsers();
     }
   }
 
@@ -1109,12 +1162,40 @@
     if(e.key==='Enter'){ e.preventDefault(); $('tt-add-preset').click(); }
   });
 
-  // ---------------- Admin panel ----------------
+  // ---------------- Admin: full-page panel ----------------
+  let adminMode = null; // 'manage' | 'export'
+  let adminScreen = 'root';
   let adminSelectedUser = null; // { uid, email, displayName }
   let adminEntries = [];
 
-  async function loadAdminUsers(){
-    const el = $('tt-admin-users');
+  const ADMIN_SCREEN_TITLES = {
+    root: 'Admin',
+    'manage-users': 'Manage data',
+    'manage-entries': 'Manage data',
+    'export-users': 'Export data',
+    'export-entries': 'Export data'
+  };
+
+  function openAdminPage(){
+    adminMode = null;
+    adminSelectedUser = null;
+    adminEntries = [];
+    showAdminScreen('root');
+    $('tt-admin-page').hidden = false;
+  }
+  function closeAdminPage(){ $('tt-admin-page').hidden = true; }
+
+  function showAdminScreen(name){
+    adminScreen = name;
+    document.querySelectorAll('.tt-admin-page-screen').forEach(el=>{
+      el.hidden = (el.id !== `tt-admin-page-${name}`);
+    });
+    $('tt-admin-page-title').textContent = ADMIN_SCREEN_TITLES[name] || 'Admin';
+    $('tt-admin-page-back').hidden = (name==='root');
+  }
+
+  async function loadUsersInto(listElId, onSelect){
+    const el = $(listElId);
     el.innerHTML = '<div class="tt-preset-empty">Loading users…</div>';
     try{
       const snap = await getDocs(collection(db, 'directory'));
@@ -1135,12 +1216,11 @@
       `).join('');
       el.querySelectorAll('.tt-admin-user-row').forEach(row=>{
         row.addEventListener('click', ()=>{
-          adminSelectedUser = {
+          onSelect({
             uid: row.getAttribute('data-uid'),
             email: row.getAttribute('data-email'),
             displayName: row.getAttribute('data-name')
-          };
-          loadAdminEntriesForSelectedUser();
+          });
         });
       });
     }catch(err){
@@ -1150,27 +1230,18 @@
     }
   }
 
-  async function loadAdminEntriesForSelectedUser(){
-    if(!adminSelectedUser) return;
-    $('tt-admin-entries-section').hidden = false;
-    $('tt-admin-entries-label').textContent = adminSelectedUser.displayName || adminSelectedUser.email || 'Entries';
-    const listEl = $('tt-admin-entries-list');
-    listEl.innerHTML = '<div class="tt-preset-empty">Loading entries…</div>';
-    try{
-      const q = query(collectionGroup(db, 'entries'), where('uid', '==', adminSelectedUser.uid));
-      const snap = await getDocs(q);
-      adminEntries = snap.docs.map(d=>({ ref:d.ref, ...d.data() }))
-        .sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
-      renderAdminEntriesList();
-    }catch(err){
-      console.error('Could not load entries for user', err);
-      const code = err && err.code ? err.code : 'unknown';
-      listEl.innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
-    }
+  async function loadEntriesForUid(uid){
+    const q = query(collectionGroup(db, 'entries'), where('uid', '==', uid));
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>({ ref:d.ref, ...d.data() }))
+      .sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
   }
 
-  function renderAdminEntriesList(){
-    const listEl = $('tt-admin-entries-list');
+  // ---- Manage data flow ----
+  $('tt-admin-manage-back-users').addEventListener('click', ()=> showAdminScreen('manage-users'));
+
+  function renderAdminManageEntriesList(){
+    const listEl = $('tt-admin-manage-entries-list');
     if(adminEntries.length===0){
       listEl.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
       return;
@@ -1203,7 +1274,7 @@
             try{
               await deleteDoc(entry.ref);
               adminEntries.splice(idx, 1);
-              renderAdminEntriesList();
+              renderAdminManageEntriesList();
             }catch(err){
               console.error('Could not delete entry', err);
             }
@@ -1213,12 +1284,71 @@
     });
   }
 
-  $('tt-admin-back-to-users').addEventListener('click', ()=>{
-    adminSelectedUser = null;
-    $('tt-admin-entries-section').hidden = true;
-  });
+  async function selectUserForManage(user){
+    adminSelectedUser = user;
+    showAdminScreen('manage-entries');
+    $('tt-admin-manage-entries-label').textContent = user.displayName || user.email || 'Entries';
+    const listEl = $('tt-admin-manage-entries-list');
+    listEl.innerHTML = '<div class="tt-preset-empty">Loading entries…</div>';
+    try{
+      adminEntries = await loadEntriesForUid(user.uid);
+      renderAdminManageEntriesList();
+    }catch(err){
+      console.error('Could not load entries for user', err);
+      const code = err && err.code ? err.code : 'unknown';
+      listEl.innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
+    }
+  }
 
-  $('tt-admin-export').addEventListener('click', ()=>{
+  // ---- Export data flow ----
+  $('tt-admin-export-back-users').addEventListener('click', ()=> showAdminScreen('export-users'));
+
+  function renderAdminAnalytics(){
+    const el = $('tt-admin-analytics');
+    if(adminEntries.length===0){
+      el.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
+      return;
+    }
+    const totalSec = adminEntries.reduce((s,e)=>s+(e.durationSec||0), 0);
+    const uniqueDays = new Set(adminEntries.map(e=>e.date)).size;
+    const dates = adminEntries.map(e=>e.date).filter(Boolean).sort();
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length-1];
+    const avgSec = uniqueDays>0 ? Math.round(totalSec/uniqueDays) : 0;
+
+    const stats = [
+      ['Total entries', String(adminEntries.length)],
+      ['Total hours', fmtHM(totalSec)+'h'],
+      ['Days with time logged', String(uniqueDays)],
+      ['Average per active day', fmtHM(avgSec)+'h'],
+      ['First entry', firstDate || '—'],
+      ['Last entry', lastDate || '—']
+    ];
+    el.innerHTML = stats.map(([label,val])=>`
+      <div class="tt-today">
+        <div class="tt-today-label">${escapeHtml(label)}</div>
+        <div class="tt-today-val">${escapeHtml(val)}</div>
+      </div>
+    `).join('');
+  }
+
+  async function selectUserForExport(user){
+    adminSelectedUser = user;
+    showAdminScreen('export-entries');
+    $('tt-admin-export-entries-label').textContent = (user.displayName || user.email || 'Analytics');
+    const el = $('tt-admin-analytics');
+    el.innerHTML = '<div class="tt-preset-empty">Loading analytics…</div>';
+    try{
+      adminEntries = await loadEntriesForUid(user.uid);
+      renderAdminAnalytics();
+    }catch(err){
+      console.error('Could not load entries for user', err);
+      const code = err && err.code ? err.code : 'unknown';
+      el.innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
+    }
+  }
+
+  $('tt-admin-export-btn').addEventListener('click', ()=>{
     if(!adminSelectedUser || adminEntries.length===0) return;
     const wb = XLSX.utils.book_new();
     const aoa = [
@@ -1232,7 +1362,7 @@
           e.date || '',
           s ? s.toTimeString().slice(0,5) : '',
           st ? st.toTimeString().slice(0,5) : '',
-          +(( e.durationSec||0)/3600).toFixed(2),
+          +((e.durationSec||0)/3600).toFixed(2),
           fmtHMS(e.durationSec||0),
           e.note || ''
         ];
@@ -1243,6 +1373,35 @@
     XLSX.utils.book_append_sheet(wb, ws, 'Entries');
     const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
     XLSX.writeFile(wb, `Double_T_admin_${safeName}.xlsx`);
+  });
+
+  // ---- Root navigation ----
+  document.querySelectorAll('.tt-admin-bigcard').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const mode = card.getAttribute('data-adminscreen');
+      adminMode = mode;
+      if(mode==='manage'){
+        showAdminScreen('manage-users');
+        loadUsersInto('tt-admin-manage-users-list', selectUserForManage);
+      } else {
+        showAdminScreen('export-users');
+        loadUsersInto('tt-admin-export-users-list', selectUserForExport);
+      }
+    });
+  });
+
+  $('tt-admin-page-back').addEventListener('click', ()=>{
+    if(adminScreen==='manage-entries') showAdminScreen('manage-users');
+    else if(adminScreen==='export-entries') showAdminScreen('export-users');
+    else showAdminScreen('root');
+  });
+  $('tt-admin-page-titlebar').addEventListener('click', ()=>{
+    if(!$('tt-admin-page-back').hidden) $('tt-admin-page-back').click();
+  });
+  $('tt-admin-page-close').addEventListener('click', closeAdminPage);
+  $('tt-admin-navrow').addEventListener('click', ()=>{
+    closeMenu();
+    openAdminPage();
   });
 
   onAuthStateChanged(auth, (user)=>{
