@@ -167,6 +167,21 @@
   .tt-admin-bigcard-desc{font-size:13px; color:var(--paper-dim); line-height:1.5;}
   .tt-admin-analytics{display:flex; flex-direction:column; gap:10px;}
 
+  .tt-admin-filterbar{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:12px; margin-bottom:14px; display:flex; flex-direction:column; gap:8px;
+  }
+  .tt-admin-filter-row{display:flex; gap:8px;}
+  .tt-admin-filter-field{flex:1; display:flex; flex-direction:column; gap:3px;}
+  .tt-admin-filter-field label{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em;}
+  .tt-admin-filter-field input, .tt-admin-filter-search{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; padding:8px 10px;
+  }
+  .tt-admin-filter-search{flex:1;}
+  .tt-admin-summary{font-size:12px; color:var(--paper-dim); margin-bottom:10px;}
+  .tt-admin-summary strong{color:var(--amber);}
+
   .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
   .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
   .tt-segment button{
@@ -696,9 +711,31 @@
 
         <div class="tt-admin-page-screen" id="tt-admin-page-manage-entries" hidden>
           <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <div class="tt-menu-label" id="tt-admin-manage-entries-label" style="margin:0;">Entries</div>
+            <div>
+              <div class="tt-menu-label" id="tt-admin-manage-entries-label" style="margin:0;">Entries</div>
+              <div class="tt-admin-user-email" id="tt-admin-manage-entries-email"></div>
+            </div>
             <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-manage-back-users">&#8249; Users</button>
           </div>
+
+          <div class="tt-admin-filterbar">
+            <div class="tt-admin-filter-row">
+              <div class="tt-admin-filter-field">
+                <label>From</label>
+                <input type="date" id="tt-admin-manage-filter-from" />
+              </div>
+              <div class="tt-admin-filter-field">
+                <label>To</label>
+                <input type="date" id="tt-admin-manage-filter-to" />
+              </div>
+            </div>
+            <div class="tt-admin-filter-row">
+              <input type="text" id="tt-admin-manage-filter-search" class="tt-admin-filter-search" placeholder="Search notes / projects…" />
+              <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-manage-filter-clear">Clear</button>
+            </div>
+          </div>
+
+          <div class="tt-admin-summary" id="tt-admin-manage-summary"></div>
           <div id="tt-admin-manage-entries-list" class="tt-admin-entries-list"></div>
         </div>
 
@@ -708,11 +745,32 @@
 
         <div class="tt-admin-page-screen" id="tt-admin-page-export-entries" hidden>
           <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <div class="tt-menu-label" id="tt-admin-export-entries-label" style="margin:0;">Analytics</div>
+            <div>
+              <div class="tt-menu-label" id="tt-admin-export-entries-label" style="margin:0;">Analytics</div>
+              <div class="tt-admin-user-email" id="tt-admin-export-entries-email"></div>
+            </div>
             <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-export-back-users">&#8249; Users</button>
           </div>
+
+          <div class="tt-admin-filterbar">
+            <div class="tt-admin-filter-row">
+              <div class="tt-admin-filter-field">
+                <label>From</label>
+                <input type="date" id="tt-admin-export-filter-from" />
+              </div>
+              <div class="tt-admin-filter-field">
+                <label>To</label>
+                <input type="date" id="tt-admin-export-filter-to" />
+              </div>
+            </div>
+            <div class="tt-admin-filter-row">
+              <input type="text" id="tt-admin-export-filter-search" class="tt-admin-filter-search" placeholder="Search notes / projects…" />
+              <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-export-filter-clear">Clear</button>
+            </div>
+          </div>
+
           <div id="tt-admin-analytics" class="tt-admin-analytics"></div>
-          <button class="tt-btn primary tt-menu-bigbtn" id="tt-admin-export-btn" style="margin-top:16px;">&#8595; Export this user's entries (.xlsx)</button>
+          <button class="tt-btn primary tt-menu-bigbtn" id="tt-admin-export-btn" style="margin-top:16px;">&#8595; Export filtered entries (.xlsx)</button>
         </div>
       </div>
     </div>
@@ -776,7 +834,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.033</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.034</div>
   </div>
 </div>
 
@@ -1166,7 +1224,8 @@
   let adminMode = null; // 'manage' | 'export'
   let adminScreen = 'root';
   let adminSelectedUser = null; // { uid, email, displayName }
-  let adminEntries = [];
+  let adminEntries = []; // full, unfiltered entries for the selected user
+  let adminAllEntriesCache = null; // every entry across every user, fetched once per admin session
 
   const ADMIN_SCREEN_TITLES = {
     root: 'Admin',
@@ -1180,6 +1239,7 @@
     adminMode = null;
     adminSelectedUser = null;
     adminEntries = [];
+    adminAllEntriesCache = null;
     showAdminScreen('root');
     $('tt-admin-page').hidden = false;
   }
@@ -1194,26 +1254,47 @@
     $('tt-admin-page-back').hidden = (name==='root');
   }
 
+  // Fetches every entry across every user ONCE per admin session. Ownership is
+  // derived from the document's own path (users/{uid}/entries/{id}) rather than
+  // a stored 'uid' field, so this works even for entries logged before that
+  // field existed — nothing is missed regardless of when it was created.
+  async function ensureAllEntriesLoaded(){
+    if(adminAllEntriesCache) return adminAllEntriesCache;
+    const snap = await getDocs(collectionGroup(db, 'entries'));
+    adminAllEntriesCache = snap.docs.map(d=>{
+      const ownerUid = d.ref.parent.parent ? d.ref.parent.parent.id : (d.data().uid || null);
+      return { ref: d.ref, uid: ownerUid, ...d.data() };
+    });
+    return adminAllEntriesCache;
+  }
+
+  function getEntriesForUid(uid){
+    return (adminAllEntriesCache || []).filter(e=>e.uid===uid)
+      .sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
+  }
+
   async function loadUsersInto(listElId, onSelect){
     const el = $(listElId);
     el.innerHTML = '<div class="tt-preset-empty">Loading users…</div>';
     try{
-      const snap = await getDocs(collection(db, 'directory'));
-      if(snap.empty){
+      const [dirSnap] = await Promise.all([getDocs(collection(db, 'directory')), ensureAllEntriesLoaded()]);
+      if(dirSnap.empty){
         el.innerHTML = '<div class="tt-preset-empty">No users found yet.</div>';
         return;
       }
-      const users = snap.docs.map(d=>d.data());
+      const users = dirSnap.docs.map(d=>d.data());
       users.sort((a,b)=> (a.email||'').localeCompare(b.email||''));
-      el.innerHTML = users.map(u=>`
+      el.innerHTML = users.map(u=>{
+        const count = (adminAllEntriesCache||[]).filter(e=>e.uid===u.uid).length;
+        return `
         <div class="tt-admin-user-row" data-uid="${escapeHtml(u.uid)}" data-email="${escapeHtml(u.email||'')}" data-name="${escapeHtml(u.displayName||'')}">
           <div>
             <div class="tt-admin-user-name">${escapeHtml(u.displayName || u.email || 'Unnamed user')}</div>
-            <div class="tt-admin-user-email">${escapeHtml(u.email||'')}</div>
+            <div class="tt-admin-user-email">${escapeHtml(u.email||'')} · ${count} entr${count===1?'y':'ies'}</div>
           </div>
           <span class="tt-admin-user-chevron">&#8250;</span>
         </div>
-      `).join('');
+      `;}).join('');
       el.querySelectorAll('.tt-admin-user-row').forEach(row=>{
         row.addEventListener('click', ()=>{
           onSelect({
@@ -1230,38 +1311,55 @@
     }
   }
 
-  async function loadEntriesForUid(uid){
-    const q = query(collectionGroup(db, 'entries'), where('uid', '==', uid));
-    const snap = await getDocs(q);
-    return snap.docs.map(d=>({ ref:d.ref, ...d.data() }))
-      .sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
+  function applyAdminFilters(entries, from, to, search){
+    const term = (search||'').trim().toLowerCase();
+    return entries.filter(e=>{
+      if(from && e.date < from) return false;
+      if(to && e.date > to) return false;
+      if(term && !(e.note||'').toLowerCase().includes(term)) return false;
+      return true;
+    });
   }
 
   // ---- Manage data flow ----
   $('tt-admin-manage-back-users').addEventListener('click', ()=> showAdminScreen('manage-users'));
 
+  function getManageFilteredEntries(){
+    return applyAdminFilters(
+      adminEntries,
+      $('tt-admin-manage-filter-from').value,
+      $('tt-admin-manage-filter-to').value,
+      $('tt-admin-manage-filter-search').value
+    );
+  }
+
   function renderAdminManageEntriesList(){
     const listEl = $('tt-admin-manage-entries-list');
-    if(adminEntries.length===0){
-      listEl.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
+    const filtered = getManageFilteredEntries();
+    const totalSec = filtered.reduce((s,e)=>s+(e.durationSec||0), 0);
+    $('tt-admin-manage-summary').innerHTML =
+      `Showing <strong>${filtered.length}</strong> of ${adminEntries.length} entries · <strong>${fmtHM(totalSec)}h</strong> total`;
+
+    if(filtered.length===0){
+      listEl.innerHTML = '<div class="tt-preset-empty">No entries match these filters.</div>';
       return;
     }
-    listEl.innerHTML = adminEntries.map((e,i)=>{
+    listEl.innerHTML = filtered.map((e)=>{
       const s = e.startISO ? new Date(e.startISO) : null;
       const st = e.stopISO ? new Date(e.stopISO) : null;
       const timeRange = (s && st) ? `${e.date} · ${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : (e.date||'');
-      return `<div class="tt-admin-entry-row" data-index="${i}">
+      return `<div class="tt-admin-entry-row" data-ref-id="${escapeHtml(e.ref.path||e.ref.id||'')}">
         <div class="tt-admin-entry-info">
           <div class="tt-admin-entry-note">${escapeHtml(e.note || 'No note')}</div>
           <div class="tt-admin-entry-time">${escapeHtml(timeRange)} · ${fmtHM(e.durationSec||0)}h</div>
         </div>
-        <button type="button" class="tt-admin-entry-delete" data-index="${i}" aria-label="Delete entry">&times;</button>
+        <button type="button" class="tt-admin-entry-delete" data-ref-id="${escapeHtml(e.ref.path||e.ref.id||'')}" aria-label="Delete entry">&times;</button>
       </div>`;
     }).join('');
     listEl.querySelectorAll('.tt-admin-entry-delete').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const idx = +btn.getAttribute('data-index');
-        const entry = adminEntries[idx];
+        const refId = btn.getAttribute('data-ref-id');
+        const entry = filtered.find(e=> (e.ref.path||e.ref.id||'')===refId);
         if(!entry) return;
         const s = entry.startISO ? new Date(entry.startISO) : null;
         const st = entry.stopISO ? new Date(entry.stopISO) : null;
@@ -1273,7 +1371,8 @@
           onConfirm: async ()=>{
             try{
               await deleteDoc(entry.ref);
-              adminEntries.splice(idx, 1);
+              adminEntries = adminEntries.filter(e=>e!==entry);
+              adminAllEntriesCache = (adminAllEntriesCache||[]).filter(e=>e!==entry);
               renderAdminManageEntriesList();
             }catch(err){
               console.error('Could not delete entry', err);
@@ -1284,14 +1383,29 @@
     });
   }
 
+  ['tt-admin-manage-filter-from','tt-admin-manage-filter-to','tt-admin-manage-filter-search'].forEach(id=>{
+    $(id).addEventListener('input', renderAdminManageEntriesList);
+  });
+  $('tt-admin-manage-filter-clear').addEventListener('click', ()=>{
+    $('tt-admin-manage-filter-from').value = '';
+    $('tt-admin-manage-filter-to').value = '';
+    $('tt-admin-manage-filter-search').value = '';
+    renderAdminManageEntriesList();
+  });
+
   async function selectUserForManage(user){
     adminSelectedUser = user;
     showAdminScreen('manage-entries');
-    $('tt-admin-manage-entries-label').textContent = user.displayName || user.email || 'Entries';
+    $('tt-admin-manage-entries-label').textContent = user.displayName || 'Entries';
+    $('tt-admin-manage-entries-email').textContent = user.email || '';
+    $('tt-admin-manage-filter-from').value = '';
+    $('tt-admin-manage-filter-to').value = '';
+    $('tt-admin-manage-filter-search').value = '';
     const listEl = $('tt-admin-manage-entries-list');
     listEl.innerHTML = '<div class="tt-preset-empty">Loading entries…</div>';
     try{
-      adminEntries = await loadEntriesForUid(user.uid);
+      await ensureAllEntriesLoaded();
+      adminEntries = getEntriesForUid(user.uid);
       renderAdminManageEntriesList();
     }catch(err){
       console.error('Could not load entries for user', err);
@@ -1303,26 +1417,40 @@
   // ---- Export data flow ----
   $('tt-admin-export-back-users').addEventListener('click', ()=> showAdminScreen('export-users'));
 
+  function getExportFilteredEntries(){
+    return applyAdminFilters(
+      adminEntries,
+      $('tt-admin-export-filter-from').value,
+      $('tt-admin-export-filter-to').value,
+      $('tt-admin-export-filter-search').value
+    );
+  }
+
   function renderAdminAnalytics(){
     const el = $('tt-admin-analytics');
-    if(adminEntries.length===0){
-      el.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
+    const filtered = getExportFilteredEntries();
+    if(filtered.length===0){
+      el.innerHTML = '<div class="tt-preset-empty">No entries match these filters.</div>';
       return;
     }
-    const totalSec = adminEntries.reduce((s,e)=>s+(e.durationSec||0), 0);
-    const uniqueDays = new Set(adminEntries.map(e=>e.date)).size;
-    const dates = adminEntries.map(e=>e.date).filter(Boolean).sort();
+    const totalSec = filtered.reduce((s,e)=>s+(e.durationSec||0), 0);
+    const uniqueDays = new Set(filtered.map(e=>e.date)).size;
+    const dates = filtered.map(e=>e.date).filter(Boolean).sort();
     const firstDate = dates[0];
     const lastDate = dates[dates.length-1];
     const avgSec = uniqueDays>0 ? Math.round(totalSec/uniqueDays) : 0;
+    const noteCounts = {};
+    filtered.forEach(e=>{ const k = e.note||'(no note)'; noteCounts[k] = (noteCounts[k]||0) + (e.durationSec||0); });
+    const topProject = Object.entries(noteCounts).sort((a,b)=>b[1]-a[1])[0];
 
     const stats = [
-      ['Total entries', String(adminEntries.length)],
+      ['Total entries', String(filtered.length)],
       ['Total hours', fmtHM(totalSec)+'h'],
       ['Days with time logged', String(uniqueDays)],
       ['Average per active day', fmtHM(avgSec)+'h'],
       ['First entry', firstDate || '—'],
-      ['Last entry', lastDate || '—']
+      ['Last entry', lastDate || '—'],
+      ['Top project/note', topProject ? `${topProject[0]} (${fmtHM(topProject[1])}h)` : '—']
     ];
     el.innerHTML = stats.map(([label,val])=>`
       <div class="tt-today">
@@ -1332,14 +1460,29 @@
     `).join('');
   }
 
+  ['tt-admin-export-filter-from','tt-admin-export-filter-to','tt-admin-export-filter-search'].forEach(id=>{
+    $(id).addEventListener('input', renderAdminAnalytics);
+  });
+  $('tt-admin-export-filter-clear').addEventListener('click', ()=>{
+    $('tt-admin-export-filter-from').value = '';
+    $('tt-admin-export-filter-to').value = '';
+    $('tt-admin-export-filter-search').value = '';
+    renderAdminAnalytics();
+  });
+
   async function selectUserForExport(user){
     adminSelectedUser = user;
     showAdminScreen('export-entries');
-    $('tt-admin-export-entries-label').textContent = (user.displayName || user.email || 'Analytics');
+    $('tt-admin-export-entries-label').textContent = user.displayName || 'Analytics';
+    $('tt-admin-export-entries-email').textContent = user.email || '';
+    $('tt-admin-export-filter-from').value = '';
+    $('tt-admin-export-filter-to').value = '';
+    $('tt-admin-export-filter-search').value = '';
     const el = $('tt-admin-analytics');
     el.innerHTML = '<div class="tt-preset-empty">Loading analytics…</div>';
     try{
-      adminEntries = await loadEntriesForUid(user.uid);
+      await ensureAllEntriesLoaded();
+      adminEntries = getEntriesForUid(user.uid);
       renderAdminAnalytics();
     }catch(err){
       console.error('Could not load entries for user', err);
@@ -1349,13 +1492,14 @@
   }
 
   $('tt-admin-export-btn').addEventListener('click', ()=>{
-    if(!adminSelectedUser || adminEntries.length===0) return;
+    const filtered = getExportFilteredEntries();
+    if(!adminSelectedUser || filtered.length===0) return;
     const wb = XLSX.utils.book_new();
     const aoa = [
       [`Double T — Entries for ${adminSelectedUser.displayName || adminSelectedUser.email}`],
       [],
       ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'],
-      ...adminEntries.map(e=>{
+      ...filtered.map(e=>{
         const s = e.startISO ? new Date(e.startISO) : null;
         const st = e.stopISO ? new Date(e.stopISO) : null;
         return [
