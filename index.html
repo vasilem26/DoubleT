@@ -719,7 +719,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.031</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.032</div>
   </div>
 </div>
 
@@ -1145,7 +1145,8 @@
       });
     }catch(err){
       console.error('Could not load users', err);
-      el.innerHTML = '<div class="tt-preset-empty">Could not load users. Check Firestore rules for the admin account.</div>';
+      const code = err && err.code ? err.code : 'unknown';
+      el.innerHTML = `<div class="tt-preset-empty">Could not load users (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
     }
   }
 
@@ -1163,7 +1164,8 @@
       renderAdminEntriesList();
     }catch(err){
       console.error('Could not load entries for user', err);
-      listEl.innerHTML = '<div class="tt-preset-empty">Could not load entries. Check Firestore rules for the admin account.</div>';
+      const code = err && err.code ? err.code : 'unknown';
+      listEl.innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
     }
   }
 
