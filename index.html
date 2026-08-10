@@ -138,7 +138,8 @@
   .tt-admin-entry-info{color:var(--paper-dim); overflow:hidden;}
   .tt-admin-entry-note{color:var(--paper); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .tt-admin-entry-time{font-family:'Space Mono',monospace; font-size:11px; opacity:.8;}
-  .tt-admin-entry-delete{flex:0 0 auto; padding:6px 12px; font-size:12px; width:auto; min-width:0;}
+  .tt-admin-entry-delete{flex:0 0 auto; padding:5px 10px; font-size:11px; width:auto; min-width:0;}
+  .tt-admin-entry-delete:hover{background:var(--stop); border-color:var(--stop); color:#fff;}
   .tt-admin-entry-actions{display:flex; gap:6px; flex-shrink:0;}
   .tt-admin-entry-edit{flex:0 0 auto; padding:6px 12px; font-size:12px; width:auto; min-width:0;}
   .tt-admin-entry-editing{display:block; padding:12px 4px;}
@@ -155,6 +156,8 @@
   .tt-admin-danger-zone{
     margin-top:22px; padding-top:18px; border-top:1px solid var(--line);
   }
+  .tt-admin-exit-btn{flex:0 0 auto; width:auto; min-width:0; padding:6px 14px; font-size:12px;}
+  .tt-admin-exit-btn:hover{background:var(--stop); border-color:var(--stop); color:#fff;}
 
   .tt-admin-page{
     position:fixed; inset:0; background:var(--ink); z-index:3000;
@@ -707,7 +710,7 @@
             <button id="tt-admin-page-back" class="tt-menu-back" type="button" aria-label="Back" hidden>&#8249;</button>
             <span id="tt-admin-page-title">Admin</span>
           </div>
-          <button id="tt-admin-page-close" class="tt-btn tt-menu-btn-inline" type="button" aria-label="Exit admin">Exit</button>
+          <button id="tt-admin-page-close" class="tt-btn tt-admin-exit-btn" type="button" aria-label="Exit admin">Exit</button>
         </div>
 
         <div class="tt-admin-page-screen" id="tt-admin-page-root">
@@ -734,25 +737,31 @@
             <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-manage-back-users">&#8249; Users</button>
           </div>
 
-          <div class="tt-admin-filterbar">
-            <div class="tt-admin-filter-row">
-              <div class="tt-admin-filter-field">
-                <label>From</label>
-                <input type="date" id="tt-admin-manage-filter-from" />
-              </div>
-              <div class="tt-admin-filter-field">
-                <label>To</label>
-                <input type="date" id="tt-admin-manage-filter-to" />
-              </div>
+          <input type="text" id="tt-admin-mg-search" class="tt-admin-filter-search" placeholder="Search notes / projects…" style="width:100%; margin-bottom:14px;" />
+
+          <div class="tt-viewbar">
+            <div class="tt-segment" id="tt-admin-mg-granularity-tabs">
+              <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
             </div>
-            <div class="tt-admin-filter-row">
-              <input type="text" id="tt-admin-manage-filter-search" class="tt-admin-filter-search" placeholder="Search notes / projects…" />
-              <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-manage-filter-clear">Clear</button>
+            <div class="tt-segment" id="tt-admin-mg-viewmode-tabs">
+              <button data-v="list">List</button><button data-v="calendar" class="active">Calendar</button><button data-v="chart">Chart</button>
             </div>
           </div>
 
-          <div class="tt-admin-summary" id="tt-admin-manage-summary"></div>
-          <div id="tt-admin-manage-entries-list" class="tt-admin-entries-list"></div>
+          <div class="tt-monthbar">
+            <button class="tt-navbtn" id="tt-admin-mg-prev" aria-label="Previous">&#8249;</button>
+            <div style="text-align:center;">
+              <div class="tt-monthlabel" id="tt-admin-mg-rangelabel">—</div>
+              <div class="tt-monthtotal" id="tt-admin-mg-rangetotal">0h logged</div>
+            </div>
+            <button class="tt-navbtn" id="tt-admin-mg-next" aria-label="Next">&#8250;</button>
+          </div>
+
+          <div class="tt-ledger" id="tt-admin-mg-ledger">
+            <div class="tt-row head"><div>Day</div><div class="tt-count">Entries</div><div class="tt-hours">Total</div></div>
+          </div>
+          <div class="tt-calendar" id="tt-admin-mg-calendar" hidden></div>
+          <div class="tt-chart" id="tt-admin-mg-chart" hidden></div>
 
           <div class="tt-admin-danger-zone">
             <div class="tt-menu-label">Danger zone</div>
@@ -772,31 +781,40 @@
         <div class="tt-admin-page-screen" id="tt-admin-page-export-entries" hidden>
           <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div>
-              <div class="tt-menu-label" id="tt-admin-export-entries-label" style="margin:0;">Analytics</div>
+              <div class="tt-menu-label" id="tt-admin-export-entries-label" style="margin:0;">Export</div>
               <div class="tt-admin-user-email" id="tt-admin-export-entries-email"></div>
             </div>
             <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-export-back-users">&#8249; Users</button>
           </div>
 
-          <div class="tt-admin-filterbar">
-            <div class="tt-admin-filter-row">
-              <div class="tt-admin-filter-field">
-                <label>From</label>
-                <input type="date" id="tt-admin-export-filter-from" />
-              </div>
-              <div class="tt-admin-filter-field">
-                <label>To</label>
-                <input type="date" id="tt-admin-export-filter-to" />
-              </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Format</div>
+            <div class="tt-segment tt-export-segment" id="tt-admin-export-format">
+              <button data-val="xlsx" class="active">Excel</button><button data-val="csv">CSV</button><button data-val="pdf">PDF</button>
             </div>
-            <div class="tt-admin-filter-row">
-              <input type="text" id="tt-admin-export-filter-search" class="tt-admin-filter-search" placeholder="Search notes / projects…" />
-              <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-export-filter-clear">Clear</button>
+          </div>
+          <div class="tt-menu-section" id="tt-admin-export-view-section" hidden>
+            <div class="tt-menu-label">View</div>
+            <div class="tt-segment tt-export-segment" id="tt-admin-export-view">
+              <button data-val="list" class="active">List</button><button data-val="chart">Chart</button>
             </div>
+          </div>
+          <div class="tt-menu-section" id="tt-admin-export-type-section">
+            <div class="tt-menu-label">Report type</div>
+            <div class="tt-segment tt-export-segment" id="tt-admin-export-type">
+              <button data-val="detailed" class="active">Detailed</button><button data-val="summary">Summary</button>
+            </div>
+          </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Period</div>
+            <div class="tt-segment tt-export-segment" id="tt-admin-export-period">
+              <button data-val="day">Day</button><button data-val="week">Week</button><button data-val="month" class="active">Month</button><button data-val="year">Year</button>
+            </div>
+            <div class="tt-menu-desc" id="tt-admin-export-preview" style="margin-top:8px; margin-bottom:0;"></div>
           </div>
 
           <div id="tt-admin-analytics" class="tt-admin-analytics"></div>
-          <button class="tt-btn primary tt-menu-bigbtn" id="tt-admin-export-btn" style="margin-top:16px;">&#8595; Export filtered entries (.xlsx)</button>
+          <button class="tt-btn primary tt-menu-bigbtn" id="tt-admin-export-btn" style="margin-top:16px;">&#8595; Export</button>
         </div>
       </div>
     </div>
@@ -860,7 +878,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.037</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.038</div>
   </div>
 </div>
 
@@ -1250,8 +1268,9 @@
   let adminMode = null; // 'manage' | 'export'
   let adminScreen = 'root';
   let adminSelectedUser = null; // { uid, email, displayName }
-  let adminEntries = []; // full, unfiltered entries for the selected user
+  let adminEntries = []; // full entries for the selected user
   let adminAllEntriesCache = null; // every entry across every user, fetched once per admin session
+  let adminEditingRefId = null;
 
   const ADMIN_SCREEN_TITLES = {
     root: 'Admin',
@@ -1337,96 +1356,178 @@
     }
   }
 
-  function applyAdminFilters(entries, from, to, search){
-    const term = (search||'').trim().toLowerCase();
-    return entries.filter(e=>{
-      if(from && e.date < from) return false;
-      if(to && e.date > to) return false;
-      if(term && !(e.note||'').toLowerCase().includes(term)) return false;
-      return true;
-    });
+  function adminSecondsForDate(entriesArr, d){
+    const key = dateKey(d);
+    return entriesArr.filter(e=>e.date===key).reduce((s,e)=>s+(e.durationSec||0), 0);
   }
 
-  // ---- Manage data flow ----
-  $('tt-admin-manage-back-users').addEventListener('click', ()=> showAdminScreen('manage-users'));
+  // ==== Manage data: mini dashboard (mirrors the main app's List/Calendar/Chart) ====
+  let adminMgAnchorDate = new Date();
+  let adminMgGranularity = 'month';
+  let adminMgViewMode = 'calendar';
+  let adminMgExpandedDay = null;
 
-  function getManageFilteredEntries(){
-    return applyAdminFilters(
-      adminEntries,
-      $('tt-admin-manage-filter-from').value,
-      $('tt-admin-manage-filter-to').value,
-      $('tt-admin-manage-filter-search').value
-    );
+  function adminMgGetFilteredEntries(){
+    const term = ($('tt-admin-mg-search').value||'').trim().toLowerCase();
+    if(!term) return adminEntries;
+    return adminEntries.filter(e=>(e.note||'').toLowerCase().includes(term));
   }
 
-  let adminEditingRefId = null;
-
-  function renderAdminManageEntriesList(){
-    const listEl = $('tt-admin-manage-entries-list');
-    const filtered = getManageFilteredEntries();
-    const totalSec = filtered.reduce((s,e)=>s+(e.durationSec||0), 0);
-    $('tt-admin-manage-summary').innerHTML =
-      `Showing <strong>${filtered.length}</strong> of ${adminEntries.length} entries · <strong>${fmtHM(totalSec)}h</strong> total`;
-
-    if(filtered.length===0){
-      listEl.innerHTML = '<div class="tt-preset-empty">No entries match these filters.</div>';
-      return;
+  function adminMgGetRangeDates(){
+    if(adminMgGranularity==='day') return [new Date(adminMgAnchorDate.getFullYear(), adminMgAnchorDate.getMonth(), adminMgAnchorDate.getDate())];
+    if(adminMgGranularity==='week'){
+      const start = new Date(adminMgAnchorDate);
+      start.setDate(start.getDate() - mondayIndex(start));
+      const out = [];
+      for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
+      return out;
     }
-    listEl.innerHTML = filtered.map((e)=>{
-      const refId = e.ref.path||e.ref.id||'';
-      const s = e.startISO ? new Date(e.startISO) : null;
-      const st = e.stopISO ? new Date(e.stopISO) : null;
-      const timeRange = (s && st) ? `${e.date} · ${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : (e.date||'');
+    const y = adminMgAnchorDate.getFullYear(), m = adminMgAnchorDate.getMonth();
+    const days = new Date(y, m+1, 0).getDate();
+    const out = [];
+    for(let d=1; d<=days; d++) out.push(new Date(y, m, d));
+    return out;
+  }
 
-      if(adminEditingRefId===refId){
-        const stopVal = st ? st.toTimeString().slice(0,5) : '';
-        return `<div class="tt-admin-entry-row tt-admin-entry-editing" data-ref-id="${escapeHtml(refId)}">
-          <div class="tt-admin-edit-form">
-            <div class="tt-admin-entry-note">${escapeHtml(e.note || 'No note')}</div>
-            <div class="tt-admin-edit-row">
-              <span class="tt-admin-edit-label">Started ${s ? s.toTimeString().slice(0,5) : '—'} on ${escapeHtml(e.date||'')}. New end time:</span>
-              <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-input-${escapeHtml(refId)}" value="${stopVal}" />
-            </div>
-            <div class="tt-admin-edit-actions">
-              <button type="button" class="tt-btn tt-menu-btn-inline tt-admin-edit-cancel" data-ref-id="${escapeHtml(refId)}">Cancel</button>
-              <button type="button" class="tt-btn primary tt-menu-btn-inline tt-admin-edit-save" data-ref-id="${escapeHtml(refId)}">Save</button>
-            </div>
-            <div class="tt-admin-edit-error" id="tt-admin-edit-error-${escapeHtml(refId)}"></div>
-          </div>
-        </div>`;
-      }
+  function adminMgGetRangeLabel(){
+    const dates = adminMgGetRangeDates();
+    if(adminMgGranularity==='day'){
+      return dates[0].toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+    }
+    if(adminMgGranularity==='week'){
+      const s = dates[0], e = dates[6];
+      const sameMonth = s.getMonth()===e.getMonth();
+      const sFmt = s.toLocaleDateString(undefined,{month:'short', day:'numeric'});
+      const eFmt = e.toLocaleDateString(undefined, sameMonth ? {day:'numeric', year:'numeric'} : {month:'short', day:'numeric', year:'numeric'});
+      return `${sFmt} – ${eFmt}`;
+    }
+    return `${monthNames[adminMgAnchorDate.getMonth()]} ${adminMgAnchorDate.getFullYear()}`;
+  }
 
-      return `<div class="tt-admin-entry-row" data-ref-id="${escapeHtml(refId)}">
-        <div class="tt-admin-entry-info">
-          <div class="tt-admin-entry-note">${escapeHtml(e.note || 'No note')}</div>
-          <div class="tt-admin-entry-time">${escapeHtml(timeRange)} · ${fmtHM(e.durationSec||0)}h</div>
-        </div>
-        <div class="tt-admin-entry-actions">
-          <button type="button" class="tt-btn tt-admin-entry-edit" data-ref-id="${escapeHtml(refId)}" aria-label="Edit end time">Edit</button>
-          <button type="button" class="tt-btn danger tt-admin-entry-delete" data-ref-id="${escapeHtml(refId)}" aria-label="Delete entry">Delete</button>
-        </div>
+  function adminMgNavShift(delta){
+    const d = new Date(adminMgAnchorDate);
+    if(adminMgGranularity==='day') d.setDate(d.getDate()+delta);
+    else if(adminMgGranularity==='week') d.setDate(d.getDate()+delta*7);
+    else d.setMonth(d.getMonth()+delta);
+    adminMgAnchorDate = d;
+    adminMgRenderCurrentView();
+  }
+
+  function adminMgUpdateGranularityAvailability(){
+    const dayBtn = document.querySelector('#tt-admin-mg-granularity-tabs button[data-g="day"]');
+    const calendarActive = adminMgViewMode==='calendar';
+    dayBtn.disabled = calendarActive;
+    dayBtn.classList.toggle('disabled', calendarActive);
+    if(calendarActive && adminMgGranularity==='day'){
+      adminMgGranularity = 'week';
+      setActiveTab('tt-admin-mg-granularity-tabs', 'week');
+    }
+  }
+
+  function adminMgRenderCurrentView(){
+    const entries = adminMgGetFilteredEntries();
+    const dates = adminMgGetRangeDates();
+    $('tt-admin-mg-rangelabel').textContent = adminMgGetRangeLabel();
+    const rangeTotal = dates.reduce((s,d)=>s+adminSecondsForDate(entries,d), 0);
+    $('tt-admin-mg-rangetotal').textContent = `${fmtHM(rangeTotal)}h logged`;
+
+    $('tt-admin-mg-ledger').hidden = adminMgViewMode!=='list';
+    $('tt-admin-mg-calendar').hidden = adminMgViewMode!=='calendar';
+    $('tt-admin-mg-chart').hidden = adminMgViewMode!=='chart';
+
+    if(adminMgViewMode==='list') adminMgRenderListView(entries, dates);
+    else if(adminMgViewMode==='calendar') adminMgRenderCalendarView(entries, dates);
+    else adminMgRenderChartView(entries, dates);
+  }
+
+  function adminMgRenderListView(entries, dates){
+    const todayKey = dateKey(new Date());
+    let rows = `<div class="tt-row head"><div>Day</div><div class="tt-count">Entries</div><div class="tt-hours">Total</div></div>`;
+    dates.forEach(dt=>{
+      const key = dateKey(dt);
+      const dayEntries = entries.filter(e=>e.date===key).sort((a,b)=>(a.startISO||'').localeCompare(b.startISO||''));
+      const secs = dayEntries.reduce((s,e)=>s+(e.durationSec||0),0);
+      const isToday = key===todayKey;
+      const weekday = dt.toLocaleDateString(undefined,{weekday:'short'});
+      const hasEntries = dayEntries.length>0;
+      rows += `<div class="tt-row ${isToday?'today':''} ${secs===0?'empty':''}" data-day="${key}" style="${hasEntries?'cursor:pointer;':''}">
+        <div class="tt-day">${weekday} ${dt.getDate()}</div>
+        <div class="tt-count">${dayEntries.length||''}</div>
+        <div class="tt-hours">${secs>0?fmtHM(secs)+'h':'—'}</div>
       </div>`;
-    }).join('');
-
-    listEl.querySelectorAll('.tt-admin-entry-edit').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        adminEditingRefId = btn.getAttribute('data-ref-id');
-        renderAdminManageEntriesList();
-      });
+      if(adminMgExpandedDay===key && hasEntries){
+        dayEntries.forEach(e=>{
+          const refId = e.ref.path||e.ref.id||'';
+          const s = e.startISO ? new Date(e.startISO) : null;
+          const st = e.stopISO ? new Date(e.stopISO) : null;
+          const timeRange = (s && st) ? `${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : '';
+          if(adminEditingRefId===refId){
+            const stopVal = st ? st.toTimeString().slice(0,5) : '';
+            rows += `<div class="tt-detail-row tt-admin-entry-editing" style="display:block;">
+              <div class="tt-admin-edit-form">
+                <div class="tt-admin-entry-note">${escapeHtml(e.note||'No note')}</div>
+                <div class="tt-admin-edit-row">
+                  <span class="tt-admin-edit-label">Started ${s?s.toTimeString().slice(0,5):'—'}. New end time:</span>
+                  <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-input-${escapeHtml(refId)}" value="${stopVal}" />
+                </div>
+                <div class="tt-admin-edit-actions">
+                  <button type="button" class="tt-btn tt-menu-btn-inline tt-admin-edit-cancel" data-ref-id="${escapeHtml(refId)}">Cancel</button>
+                  <button type="button" class="tt-btn primary tt-menu-btn-inline tt-admin-edit-save" data-ref-id="${escapeHtml(refId)}">Save</button>
+                </div>
+                <div class="tt-admin-edit-error" id="tt-admin-edit-error-${escapeHtml(refId)}"></div>
+              </div>
+            </div>`;
+          } else {
+            rows += `<div class="tt-detail-row">
+              <div class="tt-detail-note">${escapeHtml(e.note||'No note')}</div>
+              <div class="tt-detail-time">${escapeHtml(timeRange)} · ${fmtHM(e.durationSec||0)}h</div>
+              <div class="tt-admin-entry-actions">
+                <button type="button" class="tt-btn tt-admin-entry-edit" data-ref-id="${escapeHtml(refId)}">Edit</button>
+                <button type="button" class="tt-btn danger tt-admin-entry-delete" data-ref-id="${escapeHtml(refId)}">Delete</button>
+              </div>
+            </div>`;
+          }
+        });
+      }
     });
-    listEl.querySelectorAll('.tt-admin-edit-cancel').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+    $('tt-admin-mg-ledger').innerHTML = rows;
+    $('tt-admin-mg-ledger').querySelectorAll('.tt-row:not(.head)').forEach(rowEl=>{
+      rowEl.addEventListener('click', ()=>{
+        const key = rowEl.getAttribute('data-day');
+        const dayEntries = entries.filter(e=>e.date===key);
+        if(dayEntries.length===0) return;
+        adminMgExpandedDay = (adminMgExpandedDay===key) ? null : key;
         adminEditingRefId = null;
-        renderAdminManageEntriesList();
+        adminMgRenderCurrentView();
       });
     });
-    listEl.querySelectorAll('.tt-admin-edit-save').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
+    wireAdminEntryActionButtons(entries);
+  }
+
+  function wireAdminEntryActionButtons(entriesArr){
+    const container = $('tt-admin-mg-ledger');
+    container.querySelectorAll('.tt-admin-entry-edit').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        adminEditingRefId = btn.getAttribute('data-ref-id');
+        adminMgRenderCurrentView();
+      });
+    });
+    container.querySelectorAll('.tt-admin-edit-cancel').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        adminEditingRefId = null;
+        adminMgRenderCurrentView();
+      });
+    });
+    container.querySelectorAll('.tt-admin-edit-save').forEach(btn=>{
+      btn.addEventListener('click', async (e)=>{
+        e.stopPropagation();
         const refId = btn.getAttribute('data-ref-id');
-        const entry = filtered.find(e=> (e.ref.path||e.ref.id||'')===refId);
+        const entry = entriesArr.find(en=> (en.ref.path||en.ref.id||'')===refId);
         if(!entry) return;
         const errEl = $(`tt-admin-edit-error-${refId}`);
-        const timeVal = $(`tt-admin-edit-input-${refId}`).value; // "HH:MM"
+        const timeVal = $(`tt-admin-edit-input-${refId}`).value;
         if(!timeVal){ errEl.textContent = 'Please choose an end time.'; return; }
         const startDT = new Date(entry.startISO);
         const [hh, mm] = timeVal.split(':').map(Number);
@@ -1435,28 +1536,24 @@
         const newDurationSec = Math.round((newStopDT - startDT)/1000);
         try{
           const updated = {
-            date: entry.date,
-            startISO: entry.startISO,
-            stopISO: newStopDT.toISOString(),
-            durationSec: newDurationSec,
-            note: entry.note || '',
-            uid: entry.uid
+            date: entry.date, startISO: entry.startISO, stopISO: newStopDT.toISOString(),
+            durationSec: newDurationSec, note: entry.note || '', uid: entry.uid
           };
           await setDoc(entry.ref, updated);
           Object.assign(entry, updated);
           adminEditingRefId = null;
-          renderAdminManageEntriesList();
+          adminMgRenderCurrentView();
         }catch(err){
           console.error('Could not update entry', err);
           errEl.textContent = 'Could not save. Please try again.';
         }
       });
     });
-
-    listEl.querySelectorAll('.tt-admin-entry-delete').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+    container.querySelectorAll('.tt-admin-entry-delete').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
         const refId = btn.getAttribute('data-ref-id');
-        const entry = filtered.find(e=> (e.ref.path||e.ref.id||'')===refId);
+        const entry = entriesArr.find(en=> (en.ref.path||en.ref.id||'')===refId);
         if(!entry) return;
         const s = entry.startISO ? new Date(entry.startISO) : null;
         const st = entry.stopISO ? new Date(entry.stopISO) : null;
@@ -1468,9 +1565,9 @@
           onConfirm: async ()=>{
             try{
               await deleteDoc(entry.ref);
-              adminEntries = adminEntries.filter(e=>e!==entry);
-              adminAllEntriesCache = (adminAllEntriesCache||[]).filter(e=>e!==entry);
-              renderAdminManageEntriesList();
+              adminEntries = adminEntries.filter(en=>en!==entry);
+              adminAllEntriesCache = (adminAllEntriesCache||[]).filter(en=>en!==entry);
+              adminMgRenderCurrentView();
             }catch(err){
               console.error('Could not delete entry', err);
             }
@@ -1480,34 +1577,105 @@
     });
   }
 
-  ['tt-admin-manage-filter-from','tt-admin-manage-filter-to','tt-admin-manage-filter-search'].forEach(id=>{
-    $(id).addEventListener('input', renderAdminManageEntriesList);
+  function adminMgRenderCalendarView(entries, dates){
+    const todayKey = dateKey(new Date());
+    let html = '';
+    let leadDates = [];
+    if(adminMgGranularity==='month'){
+      const first = dates[0];
+      const leadCount = mondayIndex(first);
+      for(let i=leadCount; i>0; i--){ const d=new Date(first); d.setDate(first.getDate()-i); leadDates.push(d); }
+    }
+    dowShort.forEach(d=> html += `<div class="tt-cal-dow">${d}</div>`);
+    const cellClass = adminMgGranularity==='week' ? 'tt-cal-cell week-mode' : 'tt-cal-cell';
+    leadDates.forEach(d=>{ html += `<div class="${cellClass} outside"><div class="tt-cal-daynum">${d.getDate()}</div><div></div></div>`; });
+    dates.forEach(dt=>{
+      const key = dateKey(dt);
+      const secs = adminSecondsForDate(entries, dt);
+      const isToday = key===todayKey;
+      html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}">
+        <div class="tt-cal-daynum">${dt.getDate()}</div>
+        <div class="tt-cal-hours">${secs>0?fmtHM(secs)+'h':''}</div>
+      </div>`;
+    });
+    if(adminMgGranularity==='month'){
+      const totalCells = leadDates.length + dates.length;
+      const trailCount = (7 - (totalCells % 7)) % 7;
+      const last = dates[dates.length-1];
+      for(let i=1; i<=trailCount; i++){
+        const d = new Date(last); d.setDate(last.getDate()+i);
+        html += `<div class="${cellClass} outside"><div class="tt-cal-daynum">${d.getDate()}</div><div></div></div>`;
+      }
+    }
+    $('tt-admin-mg-calendar').innerHTML = html;
+  }
+
+  function adminMgRenderChartView(entries, dates){
+    const todayKey = dateKey(new Date());
+    const secsArr = dates.map(d=>adminSecondsForDate(entries,d));
+    const maxVal = Math.max(...secsArr.map(s=>s/3600), 1);
+    const isMonth = adminMgGranularity==='month';
+    const showLabel = (i)=> !isMonth || i===0 || i===dates.length-1 || (dates[i].getDate()%5===0);
+    let cols = '';
+    dates.forEach((dt,i)=>{
+      const secs = secsArr[i];
+      const isEmpty = secs===0;
+      const heightPct = isEmpty ? 3 : Math.max(4, Math.round((secs/3600/maxVal)*100));
+      const isToday = dateKey(dt)===todayKey;
+      const label = isMonth ? dt.getDate() : dt.toLocaleDateString(undefined,{weekday:'short'});
+      cols += `<div class="tt-chart-col" title="${dt.toLocaleDateString(undefined,{month:'short',day:'numeric'})}: ${fmtHM(secs)}h">
+        <div class="tt-chart-val">${secs>0?fmtHM(secs)+'h':''}</div>
+        <div class="tt-chart-bar ${isToday?'today':''} ${isEmpty?'empty':''}" style="height:${heightPct}%"></div>
+        <div class="tt-chart-label ${showLabel(i)?'':'dim'}">${showLabel(i)?label:'·'}</div>
+      </div>`;
+    });
+    $('tt-admin-mg-chart').innerHTML = `<div class="tt-chart-bars">${cols}</div>`;
+  }
+
+  $('tt-admin-mg-granularity-tabs').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-g]');
+    if(!btn || btn.disabled) return;
+    adminMgGranularity = btn.dataset.g;
+    setActiveTab('tt-admin-mg-granularity-tabs', adminMgGranularity);
+    adminMgExpandedDay = null;
+    adminMgRenderCurrentView();
   });
-  $('tt-admin-manage-filter-clear').addEventListener('click', ()=>{
-    $('tt-admin-manage-filter-from').value = '';
-    $('tt-admin-manage-filter-to').value = '';
-    $('tt-admin-manage-filter-search').value = '';
-    renderAdminManageEntriesList();
+  $('tt-admin-mg-viewmode-tabs').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-v]');
+    if(!btn) return;
+    adminMgViewMode = btn.dataset.v;
+    setActiveTab('tt-admin-mg-viewmode-tabs', adminMgViewMode);
+    adminMgUpdateGranularityAvailability();
+    adminMgRenderCurrentView();
   });
+  $('tt-admin-mg-prev').addEventListener('click', ()=> adminMgNavShift(-1));
+  $('tt-admin-mg-next').addEventListener('click', ()=> adminMgNavShift(1));
+  $('tt-admin-mg-search').addEventListener('input', ()=>{ adminMgExpandedDay = null; adminMgRenderCurrentView(); });
+  $('tt-admin-manage-back-users').addEventListener('click', ()=> showAdminScreen('manage-users'));
 
   async function selectUserForManage(user){
     adminSelectedUser = user;
     showAdminScreen('manage-entries');
     $('tt-admin-manage-entries-label').textContent = user.displayName || 'Entries';
     $('tt-admin-manage-entries-email').textContent = user.email || '';
-    $('tt-admin-manage-filter-from').value = '';
-    $('tt-admin-manage-filter-to').value = '';
-    $('tt-admin-manage-filter-search').value = '';
-    const listEl = $('tt-admin-manage-entries-list');
-    listEl.innerHTML = '<div class="tt-preset-empty">Loading entries…</div>';
+    $('tt-admin-mg-search').value = '';
+    adminMgAnchorDate = new Date();
+    adminMgGranularity = 'month';
+    adminMgViewMode = 'calendar';
+    adminMgExpandedDay = null;
+    adminEditingRefId = null;
+    setActiveTab('tt-admin-mg-granularity-tabs', 'month');
+    setActiveTab('tt-admin-mg-viewmode-tabs', 'calendar');
+    adminMgUpdateGranularityAvailability();
+    $('tt-admin-mg-ledger').innerHTML = '<div class="tt-preset-empty" style="padding:14px;">Loading entries…</div>';
     try{
       await ensureAllEntriesLoaded();
       adminEntries = getEntriesForUid(user.uid);
-      renderAdminManageEntriesList();
+      adminMgRenderCurrentView();
     }catch(err){
       console.error('Could not load entries for user', err);
       const code = err && err.code ? err.code : 'unknown';
-      listEl.innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
+      $('tt-admin-mg-ledger').innerHTML = `<div class="tt-preset-empty">Could not load entries (${escapeHtml(code)}): ${escapeHtml(err.message||'Unknown error')}</div>`;
     }
   }
 
@@ -1531,7 +1699,6 @@
           await batch.commit();
           adminAllEntriesCache = (adminAllEntriesCache||[]).filter(e=>e.uid!==uid);
           adminEntries = [];
-          renderAdminManageEntriesList();
           showAdminScreen('manage-users');
           loadUsersInto('tt-admin-manage-users-list', selectUserForManage);
         }catch(err){
@@ -1541,37 +1708,176 @@
     });
   });
 
-  // ---- Export data flow ----
+  // ==== Export data: same Format/View/Type/Period options as the main app's export ====
+  let adminExportFormat = 'xlsx';
+  let adminExportView = 'list';
+  let adminExportType = 'detailed';
+  let adminExportPeriod = 'month';
+  let adminExportAnchorDate = new Date();
+
   $('tt-admin-export-back-users').addEventListener('click', ()=> showAdminScreen('export-users'));
 
-  function getExportFilteredEntries(){
-    return applyAdminFilters(
-      adminEntries,
-      $('tt-admin-export-filter-from').value,
-      $('tt-admin-export-filter-to').value,
-      $('tt-admin-export-filter-search').value
-    );
+  function adminGetExportDates(period, anchor){
+    if(period==='day') return [new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate())];
+    if(period==='week'){
+      const start = new Date(anchor);
+      start.setDate(start.getDate() - mondayIndex(start));
+      const out = [];
+      for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
+      return out;
+    }
+    if(period==='year'){
+      const y = anchor.getFullYear();
+      const out = [];
+      for(let m=0;m<12;m++){
+        const days = new Date(y, m+1, 0).getDate();
+        for(let d=1; d<=days; d++) out.push(new Date(y, m, d));
+      }
+      return out;
+    }
+    const y = anchor.getFullYear(), m = anchor.getMonth();
+    const days = new Date(y, m+1, 0).getDate();
+    const out = [];
+    for(let d=1; d<=days; d++) out.push(new Date(y, m, d));
+    return out;
   }
+
+  function adminGetExportLabel(period, anchor){
+    const dates = adminGetExportDates(period, anchor);
+    if(period==='day') return dates[0].toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
+    if(period==='week') return `${dates[0].toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${dates[6].toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
+    if(period==='year') return `${anchor.getFullYear()}`;
+    return `${monthNames[anchor.getMonth()]} ${anchor.getFullYear()}`;
+  }
+
+  function adminBuildDetailedRows(entriesArr, dates){
+    const keys = new Set(dates.map(dateKey));
+    return entriesArr.filter(e=>keys.has(e.date)).sort((a,b)=>(a.startISO||'').localeCompare(b.startISO||'')).map(e=>{
+      const s = new Date(e.startISO), st = new Date(e.stopISO);
+      return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
+    });
+  }
+
+  function adminBuildSummaryRows(entriesArr, dates, period, anchor){
+    if(period==='year'){
+      const y = anchor.getFullYear();
+      const rows = [];
+      for(let m=0;m<12;m++){
+        const days = new Date(y, m+1, 0).getDate();
+        let sec = 0;
+        for(let d=1; d<=days; d++) sec += adminSecondsForDate(entriesArr, new Date(y, m, d));
+        rows.push([monthNames[m], +(sec/3600).toFixed(2), fmtHMS(sec)]);
+      }
+      return rows;
+    }
+    return dates.map(d=>{
+      const sec = adminSecondsForDate(entriesArr, d);
+      return [dateKey(d), +(sec/3600).toFixed(2), fmtHMS(sec)];
+    });
+  }
+
+  function adminRenderChartPNG(entriesArr, dates, period, anchor){
+    const width = 960, height = 440;
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1B2733';
+    ctx.fillRect(0, 0, width, height);
+
+    let labels, values;
+    if(period==='year'){
+      const rows = adminBuildSummaryRows(entriesArr, dates, 'year', anchor);
+      labels = rows.map(r=>r[0].slice(0,3));
+      values = rows.map(r=>r[1]);
+    } else {
+      values = dates.map(d=> adminSecondsForDate(entriesArr,d)/3600);
+      labels = dates.map(d=> period==='month' ? String(d.getDate()) : d.toLocaleDateString(undefined,{weekday:'short'}));
+    }
+    const maxVal = Math.max(...values, 1);
+    const chartTop = 30, chartBottom = height - 70, chartLeft = 60, chartRight = width - 30;
+    const n = values.length, gap = 6;
+    const barWidth = Math.max(3, (chartRight - chartLeft - gap*(n-1)) / n);
+
+    ctx.strokeStyle = '#2C3A4C'; ctx.lineWidth = 1;
+    for(let g=0; g<=4; g++){
+      const gy = chartTop + (g/4)*(chartBottom-chartTop);
+      ctx.beginPath(); ctx.moveTo(chartLeft, gy); ctx.lineTo(chartRight, gy); ctx.stroke();
+    }
+    ctx.strokeStyle = '#3A4A5C';
+    ctx.beginPath(); ctx.moveTo(chartLeft, chartBottom); ctx.lineTo(chartRight, chartBottom); ctx.stroke();
+
+    values.forEach((v,i)=>{
+      const x = chartLeft + i*(barWidth+gap);
+      const h = (v/maxVal) * (chartBottom-chartTop);
+      const y = chartBottom - h;
+      ctx.fillStyle = v>0 ? '#E8A33D' : '#3A4A5C';
+      ctx.fillRect(x, y, barWidth, Math.max(h, 2));
+      if(n<=12 || i%5===0 || i===n-1){
+        ctx.fillStyle = '#B9C2CC'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(String(labels[i]), x+barWidth/2, chartBottom+18);
+      }
+    });
+    ctx.fillStyle = '#B9C2CC'; ctx.font = '11px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(maxVal.toFixed(1)+'h', chartLeft-8, chartTop+4);
+    ctx.fillText('0h', chartLeft-8, chartBottom+4);
+    return canvas.toDataURL('image/png');
+  }
+
+  function adminUpdateExportControlsAvailability(){
+    const isPdf = adminExportFormat==='pdf';
+    $('tt-admin-export-view-section').hidden = !isPdf;
+    if(!isPdf && adminExportView==='chart'){
+      adminExportView = 'list';
+      setActiveTab('tt-admin-export-view', 'list');
+    }
+    const showType = !(isPdf && adminExportView==='chart');
+    $('tt-admin-export-type-section').hidden = !showType;
+  }
+
+  function adminUpdateExportPreview(){
+    const dates = adminGetExportDates(adminExportPeriod, adminExportAnchorDate);
+    const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(adminEntries,d), 0);
+    if(adminExportFormat==='pdf' && adminExportView==='chart'){
+      $('tt-admin-export-preview').textContent = `${adminGetExportLabel(adminExportPeriod, adminExportAnchorDate)} — chart, ${fmtHM(totalSec)}h total.`;
+      return;
+    }
+    const rows = adminExportType==='detailed' ? adminBuildDetailedRows(adminEntries, dates) : adminBuildSummaryRows(adminEntries, dates, adminExportPeriod, adminExportAnchorDate);
+    const noun = adminExportType==='detailed' ? 'entries' : (adminExportPeriod==='year' ? 'months' : 'days');
+    $('tt-admin-export-preview').textContent = `${adminGetExportLabel(adminExportPeriod, adminExportAnchorDate)} — ${rows.length} ${noun}, ${fmtHM(totalSec)}h total.`;
+  }
+
+  ['tt-admin-export-format','tt-admin-export-view','tt-admin-export-type','tt-admin-export-period'].forEach(id=>{
+    $(id).addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-val]');
+      if(!btn) return;
+      setActiveTab(id, btn.dataset.val);
+      if(id==='tt-admin-export-format') adminExportFormat = btn.dataset.val;
+      else if(id==='tt-admin-export-view') adminExportView = btn.dataset.val;
+      else if(id==='tt-admin-export-type') adminExportType = btn.dataset.val;
+      else adminExportPeriod = btn.dataset.val;
+      adminUpdateExportControlsAvailability();
+      adminUpdateExportPreview();
+    });
+  });
 
   function renderAdminAnalytics(){
     const el = $('tt-admin-analytics');
-    const filtered = getExportFilteredEntries();
-    if(filtered.length===0){
-      el.innerHTML = '<div class="tt-preset-empty">No entries match these filters.</div>';
+    if(adminEntries.length===0){
+      el.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
       return;
     }
-    const totalSec = filtered.reduce((s,e)=>s+(e.durationSec||0), 0);
-    const uniqueDays = new Set(filtered.map(e=>e.date)).size;
-    const dates = filtered.map(e=>e.date).filter(Boolean).sort();
+    const totalSec = adminEntries.reduce((s,e)=>s+(e.durationSec||0), 0);
+    const uniqueDays = new Set(adminEntries.map(e=>e.date)).size;
+    const dates = adminEntries.map(e=>e.date).filter(Boolean).sort();
     const firstDate = dates[0];
     const lastDate = dates[dates.length-1];
     const avgSec = uniqueDays>0 ? Math.round(totalSec/uniqueDays) : 0;
     const noteCounts = {};
-    filtered.forEach(e=>{ const k = e.note||'(no note)'; noteCounts[k] = (noteCounts[k]||0) + (e.durationSec||0); });
+    adminEntries.forEach(e=>{ const k = e.note||'(no note)'; noteCounts[k] = (noteCounts[k]||0) + (e.durationSec||0); });
     const topProject = Object.entries(noteCounts).sort((a,b)=>b[1]-a[1])[0];
 
     const stats = [
-      ['Total entries', String(filtered.length)],
+      ['Total entries', String(adminEntries.length)],
       ['Total hours', fmtHM(totalSec)+'h'],
       ['Days with time logged', String(uniqueDays)],
       ['Average per active day', fmtHM(avgSec)+'h'],
@@ -1587,30 +1893,25 @@
     `).join('');
   }
 
-  ['tt-admin-export-filter-from','tt-admin-export-filter-to','tt-admin-export-filter-search'].forEach(id=>{
-    $(id).addEventListener('input', renderAdminAnalytics);
-  });
-  $('tt-admin-export-filter-clear').addEventListener('click', ()=>{
-    $('tt-admin-export-filter-from').value = '';
-    $('tt-admin-export-filter-to').value = '';
-    $('tt-admin-export-filter-search').value = '';
-    renderAdminAnalytics();
-  });
-
   async function selectUserForExport(user){
     adminSelectedUser = user;
     showAdminScreen('export-entries');
-    $('tt-admin-export-entries-label').textContent = user.displayName || 'Analytics';
+    $('tt-admin-export-entries-label').textContent = user.displayName || 'Export';
     $('tt-admin-export-entries-email').textContent = user.email || '';
-    $('tt-admin-export-filter-from').value = '';
-    $('tt-admin-export-filter-to').value = '';
-    $('tt-admin-export-filter-search').value = '';
+    adminExportFormat = 'xlsx'; adminExportView = 'list'; adminExportType = 'detailed'; adminExportPeriod = 'month';
+    adminExportAnchorDate = new Date();
+    setActiveTab('tt-admin-export-format', 'xlsx');
+    setActiveTab('tt-admin-export-view', 'list');
+    setActiveTab('tt-admin-export-type', 'detailed');
+    setActiveTab('tt-admin-export-period', 'month');
     const el = $('tt-admin-analytics');
     el.innerHTML = '<div class="tt-preset-empty">Loading analytics…</div>';
     try{
       await ensureAllEntriesLoaded();
       adminEntries = getEntriesForUid(user.uid);
       renderAdminAnalytics();
+      adminUpdateExportControlsAvailability();
+      adminUpdateExportPreview();
     }catch(err){
       console.error('Could not load entries for user', err);
       const code = err && err.code ? err.code : 'unknown';
@@ -1618,32 +1919,118 @@
     }
   }
 
-  $('tt-admin-export-btn').addEventListener('click', ()=>{
-    const filtered = getExportFilteredEntries();
-    if(!adminSelectedUser || filtered.length===0) return;
+  function adminDoExportXlsx(entriesArr, dates, label){
     const wb = XLSX.utils.book_new();
+    const headers = adminExportType==='detailed'
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
+    const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
+    const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(entriesArr,d), 0);
+    const typeLabel = adminExportType==='detailed' ? 'Detailed' : 'Summary';
     const aoa = [
-      [`Double T — Entries for ${adminSelectedUser.displayName || adminSelectedUser.email}`],
-      [],
-      ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'],
-      ...filtered.map(e=>{
-        const s = e.startISO ? new Date(e.startISO) : null;
-        const st = e.stopISO ? new Date(e.stopISO) : null;
-        return [
-          e.date || '',
-          s ? s.toTimeString().slice(0,5) : '',
-          st ? st.toTimeString().slice(0,5) : '',
-          +((e.durationSec||0)/3600).toFixed(2),
-          fmtHMS(e.durationSec||0),
-          e.note || ''
-        ];
-      })
+      [`Double T — Entries for ${adminSelectedUser.displayName||adminSelectedUser.email} (${typeLabel} · ${label})`],
+      [], headers, ...rows, [], ['Total (h)', +(totalSec/3600).toFixed(2), fmtHMS(totalSec)]
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}];
+    ws['!cols'] = adminExportType==='detailed'
+      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}]
+      : [{wch:14},{wch:10},{wch:12}];
     XLSX.utils.book_append_sheet(wb, ws, 'Entries');
     const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
-    XLSX.writeFile(wb, `Double_T_admin_${safeName}.xlsx`);
+    XLSX.writeFile(wb, `Double_T_admin_${safeName}_${adminExportPeriod}.xlsx`);
+  }
+
+  function adminDoExportCsv(entriesArr, dates, label){
+    const headers = adminExportType==='detailed'
+      ? ['date','start','stop','duration_h','duration_hms','notes']
+      : (adminExportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
+    const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
+    const csvLines = [headers.join(',')];
+    rows.forEach(r=>{
+      csvLines.push(r.map(v=>{
+        const s = String(v);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+      }).join(','));
+    });
+    const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
+    triggerDownloadBlob('\uFEFF'+csvLines.join('\n'), `Double_T_admin_${safeName}_${adminExportPeriod}.csv`, 'text/csv;charset=utf-8');
+  }
+
+  function adminDoExportPdf(entriesArr, dates, label){
+    const { jsPDF } = window.jspdf;
+    const pdfDoc = new jsPDF();
+    const pageWidth = pdfDoc.internal.pageSize.getWidth();
+    const typeLabel = (adminExportView==='chart') ? 'Chart' : (adminExportType==='detailed' ? 'Detailed' : 'Summary');
+    const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(entriesArr,d), 0);
+
+    pdfDoc.setFillColor(27,39,51);
+    pdfDoc.rect(0, 0, pageWidth, 24, 'F');
+    pdfDoc.setTextColor(232,163,61); pdfDoc.setFontSize(15); pdfDoc.text('Double T', 14, 15);
+    pdfDoc.setTextColor(255,255,255); pdfDoc.setFontSize(10); pdfDoc.text('Admin Export', pageWidth-14, 15, { align:'right' });
+
+    const infoY1 = 33, infoY2 = 40;
+    const cols = [14, 14+(pageWidth-28)/3, 14+2*(pageWidth-28)/3];
+    const infoItems = [['USER', adminSelectedUser.displayName||adminSelectedUser.email], ['PERIOD', label], ['TOTAL', fmtHM(totalSec)+'h']];
+    infoItems.forEach(([lbl,val], i)=>{
+      pdfDoc.setFontSize(8); pdfDoc.setTextColor(150); pdfDoc.text(lbl, cols[i], infoY1);
+      pdfDoc.setFontSize(12); pdfDoc.setTextColor(30); pdfDoc.text(String(val), cols[i], infoY2);
+    });
+    pdfDoc.setDrawColor(230); pdfDoc.line(14, infoY2+4, pageWidth-14, infoY2+4);
+    const contentStartY = infoY2 + 12;
+
+    function addFooter(){
+      const pageCount = pdfDoc.internal.getNumberOfPages();
+      for(let i=1; i<=pageCount; i++){
+        pdfDoc.setPage(i);
+        const h = pdfDoc.internal.pageSize.getHeight();
+        pdfDoc.setDrawColor(220); pdfDoc.line(14, h-14, pageWidth-14, h-14);
+        pdfDoc.setFontSize(8); pdfDoc.setTextColor(140);
+        pdfDoc.text(`Generated ${new Date().toLocaleDateString()}`, 14, h-8);
+        pdfDoc.text(`Page ${i} of ${pageCount}`, pageWidth-14, h-8, { align:'right' });
+      }
+    }
+
+    const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
+
+    if(adminExportView==='chart'){
+      const chartDataUrl = adminRenderChartPNG(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
+      const imgWidth = pageWidth - 28;
+      const imgHeight = imgWidth * (440/960);
+      pdfDoc.addImage(chartDataUrl, 'PNG', 14, contentStartY, imgWidth, imgHeight);
+      const tableHeaders = adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)'];
+      const tableRows = adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
+      pdfDoc.setFontSize(10); pdfDoc.setTextColor(90);
+      pdfDoc.text('Exact values', 14, contentStartY + imgHeight + 12);
+      pdfDoc.autoTable({
+        head: [tableHeaders], body: tableRows, startY: contentStartY + imgHeight + 16,
+        styles: { fontSize: 8 }, headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
+        alternateRowStyles: { fillColor: [245,245,245] }
+      });
+      addFooter();
+      pdfDoc.save(`Double_T_admin_${safeName}_chart_${adminExportPeriod}.pdf`);
+      return;
+    }
+
+    const headers = adminExportType==='detailed'
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
+    const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
+    pdfDoc.autoTable({
+      head: [headers], body: rows, startY: contentStartY,
+      styles: { fontSize: 9 }, headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
+      alternateRowStyles: { fillColor: [245,245,245] }
+    });
+    addFooter();
+    pdfDoc.save(`Double_T_admin_${safeName}_${adminExportPeriod}.pdf`);
+  }
+
+  $('tt-admin-export-btn').addEventListener('click', ()=>{
+    if(!adminSelectedUser) return;
+    const dates = adminGetExportDates(adminExportPeriod, adminExportAnchorDate);
+    const label = adminGetExportLabel(adminExportPeriod, adminExportAnchorDate);
+    if(adminExportFormat==='xlsx') adminDoExportXlsx(adminEntries, dates, label);
+    else if(adminExportFormat==='csv') adminDoExportCsv(adminEntries, dates, label);
+    else adminDoExportPdf(adminEntries, dates, label);
   });
 
   // ---- Root navigation ----
