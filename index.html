@@ -118,6 +118,28 @@
   .tt-preset-remove:hover{opacity:1; color:#E7A29D;}
   .tt-preset-empty{font-size:13px; color:var(--paper-dim); opacity:.6; padding:6px 0;}
 
+  .tt-admin-users{display:flex; flex-direction:column; gap:6px;}
+  .tt-admin-user-row{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
+    padding:11px 13px; cursor:pointer; transition:background .15s ease, border-color .15s ease;
+  }
+  .tt-admin-user-row:hover{background:var(--panel); border-color:var(--amber-dim);}
+  .tt-admin-user-name{font-size:13px; font-weight:600; color:var(--paper);}
+  .tt-admin-user-email{font-size:11px; color:var(--paper-dim); opacity:.75;}
+  .tt-admin-user-chevron{color:var(--paper-dim); font-size:16px; flex-shrink:0;}
+  .tt-admin-entries-list{display:flex; flex-direction:column; gap:0;}
+  .tt-admin-entry-row{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:9px 4px; border-bottom:1px solid var(--line); font-size:12px;
+  }
+  .tt-admin-entry-row:last-child{border-bottom:none;}
+  .tt-admin-entry-info{color:var(--paper-dim); overflow:hidden;}
+  .tt-admin-entry-note{color:var(--paper); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tt-admin-entry-time{font-family:'Space Mono',monospace; font-size:11px; opacity:.8;}
+  .tt-admin-entry-delete{background:none; border:none; color:var(--paper-dim); opacity:.6; cursor:pointer; font-size:16px; padding:0 4px; flex-shrink:0;}
+  .tt-admin-entry-delete:hover{opacity:1; color:#E7A29D;}
+
   .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
   .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
   .tt-segment button{
@@ -497,6 +519,7 @@
           <button type="button" class="tt-menu-navrow" data-screen="projects">Projects <span class="tt-menu-chevron">&#8250;</span></button>
           <button type="button" class="tt-menu-navrow" data-screen="exports">Exports <span class="tt-menu-chevron">&#8250;</span></button>
           <button type="button" class="tt-menu-navrow" data-screen="data">Manage data <span class="tt-menu-chevron">&#8250;</span></button>
+          <button type="button" class="tt-menu-navrow" id="tt-admin-navrow" data-screen="admin" hidden>Admin <span class="tt-menu-chevron">&#8250;</span></button>
           <div class="tt-menu-root-signout">
             <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
           </div>
@@ -615,6 +638,25 @@
             <button class="tt-btn danger tt-menu-bigbtn" id="tt-reset">&#10005; Clear all data</button>
           </div>
         </div>
+
+        <div class="tt-menu-screen" id="tt-menu-screen-admin" hidden>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Users</div>
+            <div class="tt-menu-desc">
+              View, export, or delete any user's time entries. You cannot edit usernames, passwords,
+              or projects here — only entries.
+            </div>
+            <div id="tt-admin-users" class="tt-admin-users"></div>
+          </div>
+          <div class="tt-menu-section" id="tt-admin-entries-section" hidden>
+            <div class="tt-menu-row" style="justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div class="tt-menu-label" id="tt-admin-entries-label" style="margin:0;">Entries</div>
+              <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-admin-back-to-users">&#8249; Users</button>
+            </div>
+            <button class="tt-btn tt-menu-bigbtn" id="tt-admin-export" style="margin-bottom:10px;">&#8595; Export this user's entries (.xlsx)</button>
+            <div id="tt-admin-entries-list" class="tt-admin-entries-list"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -677,7 +719,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.029</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.030</div>
   </div>
 </div>
 
@@ -690,7 +732,7 @@
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, doc, addDoc, deleteDoc, setDoc,
-    onSnapshot, query, orderBy, writeBatch
+    onSnapshot, query, orderBy, writeBatch, collectionGroup, getDocs, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ====================================================================
@@ -724,6 +766,8 @@
   let lastProjectPref = '';
   let currentUid = null;
   let isSignUpMode = false;
+  const ADMIN_EMAIL = 'vasile26marian@gmail.com';
+  let isAdmin = false;
 
   const $ = id => document.getElementById(id);
   const pad = n => String(n).padStart(2,'0');
@@ -921,6 +965,11 @@
     $('tt-app-root').style.display = 'block';
     $('tt-account-name').textContent = user.displayName || user.email;
     currentUid = user.uid;
+    isAdmin = (user.email === ADMIN_EMAIL);
+    $('tt-admin-navrow').hidden = !isAdmin;
+    setDoc(doc(db, 'directory', user.uid), {
+      uid: user.uid, email: user.email, displayName: user.displayName || ''
+    }).catch(err=> console.error('Could not update directory record', err));
     attachListeners(user.uid);
   }
 
@@ -929,7 +978,7 @@
     return user.providerData.some(p=>p.providerId==='password');
   }
 
-  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data' };
+  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data', admin:'Admin' };
 
   function showMenuScreen(name){
     document.querySelectorAll('.tt-menu-screen').forEach(el=>{
@@ -942,6 +991,10 @@
       setActiveTab('tt-export-period', exportPeriod);
       updateExportControlsAvailability();
       updateExportPreview();
+    }
+    if(name==='admin' && isAdmin){
+      $('tt-admin-entries-section').hidden = true;
+      loadAdminUsers();
     }
   }
 
@@ -1054,6 +1107,130 @@
   });
   $('tt-new-preset').addEventListener('keydown', (e)=>{
     if(e.key==='Enter'){ e.preventDefault(); $('tt-add-preset').click(); }
+  });
+
+  // ---------------- Admin panel ----------------
+  let adminSelectedUser = null; // { uid, email, displayName }
+  let adminEntries = [];
+
+  async function loadAdminUsers(){
+    const el = $('tt-admin-users');
+    el.innerHTML = '<div class="tt-preset-empty">Loading users…</div>';
+    try{
+      const snap = await getDocs(collection(db, 'directory'));
+      if(snap.empty){
+        el.innerHTML = '<div class="tt-preset-empty">No users found yet.</div>';
+        return;
+      }
+      const users = snap.docs.map(d=>d.data());
+      users.sort((a,b)=> (a.email||'').localeCompare(b.email||''));
+      el.innerHTML = users.map(u=>`
+        <div class="tt-admin-user-row" data-uid="${escapeHtml(u.uid)}" data-email="${escapeHtml(u.email||'')}" data-name="${escapeHtml(u.displayName||'')}">
+          <div>
+            <div class="tt-admin-user-name">${escapeHtml(u.displayName || u.email || 'Unnamed user')}</div>
+            <div class="tt-admin-user-email">${escapeHtml(u.email||'')}</div>
+          </div>
+          <span class="tt-admin-user-chevron">&#8250;</span>
+        </div>
+      `).join('');
+      el.querySelectorAll('.tt-admin-user-row').forEach(row=>{
+        row.addEventListener('click', ()=>{
+          adminSelectedUser = {
+            uid: row.getAttribute('data-uid'),
+            email: row.getAttribute('data-email'),
+            displayName: row.getAttribute('data-name')
+          };
+          loadAdminEntriesForSelectedUser();
+        });
+      });
+    }catch(err){
+      console.error('Could not load users', err);
+      el.innerHTML = '<div class="tt-preset-empty">Could not load users. Check Firestore rules for the admin account.</div>';
+    }
+  }
+
+  async function loadAdminEntriesForSelectedUser(){
+    if(!adminSelectedUser) return;
+    $('tt-admin-entries-section').hidden = false;
+    $('tt-admin-entries-label').textContent = adminSelectedUser.displayName || adminSelectedUser.email || 'Entries';
+    const listEl = $('tt-admin-entries-list');
+    listEl.innerHTML = '<div class="tt-preset-empty">Loading entries…</div>';
+    try{
+      const q = query(collectionGroup(db, 'entries'), where('uid', '==', adminSelectedUser.uid));
+      const snap = await getDocs(q);
+      adminEntries = snap.docs.map(d=>({ ref:d.ref, ...d.data() }))
+        .sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
+      renderAdminEntriesList();
+    }catch(err){
+      console.error('Could not load entries for user', err);
+      listEl.innerHTML = '<div class="tt-preset-empty">Could not load entries. Check Firestore rules for the admin account.</div>';
+    }
+  }
+
+  function renderAdminEntriesList(){
+    const listEl = $('tt-admin-entries-list');
+    if(adminEntries.length===0){
+      listEl.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
+      return;
+    }
+    listEl.innerHTML = adminEntries.map((e,i)=>{
+      const s = e.startISO ? new Date(e.startISO) : null;
+      const st = e.stopISO ? new Date(e.stopISO) : null;
+      const timeRange = (s && st) ? `${e.date} · ${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : (e.date||'');
+      return `<div class="tt-admin-entry-row" data-index="${i}">
+        <div class="tt-admin-entry-info">
+          <div class="tt-admin-entry-note">${escapeHtml(e.note || 'No note')}</div>
+          <div class="tt-admin-entry-time">${escapeHtml(timeRange)} · ${fmtHM(e.durationSec||0)}h</div>
+        </div>
+        <button type="button" class="tt-admin-entry-delete" data-index="${i}" aria-label="Delete entry">&times;</button>
+      </div>`;
+    }).join('');
+    listEl.querySelectorAll('.tt-admin-entry-delete').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const idx = +btn.getAttribute('data-index');
+        const entry = adminEntries[idx];
+        if(!entry) return;
+        try{
+          await deleteDoc(entry.ref);
+          adminEntries.splice(idx, 1);
+          renderAdminEntriesList();
+        }catch(err){
+          console.error('Could not delete entry', err);
+        }
+      });
+    });
+  }
+
+  $('tt-admin-back-to-users').addEventListener('click', ()=>{
+    adminSelectedUser = null;
+    $('tt-admin-entries-section').hidden = true;
+  });
+
+  $('tt-admin-export').addEventListener('click', ()=>{
+    if(!adminSelectedUser || adminEntries.length===0) return;
+    const wb = XLSX.utils.book_new();
+    const aoa = [
+      [`Double T — Entries for ${adminSelectedUser.displayName || adminSelectedUser.email}`],
+      [],
+      ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'],
+      ...adminEntries.map(e=>{
+        const s = e.startISO ? new Date(e.startISO) : null;
+        const st = e.stopISO ? new Date(e.stopISO) : null;
+        return [
+          e.date || '',
+          s ? s.toTimeString().slice(0,5) : '',
+          st ? st.toTimeString().slice(0,5) : '',
+          +(( e.durationSec||0)/3600).toFixed(2),
+          fmtHMS(e.durationSec||0),
+          e.note || ''
+        ];
+      })
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Entries');
+    const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
+    XLSX.writeFile(wb, `Double_T_admin_${safeName}.xlsx`);
   });
 
   onAuthStateChanged(auth, (user)=>{
@@ -1376,6 +1553,7 @@
       const durationSec = Math.max(0, Math.round((stop-start)/1000));
       try{
         await addDoc(entriesCol(currentUid), {
+          uid: currentUid,
           date: dateKey(start),
           startISO: active.startISO,
           stopISO: stop.toISOString(),
@@ -1822,6 +2000,7 @@
           const durationSec = Math.round((stopDT-startDT)/1000);
           try{
             await addDoc(entriesCol(currentUid), {
+              uid: currentUid,
               date: `${d.y}-${pad(d.mo)}-${pad(d.d)}`,
               startISO: startDT.toISOString(),
               stopISO: stopDT.toISOString(),
