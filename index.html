@@ -719,7 +719,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.030</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.031</div>
   </div>
 </div>
 
@@ -1186,17 +1186,27 @@
       </div>`;
     }).join('');
     listEl.querySelectorAll('.tt-admin-entry-delete').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
+      btn.addEventListener('click', ()=>{
         const idx = +btn.getAttribute('data-index');
         const entry = adminEntries[idx];
         if(!entry) return;
-        try{
-          await deleteDoc(entry.ref);
-          adminEntries.splice(idx, 1);
-          renderAdminEntriesList();
-        }catch(err){
-          console.error('Could not delete entry', err);
-        }
+        const s = entry.startISO ? new Date(entry.startISO) : null;
+        const st = entry.stopISO ? new Date(entry.stopISO) : null;
+        const timeRange = (s && st) ? `${entry.date} ${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : (entry.date||'');
+        openConfirmModal({
+          title: 'Delete this entry?',
+          desc: `This permanently deletes the entry "${entry.note || 'No note'}" (${timeRange}, ${fmtHM(entry.durationSec||0)}h) for ${adminSelectedUser.displayName || adminSelectedUser.email}. It cannot be undone.`,
+          confirmLabel: 'Delete entry',
+          onConfirm: async ()=>{
+            try{
+              await deleteDoc(entry.ref);
+              adminEntries.splice(idx, 1);
+              renderAdminEntriesList();
+            }catch(err){
+              console.error('Could not delete entry', err);
+            }
+          }
+        });
       });
     });
   }
@@ -1926,8 +1936,24 @@
     }catch(err){ console.error('Could not clear data', err); }
   }
 
-  function openResetModal(){ $('tt-modal-backdrop').hidden = false; }
-  function closeResetModal(){ $('tt-modal-backdrop').hidden = true; }
+  let pendingConfirmAction = null;
+
+  function openConfirmModal({ title, desc, confirmLabel, onConfirm }){
+    $('tt-modal-title').textContent = title;
+    $('tt-modal-desc').textContent = desc;
+    $('tt-modal-confirm').textContent = confirmLabel;
+    pendingConfirmAction = onConfirm;
+    $('tt-modal-backdrop').hidden = false;
+  }
+  function openResetModal(){
+    openConfirmModal({
+      title: 'Delete all data?',
+      desc: 'This permanently removes every logged entry for your account, on every device. It cannot be undone. Export to Excel first if you want to keep a copy.',
+      confirmLabel: 'Delete everything',
+      onConfirm: resetAll
+    });
+  }
+  function closeResetModal(){ $('tt-modal-backdrop').hidden = true; pendingConfirmAction = null; }
 
   function initMonthView(){
     anchorDate = new Date();
@@ -2046,8 +2072,9 @@
   $('tt-modal-cancel').addEventListener('click', closeResetModal);
   $('tt-modal-backdrop').addEventListener('click', (e)=>{ if(e.target.id==='tt-modal-backdrop') closeResetModal(); });
   $('tt-modal-confirm').addEventListener('click', async ()=>{
+    const action = pendingConfirmAction;
     closeResetModal();
-    await resetAll();
+    if(action) await action();
   });
   $('tt-prev').addEventListener('click', ()=> navShift(-1));
   $('tt-next').addEventListener('click', ()=> navShift(1));
