@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Double T</title>
+<meta name="robots" content="noindex" />
+<style>html,body{margin:0;height:100%;background:#1B2733;}</style>
+<script>
+  // GitHub Pages serves static files only — it can't rewrite /dashboard or
+  // /admin/manage/{uid} to index.html, so a refresh or a shared link to any
+  // client-side route lands here. Stash the path the visitor actually asked
+  // for and bounce to the app, which reads it back out of sessionStorage and
+  // restores the URL with replaceState.
+  try{
+    sessionStorage.setItem('tt-redirect', location.pathname + location.search + location.hash);
+  }catch(err){ /* storage blocked; the app will just open on the dashboard */ }
+  // The app is served from the domain root (doublet.etho.ro). Change this to
+  // the subdirectory if it ever moves off the root.
+  location.replace('/');
+</script>
+</head>
+<body></body>
+</html>

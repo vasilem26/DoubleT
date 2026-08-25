@@ -1119,9 +1119,16 @@
     $('tt-app-root').style.display = 'none';
     clearAuthFields();
   }
-  function showApp(user){
+  // Just the visibility swap, without the sign-in bookkeeping showApp() does.
+  // The router uses this to re-show the app shell when a route changes while
+  // the same user stays signed in — re-running showApp() would needlessly tear
+  // down and rebuild every Firestore listener.
+  function showAppShell(){
     $('tt-auth-backdrop').style.display = 'none';
     $('tt-app-root').style.display = 'block';
+  }
+  function showApp(user){
+    showAppShell();
     $('tt-account-name').textContent = user.displayName || user.email;
     currentUid = user.uid;
     isAdmin = (user.email === ADMIN_EMAIL);
@@ -1170,14 +1177,16 @@
   }
   function closeMenu(){ $('tt-menu-overlay').hidden = true; }
 
-  $('tt-menu-btn').addEventListener('click', openMenu);
-  $('tt-menu-close').addEventListener('click', closeMenu);
+  $('tt-menu-btn').addEventListener('click', ()=> go({ view:'account', screen:'root' }));
+  $('tt-menu-close').addEventListener('click', ()=> go({ view:'dashboard' }));
   $('tt-menu-titlebar').addEventListener('click', ()=>{
-    if(!$('tt-menu-back').hidden) showMenuScreen('root');
+    if(!$('tt-menu-back').hidden) go({ view:'account', screen:'root' });
   });
-  $('tt-menu-overlay').addEventListener('click', (e)=>{ if(e.target.id==='tt-menu-overlay') closeMenu(); });
+  $('tt-menu-overlay').addEventListener('click', (e)=>{ if(e.target.id==='tt-menu-overlay') go({ view:'dashboard' }); });
   document.querySelectorAll('.tt-menu-navrow').forEach(btn=>{
-    btn.addEventListener('click', ()=> showMenuScreen(btn.getAttribute('data-screen')));
+    const screen = btn.getAttribute('data-screen');
+    if(!screen) return; // the Admin row is its own route, wired separately below
+    btn.addEventListener('click', ()=> go({ view:'account', screen }));
   });
 
   $('tt-save-name').addEventListener('click', async ()=>{
@@ -1270,6 +1279,7 @@
   let adminSelectedUser = null; // { uid, email, displayName }
   let adminEntries = []; // full entries for the selected user
   let adminAllEntriesCache = null; // every entry across every user, fetched once per admin session
+  let adminDirectoryCache = null;  // uid -> { uid, email, displayName }, same lifetime as above
   let adminEditingRefId = null;
 
   const ADMIN_SCREEN_TITLES = {
@@ -1285,6 +1295,7 @@
     adminSelectedUser = null;
     adminEntries = [];
     adminAllEntriesCache = null;
+    adminDirectoryCache = null;
     showAdminScreen('root');
     $('tt-admin-page').hidden = false;
   }
@@ -1318,16 +1329,32 @@
       .sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
   }
 
+  // The user directory, keyed by uid, fetched once per admin session. Keeping it
+  // around lets a /admin/manage/{uid} deep link resolve the uid in the URL back
+  // to a user record without re-reading the collection.
+  async function ensureDirectoryLoaded(){
+    if(adminDirectoryCache) return adminDirectoryCache;
+    const snap = await getDocs(collection(db, 'directory'));
+    const byUid = {};
+    snap.docs.forEach(d=>{
+      const u = d.data();
+      const uid = (u && u.uid) || d.id;
+      if(uid) byUid[uid] = { uid, email:u.email||'', displayName:u.displayName||'' };
+    });
+    adminDirectoryCache = byUid;
+    return adminDirectoryCache;
+  }
+
   async function loadUsersInto(listElId, onSelect){
     const el = $(listElId);
     el.innerHTML = '<div class="tt-preset-empty">Loading users…</div>';
     try{
-      const [dirSnap] = await Promise.all([getDocs(collection(db, 'directory')), ensureAllEntriesLoaded()]);
-      if(dirSnap.empty){
+      const [dir] = await Promise.all([ensureDirectoryLoaded(), ensureAllEntriesLoaded()]);
+      const users = Object.values(dir);
+      if(users.length===0){
         el.innerHTML = '<div class="tt-preset-empty">No users found yet.</div>';
         return;
       }
-      const users = dirSnap.docs.map(d=>d.data());
       users.sort((a,b)=> (a.email||'').localeCompare(b.email||''));
       el.innerHTML = users.map(u=>{
         const count = (adminAllEntriesCache||[]).filter(e=>e.uid===u.uid).length;
@@ -1651,7 +1678,7 @@
   $('tt-admin-mg-prev').addEventListener('click', ()=> adminMgNavShift(-1));
   $('tt-admin-mg-next').addEventListener('click', ()=> adminMgNavShift(1));
   $('tt-admin-mg-search').addEventListener('input', ()=>{ adminMgExpandedDay = null; adminMgRenderCurrentView(); });
-  $('tt-admin-manage-back-users').addEventListener('click', ()=> showAdminScreen('manage-users'));
+  $('tt-admin-manage-back-users').addEventListener('click', ()=> go({ view:'admin', screen:'manage-users' }));
 
   async function selectUserForManage(user){
     adminSelectedUser = user;
@@ -1698,9 +1725,10 @@
           batch.delete(doc(db, 'directory', uid));
           await batch.commit();
           adminAllEntriesCache = (adminAllEntriesCache||[]).filter(e=>e.uid!==uid);
+          adminDirectoryCache = null; // their directory record is gone too
           adminEntries = [];
-          showAdminScreen('manage-users');
-          loadUsersInto('tt-admin-manage-users-list', selectUserForManage);
+          // replace, not push: /admin/manage/{uid} now points at a deleted user
+          go({ view:'admin', screen:'manage-users' }, { replace:true });
         }catch(err){
           console.error('Could not wipe user data', err);
         }
@@ -1715,7 +1743,7 @@
   let adminExportPeriod = 'month';
   let adminExportAnchorDate = new Date();
 
-  $('tt-admin-export-back-users').addEventListener('click', ()=> showAdminScreen('export-users'));
+  $('tt-admin-export-back-users').addEventListener('click', ()=> go({ view:'admin', screen:'export-users' }));
 
   function adminGetExportDates(period, anchor){
     if(period==='day') return [new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate())];
@@ -2037,38 +2065,286 @@
   document.querySelectorAll('.tt-admin-bigcard').forEach(card=>{
     card.addEventListener('click', ()=>{
       const mode = card.getAttribute('data-adminscreen');
-      adminMode = mode;
-      if(mode==='manage'){
-        showAdminScreen('manage-users');
-        loadUsersInto('tt-admin-manage-users-list', selectUserForManage);
-      } else {
-        showAdminScreen('export-users');
-        loadUsersInto('tt-admin-export-users-list', selectUserForExport);
-      }
+      go({ view:'admin', screen: mode==='manage' ? 'manage-users' : 'export-users' });
     });
   });
 
   $('tt-admin-page-back').addEventListener('click', ()=>{
-    if(adminScreen==='manage-entries') showAdminScreen('manage-users');
-    else if(adminScreen==='export-entries') showAdminScreen('export-users');
-    else showAdminScreen('root');
+    if(adminScreen==='manage-entries') go({ view:'admin', screen:'manage-users' });
+    else if(adminScreen==='export-entries') go({ view:'admin', screen:'export-users' });
+    else go({ view:'admin', screen:'root' });
   });
   $('tt-admin-page-titlebar').addEventListener('click', ()=>{
     if(!$('tt-admin-page-back').hidden) $('tt-admin-page-back').click();
   });
-  $('tt-admin-page-close').addEventListener('click', closeAdminPage);
-  $('tt-admin-navrow').addEventListener('click', ()=>{
-    closeMenu();
-    openAdminPage();
+  $('tt-admin-page-close').addEventListener('click', ()=> go({ view:'dashboard' }));
+  $('tt-admin-navrow').addEventListener('click', ()=> go({ view:'admin', screen:'root' }));
+
+  // ==================== Client-side routing (History API) ====================
+  // The show/hide functions above are unchanged: they still just toggle
+  // visibility and know nothing about the URL. This layer sits on top of them.
+  // Every in-app navigation goes through go(), which writes the address bar and
+  // then calls those same functions; popstate replays a route the same way, so
+  // back and forward work without any special cases.
+  //
+  //   /login                    sign-in screen
+  //   /dashboard                the tracker
+  //   /account[/<screen>]       account menu (root|user|projects|exports|data)
+  //   /admin                    admin landing
+  //   /admin/manage[/<uid>]     browse, then drill into one user's entries
+  //   /admin/export[/<uid>]     same, for the export/analytics side
+
+  // Where the app is mounted: '' when served from a domain root (the
+  // doublet.etho.ro deploy), auto-detected when it sits in a subdirectory.
+  const ROUTE_BASE = (()=>{
+    const p = location.pathname.replace(/\/index\.html?$/i, '/');
+    return p.endsWith('/') ? p.slice(0, -1) : '';
+  })();
+
+  const MENU_SCREENS = ['root','user','projects','exports','data'];
+  const ADMIN_SCREEN_SEGMENT = {
+    'manage-users':'manage', 'manage-entries':'manage',
+    'export-users':'export', 'export-entries':'export'
+  };
+  const ROUTE_TITLES = {
+    login:'Sign in · Double T',
+    dashboard:'Double T',
+    account:'Account · Double T',
+    admin:'Admin · Double T'
+  };
+
+  let currentRoute = null;
+  let pendingRoute = null;  // where a signed-out visitor was headed, replayed after sign-in
+  let authResolved = false;
+
+  // path -> route object, or null when the path matches nothing
+  function parsePath(pathname){
+    let rest = pathname;
+    if(ROUTE_BASE && rest.startsWith(ROUTE_BASE)) rest = rest.slice(ROUTE_BASE.length);
+    let seg;
+    try{ seg = rest.split('/').filter(Boolean).map(decodeURIComponent); }
+    catch(err){ return null; } // malformed percent-encoding in the URL
+
+    if(seg.length===0) return { view:'dashboard' };
+    if(seg.length===1 && seg[0]==='login') return { view:'login' };
+    if(seg.length===1 && seg[0]==='dashboard') return { view:'dashboard' };
+    if(seg[0]==='account'){
+      const screen = seg[1] || 'root';
+      if(seg.length<=2 && MENU_SCREENS.includes(screen)) return { view:'account', screen };
+      return null;
+    }
+    if(seg[0]==='admin'){
+      if(seg.length===1) return { view:'admin', screen:'root' };
+      if(seg[1]==='manage' || seg[1]==='export'){
+        if(seg.length===2) return { view:'admin', screen:`${seg[1]}-users` };
+        if(seg.length===3) return { view:'admin', screen:`${seg[1]}-entries`, uid:seg[2] };
+      }
+      return null;
+    }
+    return null;
+  }
+
+  function buildPath(route){
+    if(route.view==='login') return `${ROUTE_BASE}/login`;
+    if(route.view==='account'){
+      return (route.screen && route.screen!=='root')
+        ? `${ROUTE_BASE}/account/${route.screen}`
+        : `${ROUTE_BASE}/account`;
+    }
+    if(route.view==='admin'){
+      const segment = ADMIN_SCREEN_SEGMENT[route.screen];
+      if(!segment) return `${ROUTE_BASE}/admin`;
+      const tail = route.uid ? `/${encodeURIComponent(route.uid)}` : '';
+      return `${ROUTE_BASE}/admin/${segment}${tail}`;
+    }
+    return `${ROUTE_BASE}/dashboard`;
+  }
+
+  // Bounces a route the current visitor can't see onto one they can, so an
+  // unknown path, a signed-out deep link or a non-admin poking at /admin all
+  // land somewhere sensible instead of showing a half-rendered screen.
+  function resolveRoute(route){
+    const signedIn = !!auth.currentUser;
+    if(!route) route = { view: signedIn ? 'dashboard' : 'login' };
+
+    if(!signedIn){
+      if(route.view!=='login') pendingRoute = route;
+      return { view:'login' };
+    }
+    if(route.view==='login') return { view:'dashboard' };
+    if(route.view==='admin'){
+      if(!isAdmin) return { view:'dashboard' };
+      // an entries screen without a uid is just the list it drills down from
+      if(/-entries$/.test(route.screen) && !route.uid){
+        return { view:'admin', screen: route.screen.replace('-entries','-users') };
+      }
+    }
+    return route;
+  }
+
+  function sameRoute(a, b){
+    return !!a && !!b && a.view===b.view
+      && (a.screen||null)===(b.screen||null)
+      && (a.uid||null)===(b.uid||null);
+  }
+
+  // The single entry point for navigation. Pass a route object or a path.
+  function go(target, opts){
+    const route = (typeof target==='string') ? parsePath(target) : target;
+    const resolved = resolveRoute(route);
+    const path = buildPath(resolved);
+    // Re-navigating to where we already are shouldn't stack up history entries.
+    const replace = !!(opts && opts.replace) || sameRoute(resolved, currentRoute);
+    try{
+      if(replace) history.replaceState(null, '', path);
+      else history.pushState(null, '', path);
+    }catch(err){
+      // file:// and other opaque origins reject pushState; the app still works,
+      // it just can't show the route in the address bar.
+      console.warn('Could not update the address bar', err);
+    }
+    applyRoute(resolved);
+  }
+
+  function applyRoute(route){
+    const prev = currentRoute;
+    currentRoute = route;
+    document.title = ROUTE_TITLES[route.view] || 'Double T';
+
+    if(route.view==='login'){
+      if(!prev || prev.view!=='login'){
+        closeMenu();
+        closeAdminPage();
+        showAuthScreen();
+      }
+      return;
+    }
+
+    showAppShell();
+
+    if(route.view==='admin'){
+      closeMenu();
+      if(!prev || prev.view!=='admin') openAdminPage();
+      applyAdminRoute(route);
+      return;
+    }
+
+    closeAdminPage();
+
+    if(route.view==='account'){
+      if(!prev || prev.view!=='account') openMenu();
+      showMenuScreen(route.screen);
+    } else {
+      closeMenu();
+    }
+  }
+
+  // Moves the already-open admin panel onto the screen the URL asks for. Split
+  // out from applyRoute because resolving a uid deep link needs an await.
+  async function applyAdminRoute(route){
+    const screen = route.screen;
+    const userMatches = !route.uid || (adminSelectedUser && adminSelectedUser.uid===route.uid);
+    if(adminScreen===screen && userMatches) return;
+
+    if(screen==='root'){
+      adminMode = null;
+      adminSelectedUser = null;
+      showAdminScreen('root');
+      return;
+    }
+
+    const mode = ADMIN_SCREEN_SEGMENT[screen];
+    adminMode = mode;
+
+    if(screen==='manage-users' || screen==='export-users'){
+      adminSelectedUser = null;
+      showAdminScreen(screen);
+      if(mode==='manage') loadUsersInto('tt-admin-manage-users-list', openUserForManage);
+      else loadUsersInto('tt-admin-export-users-list', openUserForExport);
+      return;
+    }
+
+    const user = await lookupDirectoryUser(route.uid);
+    if(!sameRoute(route, currentRoute)) return; // navigated away while loading
+    if(!user){
+      go({ view:'admin', screen:`${mode}-users` }, { replace:true });
+      return;
+    }
+    if(mode==='manage') selectUserForManage(user);
+    else selectUserForExport(user);
+  }
+
+  async function lookupDirectoryUser(uid){
+    try{
+      const dir = await ensureDirectoryLoaded();
+      return dir[uid] || null;
+    }catch(err){
+      console.error('Could not look up user', err);
+      return null;
+    }
+  }
+
+  // Picking a user is a navigation; applyAdminRoute does the actual loading.
+  function openUserForManage(user){ go({ view:'admin', screen:'manage-entries', uid:user.uid }); }
+  function openUserForExport(user){ go({ view:'admin', screen:'export-entries', uid:user.uid }); }
+
+  window.addEventListener('popstate', ()=>{
+    if(!authResolved) return; // the first route is applied once auth is known
+    const resolved = resolveRoute(parsePath(location.pathname));
+    const path = buildPath(resolved);
+    // A guard may have rewritten the route; keep the address bar honest without
+    // adding another entry for the user to back through.
+    if(path !== location.pathname){
+      try{ history.replaceState(null, '', path); }catch(err){ /* opaque origin */ }
+    }
+    applyRoute(resolved);
   });
 
+  // GitHub Pages can't rewrite unknown paths to index.html, so 404.html stashes
+  // the requested path here and bounces to the root. Pick it back up before
+  // reading location, so a refresh of /admin/manage lands where it should.
+  function initialPath(){
+    let stashed = null;
+    try{
+      stashed = sessionStorage.getItem('tt-redirect');
+      if(stashed) sessionStorage.removeItem('tt-redirect');
+    }catch(err){ /* storage blocked; fall back to the real URL */ }
+    return stashed || location.pathname;
+  }
+
+  let lastAuthUid = null;
+
   onAuthStateChanged(auth, (user)=>{
+    const uid = user ? user.uid : null;
+    const identityChanged = uid !== lastAuthUid;
+    lastAuthUid = uid;
+
     if(user){
       showApp(user);
     } else {
       currentUid = null;
+      isAdmin = false;
+      $('tt-admin-navrow').hidden = true;
       detachListeners();
-      showAuthScreen();
+    }
+
+    if(!authResolved){
+      // First time we know who's here: honour whatever is in the address bar.
+      authResolved = true;
+      go(parsePath(initialPath()), { replace:true });
+      return;
+    }
+    // A repeat callback for the same account isn't a navigation — leaving this
+    // out would yank an admin back to /dashboard mid-drill-down.
+    if(!identityChanged) return;
+
+    if(user){
+      const target = pendingRoute || { view:'dashboard' };
+      pendingRoute = null;
+      go(target, { replace:true });
+    } else {
+      pendingRoute = null;
+      go({ view:'login' }, { replace:true });
     }
   });
 
