@@ -209,8 +209,6 @@
   .tt-project-field span{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em;}
   .tt-project-field-wide{grid-column:1 / -1;}
   .tt-project-card-editing .tt-tax-name-input{width:100%;}
-  .tt-rates-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
-  .tt-rates-grid .tt-project-field input{width:100%;}
 
   .tt-earnings{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
@@ -224,15 +222,28 @@
     color:var(--paper); font-family:'Space Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer;
   }
   .tt-earnings-total{font-family:'Space Mono',monospace; font-size:28px; font-weight:700; color:var(--amber); margin-top:8px; font-variant-numeric:tabular-nums;}
-  .tt-earnings-sub{font-size:11px; color:var(--paper-dim); margin-top:2px;}
-  .tt-earnings-list{margin-top:12px; border-top:1px solid var(--line); padding-top:8px;}
-  .tt-earnings-row{
-    display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center;
-    padding:6px 0; font-size:12.5px;
+  .tt-earnings-total-label{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-top:1px; min-height:12px;}
+  .tt-earnings-sub{font-size:11px; color:var(--paper-dim); margin-top:6px; line-height:1.5;}
+  .tt-earnings-taxes{margin-top:12px; border-top:1px solid var(--line); padding-top:10px;}
+  .tt-earnings-tax-group{margin-bottom:8px;}
+  .tt-earnings-tax-group:last-child{margin-bottom:0;}
+  .tt-earnings-tax-head{
+    display:flex; justify-content:space-between; font-size:11px; font-weight:700;
+    color:var(--paper); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;
   }
-  .tt-earnings-row-name{color:var(--paper); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .tt-earnings-row-hours{color:var(--paper-dim); font-family:'Space Mono',monospace; font-size:11px; text-align:right;}
-  .tt-earnings-row-amt{color:var(--amber); font-weight:700; font-family:'Space Mono',monospace; font-size:12px; text-align:right; min-width:64px;}
+  .tt-earnings-tax-row{
+    display:flex; justify-content:space-between; font-size:12px; color:var(--paper-dim);
+    font-family:'Space Mono',monospace; padding:2px 0 2px 8px;
+  }
+  .tt-earnings-list-label{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-top:12px; border-top:1px solid var(--line); padding-top:10px;}
+  .tt-earnings-list{margin-top:6px;}
+  .tt-earnings-row{padding:7px 0; font-size:12.5px; border-bottom:1px solid var(--line);}
+  .tt-earnings-row:last-child{border-bottom:none;}
+  .tt-earnings-row-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .tt-earnings-row-name{color:var(--paper); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tt-earnings-row-hours{color:var(--paper-dim); font-family:'Space Mono',monospace; font-size:11px; text-align:right; flex-shrink:0;}
+  .tt-earnings-row-amt{color:var(--amber); font-weight:700; font-family:'Space Mono',monospace; font-size:12px; margin-top:2px;}
+  .tt-earnings-row-amt-empty{color:var(--paper-dim); font-weight:400; opacity:.7;}
 
   .tt-admin-users{display:flex; flex-direction:column; gap:6px;}
   .tt-admin-user-row{
@@ -854,16 +865,12 @@
           <div class="tt-menu-section">
             <div class="tt-menu-label">Exchange rates</div>
             <div class="tt-menu-desc">
-              Manual only — used to show one converted total on the dashboard. Enter how many RON
-              equal 1 unit of each currency; update whenever you like, nothing is fetched automatically.
+              Fetched automatically from official European Central Bank reference rates, refreshed
+              at most every 8 hours. Used only to compute the one converted total on the dashboard —
+              per-currency amounts are always exact, never converted.
             </div>
-            <div class="tt-rates-grid">
-              <label class="tt-project-field"><span>USD</span><input type="number" min="0" step="0.0001" id="tt-rate-usd" class="tt-menu-input" /></label>
-              <label class="tt-project-field"><span>EUR</span><input type="number" min="0" step="0.0001" id="tt-rate-eur" class="tt-menu-input" /></label>
-              <label class="tt-project-field"><span>GBP</span><input type="number" min="0" step="0.0001" id="tt-rate-gbp" class="tt-menu-input" /></label>
-            </div>
-            <button type="button" class="tt-btn primary tt-menu-bigbtn" id="tt-save-rates" style="margin-top:10px;">Save rates</button>
-            <div class="tt-menu-msg" id="tt-rates-msg"></div>
+            <div class="tt-menu-static-value" id="tt-fx-status">Loading rates…</div>
+            <button type="button" class="tt-btn tt-menu-bigbtn" id="tt-fx-refresh" style="margin-top:8px;">Refresh now</button>
           </div>
         </div>
 
@@ -1103,7 +1110,10 @@
         </select>
       </div>
       <div class="tt-earnings-total" id="tt-earnings-total">—</div>
+      <div class="tt-earnings-total-label" id="tt-earnings-total-label"></div>
       <div class="tt-earnings-sub" id="tt-earnings-sub">Set an hourly rate on a project to see estimates</div>
+      <div class="tt-earnings-taxes" id="tt-earnings-taxes" hidden></div>
+      <div class="tt-earnings-list-label">Per project · gross → net</div>
       <div class="tt-earnings-list" id="tt-earnings-list"></div>
     </div>
 
@@ -1189,7 +1199,6 @@
   let unsubPresets = null;
   let unsubPrefs = null;
   let unsubTaxTemplates = null;
-  let unsubRates = null;
   let presets = [];
   let taxTemplates = []; // [{id, name, taxes:[{name,pct}]}] — taxes applied in order, each on what's left after the previous
   let rates = { RON:1, USD:4.6, EUR:4.97, GBP:5.8 }; // manual, RON-per-1-unit; RON is always 1
@@ -1737,24 +1746,63 @@
     renderTaxTemplateManager();
   });
 
-  // ---------------- Exchange rates (manual) ----------------
-  function renderRatesForm(){
-    if($('tt-rate-usd')) $('tt-rate-usd').value = rates.USD;
-    if($('tt-rate-eur')) $('tt-rate-eur').value = rates.EUR;
-    if($('tt-rate-gbp')) $('tt-rate-gbp').value = rates.GBP;
-  }
-  $('tt-save-rates').addEventListener('click', async ()=>{
-    const usd = Number($('tt-rate-usd').value)||0;
-    const eur = Number($('tt-rate-eur').value)||0;
-    const gbp = Number($('tt-rate-gbp').value)||0;
-    const msg = $('tt-rates-msg');
+  // ---------------- Exchange rates (auto, official ECB reference rates) ----------------
+  const FX_CACHE_KEY = 'tt-fx-cache';
+  const FX_TTL_MS = 8*60*60*1000; // refresh at most every 8 hours
+  let fxMeta = { fetchedAt: null, source: null, error: null };
+
+  function loadCachedRates(){
     try{
-      await setDoc(ratesDoc(currentUid), { USD:usd, EUR:eur, GBP:gbp });
-      msg.textContent = 'Saved.'; msg.className = 'tt-menu-msg success';
-    }catch(err){
-      msg.textContent = 'Could not save rates.'; msg.className = 'tt-menu-msg error';
+      const parsed = JSON.parse(localStorage.getItem(FX_CACHE_KEY) || 'null');
+      return (parsed && parsed.rates) ? parsed : null;
+    }catch(e){ return null; }
+  }
+
+  function renderFxStatus(){
+    const el = $('tt-fx-status');
+    if(!el) return;
+    if(fxMeta.fetchedAt){
+      const d = new Date(fxMeta.fetchedAt);
+      const when = `${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})} ${d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}`;
+      el.textContent = `${fxMeta.source} · updated ${when}` + (fxMeta.error ? ` · ${fxMeta.error}` : '');
+    }else{
+      el.textContent = fxMeta.error || 'Using approximate fallback rates until the first fetch succeeds';
     }
-  });
+  }
+
+  async function refreshExchangeRates(force){
+    const cached = loadCachedRates();
+    if(cached){
+      rates = { RON:1, USD:cached.rates.USD, EUR:cached.rates.EUR, GBP:cached.rates.GBP };
+      fxMeta.fetchedAt = cached.fetchedAt;
+      fxMeta.source = cached.source;
+    }
+    const isStale = !cached || (Date.now() - new Date(cached.fetchedAt).getTime() > FX_TTL_MS);
+    if(!isStale && !force){ renderFxStatus(); renderEarningsPanel(); return; }
+    try{
+      const res = await fetch('https://api.frankfurter.dev/v1/latest?from=EUR&to=RON,USD,GBP');
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      const ronPerEur = Number(data.rates && data.rates.RON);
+      const usdPerEur = Number(data.rates && data.rates.USD);
+      const gbpPerEur = Number(data.rates && data.rates.GBP);
+      if(!ronPerEur || !usdPerEur || !gbpPerEur) throw new Error('Malformed rates response');
+      const fresh = { RON:1, EUR:ronPerEur, USD:ronPerEur/usdPerEur, GBP:ronPerEur/gbpPerEur };
+      rates = fresh;
+      fxMeta = { fetchedAt: new Date().toISOString(), source: 'European Central Bank reference rates', error: null };
+      localStorage.setItem(FX_CACHE_KEY, JSON.stringify({ rates: fresh, fetchedAt: fxMeta.fetchedAt, source: fxMeta.source }));
+    }catch(err){
+      console.error('Exchange rate fetch failed', err);
+      fxMeta.error = cached ? 'Could not refresh — showing last known rates' : 'Could not fetch rates — using approximate fallback';
+    }
+    renderFxStatus();
+    renderEarningsPanel();
+  }
+
+  const fxRefreshBtn = document.getElementById('tt-fx-refresh');
+  if(fxRefreshBtn) fxRefreshBtn.addEventListener('click', ()=> refreshExchangeRates(true));
+  refreshExchangeRates(false);
+  setInterval(()=> refreshExchangeRates(false), 60*60*1000);
 
   // ---------------- Monthly earnings estimate ----------------
   function applyTaxTemplate(gross, templateId){
@@ -1802,33 +1850,73 @@
       return { note, hours, rate, currency, gross, net, breakdown, hasRate };
     }).sort((a,b)=>b.hours-a.hours);
 
-    const byCurrency = {};
-    rows.forEach(r=>{ if(r.hasRate) byCurrency[r.currency] = (byCurrency[r.currency]||0) + r.net; });
+    const grossByCurrency = {};
+    const netByCurrency = {};
+    const taxByCurrency = {}; // { CUR: { taxName: totalAmount } }
+    rows.forEach(r=>{
+      if(!r.hasRate) return;
+      grossByCurrency[r.currency] = (grossByCurrency[r.currency]||0) + r.gross;
+      netByCurrency[r.currency] = (netByCurrency[r.currency]||0) + r.net;
+      if(r.breakdown.length){
+        if(!taxByCurrency[r.currency]) taxByCurrency[r.currency] = {};
+        r.breakdown.forEach(tax=>{
+          taxByCurrency[r.currency][tax.name] = (taxByCurrency[r.currency][tax.name]||0) + tax.amount;
+        });
+      }
+    });
 
     let convertedTotal = 0;
     const excluded = [];
-    Object.entries(byCurrency).forEach(([cur, amt])=>{
+    Object.entries(netByCurrency).forEach(([cur, amt])=>{
       const rFrom = rates[cur], rTo = rates[displayCurrency];
       if(rFrom && rTo) convertedTotal += (amt*rFrom)/rTo;
       else excluded.push(cur);
     });
 
-    return { rows, byCurrency, convertedTotal, excluded };
+    return { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded };
   }
 
   function renderEarningsPanel(){
     const panel = $('tt-earnings');
     if(!panel) return;
-    const { rows, byCurrency, convertedTotal, excluded } = computeMonthlyEarnings();
+    const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = computeMonthlyEarnings();
     const curSel = $('tt-earnings-currency');
     if(curSel) curSel.value = displayCurrency;
 
-    const hasAny = Object.keys(byCurrency).length > 0;
+    const currencies = Object.keys(netByCurrency);
+    const hasAny = currencies.length > 0;
     $('tt-earnings-total').textContent = hasAny ? `${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
+    $('tt-earnings-total-label').textContent = hasAny ? 'net, converted' : '';
 
-    const subParts = Object.entries(byCurrency).map(([cur,amt])=>`${amt.toFixed(2)} ${cur}`);
-    if(excluded.length) subParts.push(`${excluded.join(', ')} not converted — set a rate`);
-    $('tt-earnings-sub').textContent = subParts.length ? subParts.join(' · ') : 'Set an hourly rate on a project to see estimates';
+    if(!hasAny){
+      $('tt-earnings-sub').textContent = 'Set an hourly rate on a project to see estimates';
+    }else{
+      const grossParts = currencies.map(cur=>`${grossByCurrency[cur].toFixed(2)} ${cur}`).join(' + ');
+      const netParts = currencies.map(cur=>`${netByCurrency[cur].toFixed(2)} ${cur}`).join(' + ');
+      let sub = `Gross ${grossParts} → Net ${netParts}`;
+      if(excluded.length) sub += ` · ${excluded.join(', ')} not converted (rate unavailable)`;
+      $('tt-earnings-sub').textContent = sub;
+    }
+
+    const taxEl = $('tt-earnings-taxes');
+    const taxCurrencies = currencies.filter(cur => taxByCurrency[cur] && Object.keys(taxByCurrency[cur]).length);
+    if(!taxCurrencies.length){
+      taxEl.hidden = true;
+      taxEl.innerHTML = '';
+    }else{
+      taxEl.hidden = false;
+      taxEl.innerHTML = taxCurrencies.map(cur=>{
+        const taxes = taxByCurrency[cur];
+        const totalTax = Object.values(taxes).reduce((a,b)=>a+b, 0);
+        const taxRows = Object.entries(taxes).map(([name,amt])=>`
+          <div class="tt-earnings-tax-row"><span>${escapeHtml(name)}</span><span>−${amt.toFixed(2)} ${cur}</span></div>
+        `).join('');
+        return `<div class="tt-earnings-tax-group">
+          <div class="tt-earnings-tax-head"><span>Taxes withheld · ${cur}</span><span>−${totalTax.toFixed(2)} ${cur}</span></div>
+          ${taxRows}
+        </div>`;
+      }).join('');
+    }
 
     if(!rows.length){
       $('tt-earnings-list').innerHTML = '<div class="tt-preset-empty">No hours logged this month yet.</div>';
@@ -1836,9 +1924,11 @@
     }
     $('tt-earnings-list').innerHTML = rows.map(r=>`
       <div class="tt-earnings-row">
-        <div class="tt-earnings-row-name">${escapeHtml(r.note)}</div>
-        <div class="tt-earnings-row-hours">${fmtHM(Math.round(r.hours*3600))}h</div>
-        <div class="tt-earnings-row-amt">${r.hasRate ? r.net.toFixed(2)+' '+r.currency : '—'}</div>
+        <div class="tt-earnings-row-top">
+          <div class="tt-earnings-row-name">${escapeHtml(r.note)}</div>
+          <div class="tt-earnings-row-hours">${fmtHM(Math.round(r.hours*3600))}h</div>
+        </div>
+        <div class="tt-earnings-row-amt ${r.hasRate?'':'tt-earnings-row-amt-empty'}">${r.hasRate ? `${r.gross.toFixed(2)} → ${r.net.toFixed(2)} ${r.currency}` : 'No rate set'}</div>
       </div>
     `).join('');
   }
@@ -2930,7 +3020,6 @@
   function presetsDoc(uid){ return doc(db, 'users', uid, 'meta', 'presets'); }
   function prefsDoc(uid){ return doc(db, 'users', uid, 'meta', 'prefs'); }
   function taxTemplatesDoc(uid){ return doc(db, 'users', uid, 'meta', 'taxTemplates'); }
-  function ratesDoc(uid){ return doc(db, 'users', uid, 'meta', 'rates'); }
 
   function attachListeners(uid){
     detachListeners();
@@ -2965,13 +3054,6 @@
       renderEarningsPanel();
     }, (err)=> console.error('tax templates listener error', err));
 
-    unsubRates = onSnapshot(ratesDoc(uid), (snap)=>{
-      const d = snap.exists() ? snap.data() : {};
-      rates = { RON:1, USD: Number(d.USD)||4.6, EUR: Number(d.EUR)||4.97, GBP: Number(d.GBP)||5.8 };
-      renderRatesForm();
-      renderEarningsPanel();
-    }, (err)=> console.error('rates listener error', err));
-
     scheduleTick();
   }
 
@@ -2981,13 +3063,11 @@
     if(unsubPresets){ unsubPresets(); unsubPresets = null; }
     if(unsubPrefs){ unsubPrefs(); unsubPrefs = null; }
     if(unsubTaxTemplates){ unsubTaxTemplates(); unsubTaxTemplates = null; }
-    if(unsubRates){ unsubRates(); unsubRates = null; }
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
     presets = [];
     taxTemplates = [];
-    rates = { RON:1, USD:4.6, EUR:4.97, GBP:5.8 };
     editingTaxTemplateId = null;
     taxTemplateDraftTaxes = [];
     lastProjectPref = '';
