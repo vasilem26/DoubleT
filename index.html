@@ -95,8 +95,27 @@
   }
   .tt-menu-btn:hover{background:var(--panel-2); border-color:var(--amber-dim); transform:translateY(-1px);}
   .tt-menu-btn:active{transform:scale(.92);}
-  .tt-theme-toggle{color:var(--paper-dim);}
-  .tt-theme-toggle:hover{color:var(--amber);}
+  .tt-theme-switch{
+    -webkit-appearance:none; appearance:none; border:none; cursor:pointer;
+    width:52px; height:28px; border-radius:999px; flex-shrink:0;
+    background:var(--panel-2); border:1px solid var(--line);
+    position:relative; padding:0; transition:background-color .2s ease, border-color .2s ease;
+  }
+  .tt-theme-switch:hover{border-color:var(--amber-dim);}
+  .tt-theme-switch:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  .tt-theme-switch-icons{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between;
+    padding:0 6px; color:var(--paper-dim); pointer-events:none;
+  }
+  .tt-theme-switch-icons svg{opacity:.7;}
+  .tt-theme-switch-knob{
+    position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
+    background:var(--amber); color:var(--on-accent);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 6px rgba(var(--shadow-rgb),.35);
+    transition:transform .22s cubic-bezier(.2,.8,.2,1), background-color .2s ease;
+  }
+  html[data-theme="light"] .tt-theme-switch-knob{transform:translateX(24px);}
   .tt-menu-btn span{width:15px; height:2px; background:var(--paper-dim); border-radius:1px;}
 
   .tt-menu-overlay{
@@ -662,9 +681,15 @@
             <span id="tt-account-name"></span>
           </div>
         </div>
-        <button id="tt-theme-toggle" class="tt-menu-btn tt-theme-toggle" type="button" aria-label="Toggle theme">
-          <svg id="tt-theme-icon-dark" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-          <svg id="tt-theme-icon-light" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <button id="tt-theme-toggle" class="tt-theme-switch" type="button" role="switch" aria-checked="false" aria-label="Toggle theme">
+          <span class="tt-theme-switch-icons">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </span>
+          <span class="tt-theme-switch-knob">
+            <svg id="tt-theme-icon-dark" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+            <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </span>
         </button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -1087,7 +1112,10 @@
     const dark = document.getElementById('tt-theme-icon-dark'), light = document.getElementById('tt-theme-icon-light');
     if(dark && light){ dark.hidden = theme==='light'; light.hidden = theme!=='light'; }
     const btn = document.getElementById('tt-theme-toggle');
-    if(btn) btn.setAttribute('aria-label', theme==='light' ? 'Switch to dark theme' : 'Switch to light theme');
+    if(btn){
+      btn.setAttribute('aria-label', theme==='light' ? 'Switch to dark theme' : 'Switch to light theme');
+      btn.setAttribute('aria-checked', theme==='light' ? 'true' : 'false');
+    }
   }
   if(window.matchMedia){
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', ()=>{ if(!storedTheme()) applyTheme(); });
