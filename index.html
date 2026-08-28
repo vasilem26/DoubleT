@@ -47,19 +47,26 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
     cursor:pointer; transition:background .15s ease, border-color .15s ease; flex-shrink:0;
   }
-  .tt-menu-btn:hover{background:var(--panel-2); border-color:var(--amber-dim);}
+  .tt-menu-btn:hover{background:var(--panel-2); border-color:var(--amber-dim); transform:translateY(-1px);}
+  .tt-menu-btn:active{transform:scale(.92);}
   .tt-menu-btn span{width:15px; height:2px; background:var(--paper-dim); border-radius:1px;}
 
   .tt-menu-overlay{
-    position:fixed; inset:0; z-index:900; background:rgba(10,14,18,.55);
+    position:fixed; inset:0; z-index:900; background:rgba(10,14,18,0);
+    backdrop-filter:blur(0px); -webkit-backdrop-filter:blur(0px);
     display:flex; justify-content:flex-end;
+    transition:background .28s ease, backdrop-filter .28s ease, -webkit-backdrop-filter .28s ease;
   }
   .tt-menu-overlay[hidden]{display:none;}
+  .tt-menu-overlay.tt-open{background:rgba(10,14,18,.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);}
   .tt-menu-panel{
     width:100%; max-width:340px; height:100%; background:var(--panel);
     border-left:1px solid var(--line); padding:20px; overflow-y:auto;
-    animation:tt-slidein .2s ease;
+    box-shadow:-12px 0 32px rgba(0,0,0,.35);
+    transform:translateX(24px); opacity:0;
+    transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .24s ease;
   }
+  .tt-menu-overlay.tt-open .tt-menu-panel{transform:translateX(0); opacity:1;}
   @keyframes tt-slidein{ from{transform:translateX(24px); opacity:0;} to{transform:translateX(0); opacity:1;} }
   .tt-menu-header{
     display:flex; justify-content:space-between; align-items:center;
@@ -82,13 +89,18 @@
   .tt-menu-section:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
   .tt-menu-screen[hidden]{display:none;}
   .tt-menu-navrow{
-    width:100%; display:flex; justify-content:space-between; align-items:center;
+    width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
     background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
     color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; font-weight:600;
-    padding:13px 14px; margin-bottom:10px; cursor:pointer; transition:background .15s ease, border-color .15s ease;
+    padding:13px 14px; margin-bottom:10px; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
   }
   .tt-menu-navrow[hidden]{display:none;}
-  .tt-menu-navrow:hover{background:var(--panel); border-color:var(--amber-dim);}
+  .tt-menu-navrow:hover{background:var(--panel); border-color:var(--amber-dim); box-shadow:0 4px 10px rgba(0,0,0,.25);}
+  .tt-menu-navrow:active{transform:scale(.98);}
+  .tt-menu-navrow-label{display:flex; align-items:center; gap:10px; flex:1;}
+  .tt-menu-navrow-icon{flex-shrink:0; opacity:.75; display:flex;}
+  .tt-menu-navrow:hover .tt-menu-navrow-icon{opacity:1; color:var(--amber);}
   .tt-menu-chevron{color:var(--paper-dim); font-size:16px;}
   .tt-menu-root-signout{margin-top:20px; padding-top:20px; border-top:1px solid var(--line);}
   .tt-menu-static-value{
@@ -210,8 +222,10 @@
     transition:background .18s ease, color .18s ease;
   }
   .tt-segment button:last-child{border-right:none;}
-  .tt-segment button:hover{background:var(--panel-2);}
+  .tt-segment button:hover{background:var(--panel-2); color:var(--paper);}
+  .tt-segment button:active{transform:scale(.96);}
   .tt-segment button.active{background:var(--amber); color:var(--ink);}
+  .tt-segment button.active:hover{background:#f0b258;}
   .tt-segment button:focus-visible{outline:none; box-shadow:inset 0 0 0 2px var(--amber);}
   .tt-segment button:disabled{opacity:.3; cursor:not-allowed;}
   .tt-export-segment{width:100%;}
@@ -226,6 +240,7 @@
     text-align:center;
     position:relative;
     overflow:hidden;
+    box-shadow:0 10px 24px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.22);
   }
   .tt-clock::before{
     content:'';
@@ -292,11 +307,14 @@
     display:flex; justify-content:space-between; align-items:center;
     margin-top:18px; padding:14px 18px;
     background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    box-shadow:0 6px 16px rgba(0,0,0,.22);
+    transition:box-shadow .18s ease, transform .18s ease;
   }
+  .tt-today:hover{box-shadow:0 8px 20px rgba(0,0,0,.28); transform:translateY(-1px);}
   .tt-today-label{font-size:12px;color:var(--paper-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Space Mono',monospace;}
-  .tt-today-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums;}
+  .tt-today-val{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums;letter-spacing:.01em;}
   .tt-month-strip{margin-top:8px;}
-  .tt-month-strip .tt-today-val{color:var(--paper-dim);}
+  .tt-month-strip .tt-today-val{color:var(--paper); font-size:22px;}
 
   /* month nav */
   .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 12px;}
@@ -312,7 +330,7 @@
   .tt-monthlabel{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper);}
   .tt-monthtotal{font-size:12px;color:var(--paper-dim);}
 
-  .tt-ledger{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .tt-ledger{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.22);}
   .tt-row{
     display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
     padding:9px 16px;border-bottom:1px solid var(--line);font-size:13px;
@@ -336,36 +354,48 @@
   .tt-calendar{
     background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px;
     display:grid; grid-template-columns:repeat(7,1fr); gap:5px;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
   }
   .tt-calendar[hidden]{display:none;}
   .tt-cal-dow{font-family:'Space Mono',monospace; font-size:10px; text-transform:uppercase; color:var(--paper-dim); text-align:center; padding-bottom:4px; letter-spacing:.06em;}
   .tt-cal-cell{
     aspect-ratio:1; border-radius:4px; padding:6px 4px; background:var(--panel-2);
     display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;
-    border:1px solid transparent; transition:background .15s ease, border-color .15s ease, transform .15s ease;
-    position:relative;
+    border:1px solid transparent; transition:background .15s ease, border-color .15s ease, transform .12s ease, box-shadow .15s ease;
+    position:relative; overflow:hidden;
   }
-  .tt-cal-cell:hover{border-color:var(--amber-dim); transform:translateY(-1px);}
+  .tt-cal-cell:hover{border-color:var(--amber-dim); transform:translateY(-2px) scale(1.03); box-shadow:0 6px 14px rgba(0,0,0,.3); z-index:1;}
+  .tt-cal-cell:active{transform:translateY(0) scale(.98);}
   .tt-cal-cell.outside{opacity:.28; cursor:default;}
-  .tt-cal-cell.outside:hover{transform:none; border-color:transparent;}
+  .tt-cal-cell.outside:hover{transform:none; border-color:transparent; box-shadow:none;}
   .tt-cal-cell.has-time{background:rgba(232,163,61,.14);}
+  .tt-cal-cell.has-time::after{
+    content:''; position:absolute; left:0; right:0; bottom:0;
+    height:var(--fill,0%); background:linear-gradient(180deg, rgba(232,163,61,.55), rgba(232,163,61,.85));
+    z-index:0; pointer-events:none; transition:height .25s ease;
+  }
+  .tt-cal-cell.has-time .tt-cal-daynum,
+  .tt-cal-cell.has-time .tt-cal-hours{position:relative; z-index:1;}
   .tt-cal-cell.today{
     background:var(--amber); border-color:var(--amber);
-    box-shadow:0 0 0 3px rgba(232,163,61,.28);
+    box-shadow:0 0 0 3px rgba(232,163,61,.28), 0 6px 16px rgba(232,163,61,.25);
   }
+  .tt-cal-cell.today::after{display:none;}
   .tt-cal-cell.today .tt-cal-daynum{color:var(--ink); font-weight:700;}
   .tt-cal-cell.today .tt-cal-hours{color:var(--ink);}
   .tt-cal-cell.today::before{
     content:'TODAY'; position:absolute; top:3px; right:4px;
-    font-size:7px; font-weight:700; letter-spacing:.05em; color:var(--ink); opacity:.65;
+    font-size:7px; font-weight:700; letter-spacing:.05em; color:var(--ink); opacity:.65; z-index:1;
   }
   .tt-cal-daynum{font-size:11px; color:var(--paper-dim); font-family:'Space Mono',monospace;}
   .tt-cal-hours{font-size:11px; font-weight:700; color:var(--amber); font-family:'Space Mono',monospace; font-variant-numeric:tabular-nums; text-align:right;}
+  .tt-cal-cell.today .tt-cal-hours{color:var(--ink);}
   .tt-cal-cell.week-mode{aspect-ratio:auto; min-height:70px;}
 
   .tt-chart{
     background:var(--panel); border:1px solid var(--line); border-radius:6px;
     padding:16px 14px 10px;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
   }
   .tt-chart-bars{
     display:flex; align-items:flex-end; gap:3px; height:150px;
@@ -393,13 +423,17 @@
     background:var(--panel); border:1px solid var(--line); color:var(--paper);
     font-family:'Work Sans',sans-serif; font-size:13px; font-weight:600;
     padding:11px 14px; border-radius:5px; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
   }
-  .tt-btn:hover{background:var(--panel-2);}
+  .tt-btn:hover{background:var(--panel-2); border-color:var(--amber-dim); transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.25);}
+  .tt-btn:active{transform:translateY(0); box-shadow:none;}
   .tt-btn:focus-visible{outline:2px solid var(--amber);}
   .tt-btn.danger{border-color:var(--stop-dim);color:#E7A29D;}
+  .tt-btn.danger:hover{border-color:var(--stop);}
   .tt-btn.primary{background:var(--amber);color:var(--ink);border-color:var(--amber-dim);}
-  .tt-btn.primary:hover{background:#f0b258;}
+  .tt-btn.primary:hover{background:#f0b258; border-color:var(--amber); box-shadow:0 4px 12px rgba(232,163,61,.3);}
   .tt-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .tt-btn:disabled:hover{transform:none; box-shadow:none;}
 
   .tt-modal-backdrop{
     position:fixed; inset:0; background:rgba(10,14,18,.72);
@@ -576,11 +610,41 @@
         </div>
 
         <div class="tt-menu-screen" id="tt-menu-screen-root">
-          <button type="button" class="tt-menu-navrow" data-screen="user">User <span class="tt-menu-chevron">&#8250;</span></button>
-          <button type="button" class="tt-menu-navrow" data-screen="projects">Projects <span class="tt-menu-chevron">&#8250;</span></button>
-          <button type="button" class="tt-menu-navrow" data-screen="exports">Exports <span class="tt-menu-chevron">&#8250;</span></button>
-          <button type="button" class="tt-menu-navrow" data-screen="data">Manage data <span class="tt-menu-chevron">&#8250;</span></button>
-          <button type="button" class="tt-menu-navrow" id="tt-admin-navrow" hidden>Admin <span class="tt-menu-chevron">&#8250;</span></button>
+          <button type="button" class="tt-menu-navrow" data-screen="user">
+            <span class="tt-menu-navrow-label">
+              <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              User
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow" data-screen="projects">
+            <span class="tt-menu-navrow-label">
+              <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+              Projects
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow" data-screen="exports">
+            <span class="tt-menu-navrow-label">
+              <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              Exports
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow" data-screen="data">
+            <span class="tt-menu-navrow-label">
+              <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+              Manage data
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow" id="tt-admin-navrow" hidden>
+            <span class="tt-menu-navrow-label">
+              <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
+              Admin
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
           <div class="tt-menu-root-signout">
             <button class="tt-btn danger" id="tt-menu-signout" style="width:100%;">Sign out</button>
           </div>
@@ -1174,8 +1238,13 @@
     updateChecklistIn('tt-menu-pw-checklist', '');
     showMenuScreen('root');
     $('tt-menu-overlay').hidden = false;
+    requestAnimationFrame(()=> $('tt-menu-overlay').classList.add('tt-open'));
   }
-  function closeMenu(){ $('tt-menu-overlay').hidden = true; }
+  function closeMenu(){
+    const overlay = $('tt-menu-overlay');
+    overlay.classList.remove('tt-open');
+    setTimeout(()=>{ if(!overlay.classList.contains('tt-open')) overlay.hidden = true; }, 280);
+  }
 
   $('tt-menu-btn').addEventListener('click', ()=> go({ view:'account', screen:'root' }));
   $('tt-menu-close').addEventListener('click', ()=> go({ view:'dashboard' }));
@@ -1620,7 +1689,8 @@
       const key = dateKey(dt);
       const secs = adminSecondsForDate(entries, dt);
       const isToday = key===todayKey;
-      html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}">
+      const fillPct = Math.min(100, Math.round((secs/3600/8)*100));
+      html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" ${secs>0?`style="--fill:${fillPct}%"`:''}>
         <div class="tt-cal-daynum">${dt.getDate()}</div>
         <div class="tt-cal-hours">${secs>0?fmtHM(secs)+'h':''}</div>
       </div>`;
@@ -2548,7 +2618,8 @@
       const key = dateKey(dt);
       const secs = secondsForDate(dt);
       const isToday = key===todayKey;
-      html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" data-day="${key}">
+      const fillPct = Math.min(100, Math.round((secs/3600/8)*100));
+      html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" data-day="${key}" ${secs>0?`style="--fill:${fillPct}%"`:''}>
         <div class="tt-cal-daynum">${dt.getDate()}</div>
         <div class="tt-cal-hours">${secs>0?fmtHM(secs)+'h':''}</div>
       </div>`;
