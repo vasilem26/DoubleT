@@ -462,8 +462,12 @@
     height:var(--fill,0%); background:linear-gradient(180deg, rgba(232,163,61,.55), rgba(232,163,61,.85));
     z-index:0; pointer-events:none; transition:height .25s ease;
   }
-  .tt-cal-cell.has-time .tt-cal-daynum,
-  .tt-cal-cell.has-time .tt-cal-hours{position:relative; z-index:1;}
+  .tt-cal-cell.has-time .tt-cal-daynum{position:relative; z-index:1;}
+  .tt-cal-cell.has-time:not(.today) .tt-cal-hours{
+    position:relative; z-index:1; align-self:flex-end;
+    background:var(--panel); border-radius:4px; padding:1px 5px; margin:0 -2px;
+    box-shadow:0 1px 4px rgba(var(--shadow-rgb),.3);
+  }
   .tt-cal-cell.today{
     background:var(--amber); border-color:var(--amber);
     box-shadow:0 0 0 3px rgba(232,163,61,.28), 0 6px 16px rgba(232,163,61,.25);
