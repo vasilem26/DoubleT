@@ -463,11 +463,8 @@
     z-index:0; pointer-events:none; transition:height .25s ease;
   }
   .tt-cal-cell.has-time .tt-cal-daynum{position:relative; z-index:1;}
-  .tt-cal-cell.has-time:not(.today) .tt-cal-hours{
-    position:relative; z-index:1; align-self:flex-end;
-    background:var(--panel); border-radius:4px; padding:1px 5px; margin:0 -2px;
-    box-shadow:0 1px 4px rgba(var(--shadow-rgb),.3);
-  }
+  .tt-cal-cell.has-time:not(.today){flex-direction:row; align-items:flex-start; justify-content:space-between; gap:6px;}
+  .tt-cal-cell.has-time:not(.today) .tt-cal-hours{position:relative; z-index:1;}
   .tt-cal-cell.today{
     background:var(--amber); border-color:var(--amber);
     box-shadow:0 0 0 3px rgba(232,163,61,.28), 0 6px 16px rgba(232,163,61,.25);
@@ -1831,7 +1828,7 @@
       const key = dateKey(dt);
       const secs = adminSecondsForDate(entries, dt);
       const isToday = key===todayKey;
-      const fillPct = Math.min(100, Math.round((secs/3600/8)*100));
+      const fillPct = Math.min(74, Math.round((secs/3600/8)*74));
       html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" ${secs>0?`style="--fill:${fillPct}%"`:''}>
         <div class="tt-cal-daynum">${dt.getDate()}</div>
         <div class="tt-cal-hours">${secs>0?fmtHM(secs)+'h':''}</div>
@@ -2760,7 +2757,7 @@
       const key = dateKey(dt);
       const secs = secondsForDate(dt);
       const isToday = key===todayKey;
-      const fillPct = Math.min(100, Math.round((secs/3600/8)*100));
+      const fillPct = Math.min(74, Math.round((secs/3600/8)*74));
       html += `<div class="${cellClass} ${isToday?'today':''} ${secs>0?'has-time':''}" data-day="${key}" ${secs>0?`style="--fill:${fillPct}%"`:''}>
         <div class="tt-cal-daynum">${dt.getDate()}</div>
         <div class="tt-cal-hours">${secs>0?fmtHM(secs)+'h':''}</div>
