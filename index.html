@@ -235,6 +235,7 @@
     display:flex; justify-content:space-between; font-size:12px; color:var(--paper-dim);
     font-family:'Space Mono',monospace; padding:2px 0 2px 8px;
   }
+  .tt-earnings-tax-pct{opacity:.55; font-size:10.5px;}
   .tt-earnings-list-label{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-top:12px; border-top:1px solid var(--line); padding-top:10px;}
   .tt-earnings-list{margin-top:6px;}
   .tt-earnings-row{padding:7px 0; font-size:12.5px; border-bottom:1px solid var(--line);}
@@ -1852,7 +1853,7 @@
 
     const grossByCurrency = {};
     const netByCurrency = {};
-    const taxByCurrency = {}; // { CUR: { taxName: totalAmount } }
+    const taxByCurrency = {}; // { CUR: { taxName: { amount, pcts:Set } } }
     rows.forEach(r=>{
       if(!r.hasRate) return;
       grossByCurrency[r.currency] = (grossByCurrency[r.currency]||0) + r.gross;
@@ -1860,7 +1861,10 @@
       if(r.breakdown.length){
         if(!taxByCurrency[r.currency]) taxByCurrency[r.currency] = {};
         r.breakdown.forEach(tax=>{
-          taxByCurrency[r.currency][tax.name] = (taxByCurrency[r.currency][tax.name]||0) + tax.amount;
+          const bucket = taxByCurrency[r.currency];
+          if(!bucket[tax.name]) bucket[tax.name] = { amount:0, pcts:new Set() };
+          bucket[tax.name].amount += tax.amount;
+          bucket[tax.name].pcts.add(tax.pct);
         });
       }
     });
@@ -1907,10 +1911,11 @@
       taxEl.hidden = false;
       taxEl.innerHTML = taxCurrencies.map(cur=>{
         const taxes = taxByCurrency[cur];
-        const totalTax = Object.values(taxes).reduce((a,b)=>a+b, 0);
-        const taxRows = Object.entries(taxes).map(([name,amt])=>`
-          <div class="tt-earnings-tax-row"><span>${escapeHtml(name)}</span><span>−${amt.toFixed(2)} ${cur}</span></div>
-        `).join('');
+        const totalTax = Object.values(taxes).reduce((a,b)=>a+b.amount, 0);
+        const taxRows = Object.entries(taxes).map(([name,info])=>{
+          const pctLabel = [...info.pcts].sort((a,b)=>a-b).join('/');
+          return `<div class="tt-earnings-tax-row"><span>${escapeHtml(name)} <span class="tt-earnings-tax-pct">${pctLabel}%</span></span><span>−${info.amount.toFixed(2)} ${cur}</span></div>`;
+        }).join('');
         return `<div class="tt-earnings-tax-group">
           <div class="tt-earnings-tax-head"><span>Taxes withheld · ${cur}</span><span>−${totalTax.toFixed(2)} ${cur}</span></div>
           ${taxRows}
