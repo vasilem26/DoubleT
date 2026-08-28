@@ -198,6 +198,42 @@
   .tt-preset-remove:hover{opacity:1; color:var(--err-text);}
   .tt-preset-empty{font-size:13px; color:var(--paper-dim); opacity:.6; padding:6px 0;}
 
+  .tt-project-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:12px 14px; margin-bottom:10px;
+  }
+  .tt-project-card-head{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .tt-project-card-name{font-size:14px; font-weight:600; color:var(--paper); word-break:break-word; line-height:1.35;}
+  .tt-project-card-fields{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;}
+  .tt-project-field{display:flex; flex-direction:column; gap:4px; min-width:0;}
+  .tt-project-field span{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em;}
+  .tt-project-field-wide{grid-column:1 / -1;}
+  .tt-project-card-editing .tt-tax-name-input{width:100%;}
+  .tt-rates-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .tt-rates-grid .tt-project-field input{width:100%;}
+
+  .tt-earnings{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px; margin-top:12px;
+    box-shadow:0 6px 16px rgba(var(--shadow-rgb),.22);
+  }
+  .tt-earnings-head{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .tt-earnings-title{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.08em; font-family:'Space Mono',monospace;}
+  .tt-earnings-currency-select{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Space Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer;
+  }
+  .tt-earnings-total{font-family:'Space Mono',monospace; font-size:28px; font-weight:700; color:var(--amber); margin-top:8px; font-variant-numeric:tabular-nums;}
+  .tt-earnings-sub{font-size:11px; color:var(--paper-dim); margin-top:2px;}
+  .tt-earnings-list{margin-top:12px; border-top:1px solid var(--line); padding-top:8px;}
+  .tt-earnings-row{
+    display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center;
+    padding:6px 0; font-size:12.5px;
+  }
+  .tt-earnings-row-name{color:var(--paper); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tt-earnings-row-hours{color:var(--paper-dim); font-family:'Space Mono',monospace; font-size:11px; text-align:right;}
+  .tt-earnings-row-amt{color:var(--amber); font-weight:700; font-family:'Space Mono',monospace; font-size:12px; text-align:right; min-width:64px;}
+
   .tt-admin-users{display:flex; flex-direction:column; gap:6px;}
   .tt-admin-user-row{
     display:flex; justify-content:space-between; align-items:center; gap:10px;
@@ -781,11 +817,39 @@
         <div class="tt-menu-screen" id="tt-menu-screen-projects" hidden>
           <div class="tt-menu-section">
             <div class="tt-menu-label">Your projects</div>
+            <div class="tt-menu-desc" style="margin-top:-4px;">
+              Set a rate/hour, currency and tax template per project to see monthly earnings estimates on the dashboard.
+            </div>
             <div id="tt-preset-manager"></div>
             <div class="tt-menu-row" style="margin-top:10px;">
               <input type="text" id="tt-new-preset" class="tt-menu-input" placeholder="e.g. FNRGW - Support" maxlength="60" />
               <button class="tt-btn tt-menu-btn-inline" id="tt-add-preset">Add</button>
             </div>
+          </div>
+
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Tax templates</div>
+            <div class="tt-menu-desc">
+              Reusable tax rule sets you can assign to any project above. Each tax is applied in order,
+              on whatever's left after the previous one — e.g. 10% then 5% of the remainder.
+            </div>
+            <div id="tt-tax-template-manager"></div>
+            <button type="button" class="tt-btn tt-menu-bigbtn" id="tt-add-tax-template" style="margin-top:8px;">+ New tax template</button>
+          </div>
+
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Exchange rates</div>
+            <div class="tt-menu-desc">
+              Manual only — used to show one converted total on the dashboard. Enter how many RON
+              equal 1 unit of each currency; update whenever you like, nothing is fetched automatically.
+            </div>
+            <div class="tt-rates-grid">
+              <label class="tt-project-field"><span>USD</span><input type="number" min="0" step="0.0001" id="tt-rate-usd" class="tt-menu-input" /></label>
+              <label class="tt-project-field"><span>EUR</span><input type="number" min="0" step="0.0001" id="tt-rate-eur" class="tt-menu-input" /></label>
+              <label class="tt-project-field"><span>GBP</span><input type="number" min="0" step="0.0001" id="tt-rate-gbp" class="tt-menu-input" /></label>
+            </div>
+            <button type="button" class="tt-btn primary tt-menu-bigbtn" id="tt-save-rates" style="margin-top:10px;">Save rates</button>
+            <div class="tt-menu-msg" id="tt-rates-msg"></div>
           </div>
         </div>
 
@@ -1014,6 +1078,21 @@
       </div>
     </div>
 
+    <div class="tt-earnings" id="tt-earnings">
+      <div class="tt-earnings-head">
+        <div class="tt-earnings-title">This month · estimated</div>
+        <select id="tt-earnings-currency" class="tt-earnings-currency-select">
+          <option value="RON">RON</option>
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
+      <div class="tt-earnings-total" id="tt-earnings-total">—</div>
+      <div class="tt-earnings-sub" id="tt-earnings-sub">Set an hourly rate on a project to see estimates</div>
+      <div class="tt-earnings-list" id="tt-earnings-list"></div>
+    </div>
+
     <div class="tt-viewbar">
       <div class="tt-segment" id="tt-granularity-tabs">
         <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
@@ -1095,12 +1174,20 @@
   let unsubActive = null;
   let unsubPresets = null;
   let unsubPrefs = null;
+  let unsubTaxTemplates = null;
+  let unsubRates = null;
   let presets = [];
+  let taxTemplates = []; // [{id, name, taxes:[{name,pct}]}] — taxes applied in order, each on what's left after the previous
+  let rates = { RON:1, USD:4.6, EUR:4.97, GBP:5.8 }; // manual, RON-per-1-unit; RON is always 1
+  let displayCurrency = localStorage.getItem('tt-display-currency') || 'RON';
+  let editingTaxTemplateId = null; // null | 'new' | <id>
+  let taxTemplateDraftTaxes = [];
   let lastProjectPref = '';
   let currentUid = null;
   let isSignUpMode = false;
   const ADMIN_EMAIL = 'vasile26marian@gmail.com';
   let isAdmin = false;
+  const CURRENCIES = ['RON','EUR','USD','GBP'];
 
   // ---------------- Theme (light/dark, follows system unless overridden) ----------------
   const THEME_KEY = 'tt-theme';
@@ -1446,7 +1533,17 @@
 
   $('tt-menu-signout').addEventListener('click', ()=>{ closeMenu(); signOut(auth); });
 
-  // ---------------- Presets ----------------
+  // ---------------- Presets (projects) ----------------
+  async function updatePresetAt(index, patch){
+    const current = presets[index];
+    const base = typeof current === 'string' ? { name: current } : { ...current };
+    const updated = { ...base, ...patch };
+    const newList = presets.slice();
+    newList[index] = updated;
+    try{ await setDoc(presetsDoc(currentUid), { list: newList }); }
+    catch(err){ console.error('Could not update preset', err); }
+  }
+
   function renderPresetManager(){
     const el = $('tt-preset-manager');
     if(!el) return;
@@ -1454,9 +1551,37 @@
       el.innerHTML = '<div class="tt-preset-empty">No presets yet — add one below.</div>';
       return;
     }
-    el.innerHTML = presets.map((p,i)=>
-      `<div class="tt-preset-manager-row"><span>${escapeHtml(p)}</span><button type="button" class="tt-preset-remove" data-index="${i}" aria-label="Remove preset">&times;</button></div>`
-    ).join('');
+    el.innerHTML = presets.map((p,i)=>{
+      const name = presetName(p);
+      const rate = (typeof p==='object' && p.rate) ? p.rate : '';
+      const currency = (typeof p==='object' && p.currency) || 'RON';
+      const taxTemplateId = (typeof p==='object' && p.taxTemplateId) || '';
+      return `<div class="tt-project-card">
+        <div class="tt-project-card-head">
+          <span class="tt-project-card-name">${escapeHtml(name)}</span>
+          <button type="button" class="tt-preset-remove" data-index="${i}" aria-label="Remove preset">&times;</button>
+        </div>
+        <div class="tt-project-card-fields">
+          <label class="tt-project-field">
+            <span>Rate/h</span>
+            <input type="number" min="0" step="0.01" class="tt-menu-input tt-project-rate" data-index="${i}" value="${rate}" placeholder="0.00" />
+          </label>
+          <label class="tt-project-field">
+            <span>Currency</span>
+            <select class="tt-menu-input tt-project-currency" data-index="${i}">
+              ${CURRENCIES.map(c=>`<option value="${c}" ${c===currency?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </label>
+          <label class="tt-project-field tt-project-field-wide">
+            <span>Tax template</span>
+            <select class="tt-menu-input tt-project-tax" data-index="${i}">
+              <option value="">None</option>
+              ${taxTemplates.map(t=>`<option value="${t.id}" ${t.id===taxTemplateId?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}
+            </select>
+          </label>
+        </div>
+      </div>`;
+    }).join('');
     el.querySelectorAll('.tt-preset-remove').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const idx = +btn.getAttribute('data-index');
@@ -1465,20 +1590,248 @@
         catch(err){ console.error('Could not remove preset', err); }
       });
     });
+    el.querySelectorAll('.tt-project-rate').forEach(inp=>{
+      inp.addEventListener('change', ()=> updatePresetAt(+inp.dataset.index, { rate: Number(inp.value)||0 }));
+    });
+    el.querySelectorAll('.tt-project-currency').forEach(sel=>{
+      sel.addEventListener('change', ()=> updatePresetAt(+sel.dataset.index, { currency: sel.value }));
+    });
+    el.querySelectorAll('.tt-project-tax').forEach(sel=>{
+      sel.addEventListener('change', ()=> updatePresetAt(+sel.dataset.index, { taxTemplateId: sel.value || null }));
+    });
   }
 
   $('tt-add-preset').addEventListener('click', async ()=>{
     const input = $('tt-new-preset');
     const val = input.value.trim();
     if(!val) return;
-    if(presets.includes(val)){ input.value=''; return; }
+    if(presets.some(p=>presetName(p)===val)){ input.value=''; return; }
     try{
-      await setDoc(presetsDoc(currentUid), { list: [...presets, val] });
+      await setDoc(presetsDoc(currentUid), { list: [...presets, { name: val, rate:0, currency:'RON', taxTemplateId:null }] });
       input.value = '';
     }catch(err){ console.error('Could not add preset', err); }
   });
   $('tt-new-preset').addEventListener('keydown', (e)=>{
     if(e.key==='Enter'){ e.preventDefault(); $('tt-add-preset').click(); }
+  });
+
+  // ---------------- Tax templates ----------------
+  function renderTaxTemplateManager(){
+    const el = $('tt-tax-template-manager');
+    if(!el) return;
+    const cards = taxTemplates.map(t=>{
+      if(editingTaxTemplateId===t.id) return renderTaxTemplateForm(t);
+      const chips = (t.taxes||[]).map(x=>`${x.pct}%`).join(' → ') || 'No taxes configured';
+      return `<div class="tt-project-card">
+        <div class="tt-project-card-head">
+          <span class="tt-project-card-name">${escapeHtml(t.name)}</span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="tt-btn tt-menu-btn-inline tt-tax-edit" data-id="${t.id}" style="padding:4px 10px; font-size:11px;">Edit</button>
+            <button type="button" class="tt-preset-remove tt-tax-delete" data-id="${t.id}" aria-label="Delete template">&times;</button>
+          </div>
+        </div>
+        <div class="tt-menu-desc" style="margin:4px 0 0;">${escapeHtml(chips)}</div>
+      </div>`;
+    }).join('');
+    const addForm = editingTaxTemplateId==='new' ? renderTaxTemplateForm(null) : '';
+    el.innerHTML = cards + addForm || '<div class="tt-preset-empty">No tax templates yet.</div>';
+
+    el.querySelectorAll('.tt-tax-edit').forEach(btn=>btn.addEventListener('click', ()=>{
+      const t = taxTemplates.find(x=>x.id===btn.dataset.id);
+      if(!t) return;
+      editingTaxTemplateId = t.id;
+      taxTemplateDraftTaxes = (t.taxes||[]).map(x=>({...x}));
+      renderTaxTemplateManager();
+    }));
+    el.querySelectorAll('.tt-tax-delete').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const updated = taxTemplates.filter(x=>x.id!==btn.dataset.id);
+      try{ await setDoc(taxTemplatesDoc(currentUid), { list: updated }); }
+      catch(err){ console.error('Could not delete tax template', err); }
+    }));
+    wireTaxTemplateForm();
+  }
+
+  function renderTaxTemplateForm(existing){
+    const name = existing ? escapeHtml(existing.name) : '';
+    const rows = taxTemplateDraftTaxes.map((t,i)=>`
+      <div class="tt-menu-row" style="margin-top:6px;">
+        <input type="text" class="tt-menu-input tt-tax-draft-name" data-i="${i}" placeholder="Tax name" value="${escapeHtml(t.name||'')}" style="flex:2;" />
+        <input type="number" class="tt-menu-input tt-tax-draft-pct" data-i="${i}" placeholder="%" min="0" max="100" step="0.01" value="${t.pct??''}" style="flex:1; min-width:60px;" />
+        <button type="button" class="tt-preset-remove tt-tax-draft-remove" data-i="${i}" aria-label="Remove tax">&times;</button>
+      </div>
+    `).join('');
+    return `<div class="tt-project-card tt-project-card-editing">
+      <input type="text" class="tt-menu-input tt-tax-name-input" placeholder="Template name (e.g. Standard RO)" value="${name}" />
+      <div class="tt-menu-label" style="margin-top:12px; margin-bottom:0;">Taxes, applied in order on what's left</div>
+      ${rows}
+      <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-tax-add-row" style="margin-top:8px;">+ Add tax</button>
+      <div class="tt-admin-edit-actions" style="margin-top:12px;">
+        <button type="button" class="tt-btn primary" id="tt-tax-save">Save</button>
+        <button type="button" class="tt-btn" id="tt-tax-cancel">Cancel</button>
+      </div>
+    </div>`;
+  }
+
+  function wireTaxTemplateForm(){
+    const nameInput = document.querySelector('.tt-tax-name-input');
+    if(!nameInput) return;
+    document.querySelectorAll('.tt-tax-draft-name').forEach(inp=>{
+      inp.addEventListener('input', ()=>{ taxTemplateDraftTaxes[+inp.dataset.i].name = inp.value; });
+    });
+    document.querySelectorAll('.tt-tax-draft-pct').forEach(inp=>{
+      inp.addEventListener('input', ()=>{ taxTemplateDraftTaxes[+inp.dataset.i].pct = inp.value; });
+    });
+    document.querySelectorAll('.tt-tax-draft-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ taxTemplateDraftTaxes.splice(+btn.dataset.i,1); renderTaxTemplateManager(); });
+    });
+    const addRowBtn = document.getElementById('tt-tax-add-row');
+    if(addRowBtn) addRowBtn.addEventListener('click', ()=>{
+      taxTemplateDraftTaxes.push({ name:'', pct:'' });
+      renderTaxTemplateManager();
+    });
+    const saveBtn = document.getElementById('tt-tax-save');
+    if(saveBtn) saveBtn.addEventListener('click', async ()=>{
+      const name = nameInput.value.trim();
+      if(!name) return;
+      const taxes = taxTemplateDraftTaxes
+        .map(t=>({ name: (t.name||'').trim() || 'Tax', pct: Number(t.pct)||0 }))
+        .filter(t=>t.pct>0);
+      let updated;
+      if(editingTaxTemplateId==='new'){
+        updated = [...taxTemplates, { id: 'tpl_'+Date.now().toString(36), name, taxes }];
+      }else{
+        updated = taxTemplates.map(t=> t.id===editingTaxTemplateId ? { ...t, name, taxes } : t);
+      }
+      try{
+        await setDoc(taxTemplatesDoc(currentUid), { list: updated });
+        editingTaxTemplateId = null;
+        taxTemplateDraftTaxes = [];
+        renderTaxTemplateManager();
+      }catch(err){ console.error('Could not save tax template', err); }
+    });
+    const cancelBtn = document.getElementById('tt-tax-cancel');
+    if(cancelBtn) cancelBtn.addEventListener('click', ()=>{
+      editingTaxTemplateId = null;
+      taxTemplateDraftTaxes = [];
+      renderTaxTemplateManager();
+    });
+  }
+
+  $('tt-add-tax-template').addEventListener('click', ()=>{
+    editingTaxTemplateId = 'new';
+    taxTemplateDraftTaxes = [{ name:'Tax 1', pct:10 }];
+    renderTaxTemplateManager();
+  });
+
+  // ---------------- Exchange rates (manual) ----------------
+  function renderRatesForm(){
+    if($('tt-rate-usd')) $('tt-rate-usd').value = rates.USD;
+    if($('tt-rate-eur')) $('tt-rate-eur').value = rates.EUR;
+    if($('tt-rate-gbp')) $('tt-rate-gbp').value = rates.GBP;
+  }
+  $('tt-save-rates').addEventListener('click', async ()=>{
+    const usd = Number($('tt-rate-usd').value)||0;
+    const eur = Number($('tt-rate-eur').value)||0;
+    const gbp = Number($('tt-rate-gbp').value)||0;
+    const msg = $('tt-rates-msg');
+    try{
+      await setDoc(ratesDoc(currentUid), { USD:usd, EUR:eur, GBP:gbp });
+      msg.textContent = 'Saved.'; msg.className = 'tt-menu-msg success';
+    }catch(err){
+      msg.textContent = 'Could not save rates.'; msg.className = 'tt-menu-msg error';
+    }
+  });
+
+  // ---------------- Monthly earnings estimate ----------------
+  function applyTaxTemplate(gross, templateId){
+    const tpl = taxTemplates.find(t=>t.id===templateId);
+    if(!tpl || !Array.isArray(tpl.taxes) || !tpl.taxes.length) return { net: gross, breakdown: [] };
+    let remaining = gross;
+    const breakdown = [];
+    tpl.taxes.forEach(tax=>{
+      const amount = remaining * (Number(tax.pct)||0) / 100;
+      breakdown.push({ name: tax.name, pct: tax.pct, amount });
+      remaining -= amount;
+    });
+    return { net: remaining, breakdown };
+  }
+
+  function computeMonthlyEarnings(){
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const keys = new Set();
+    for(let d=1; d<=daysInMonth; d++) keys.add(dateKey(new Date(y, m, d)));
+
+    const byNote = {};
+    entries.forEach(e=>{
+      if(!keys.has(e.date)) return;
+      const note = e.note || '(no project)';
+      byNote[note] = (byNote[note]||0) + (e.durationSec||0);
+    });
+    if(active && keys.has(dateKey(new Date(active.startISO)))){
+      const note = active.note || '(no project)';
+      const liveSec = Math.floor((Date.now() - new Date(active.startISO).getTime())/1000);
+      byNote[note] = (byNote[note]||0) + liveSec;
+    }
+
+    const rows = Object.entries(byNote).map(([note, secs])=>{
+      const hours = secs/3600;
+      const meta = findPresetMeta(note);
+      const hasMeta = meta && typeof meta === 'object';
+      const rate = hasMeta ? Number(meta.rate)||0 : 0;
+      const currency = (hasMeta && meta.currency) || 'RON';
+      const taxTemplateId = hasMeta ? meta.taxTemplateId : null;
+      const hasRate = rate > 0;
+      const gross = hasRate ? hours*rate : 0;
+      const { net, breakdown } = hasRate ? applyTaxTemplate(gross, taxTemplateId) : { net:0, breakdown:[] };
+      return { note, hours, rate, currency, gross, net, breakdown, hasRate };
+    }).sort((a,b)=>b.hours-a.hours);
+
+    const byCurrency = {};
+    rows.forEach(r=>{ if(r.hasRate) byCurrency[r.currency] = (byCurrency[r.currency]||0) + r.net; });
+
+    let convertedTotal = 0;
+    const excluded = [];
+    Object.entries(byCurrency).forEach(([cur, amt])=>{
+      const rFrom = rates[cur], rTo = rates[displayCurrency];
+      if(rFrom && rTo) convertedTotal += (amt*rFrom)/rTo;
+      else excluded.push(cur);
+    });
+
+    return { rows, byCurrency, convertedTotal, excluded };
+  }
+
+  function renderEarningsPanel(){
+    const panel = $('tt-earnings');
+    if(!panel) return;
+    const { rows, byCurrency, convertedTotal, excluded } = computeMonthlyEarnings();
+    const curSel = $('tt-earnings-currency');
+    if(curSel) curSel.value = displayCurrency;
+
+    const hasAny = Object.keys(byCurrency).length > 0;
+    $('tt-earnings-total').textContent = hasAny ? `${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
+
+    const subParts = Object.entries(byCurrency).map(([cur,amt])=>`${amt.toFixed(2)} ${cur}`);
+    if(excluded.length) subParts.push(`${excluded.join(', ')} not converted — set a rate`);
+    $('tt-earnings-sub').textContent = subParts.length ? subParts.join(' · ') : 'Set an hourly rate on a project to see estimates';
+
+    if(!rows.length){
+      $('tt-earnings-list').innerHTML = '<div class="tt-preset-empty">No hours logged this month yet.</div>';
+      return;
+    }
+    $('tt-earnings-list').innerHTML = rows.map(r=>`
+      <div class="tt-earnings-row">
+        <div class="tt-earnings-row-name">${escapeHtml(r.note)}</div>
+        <div class="tt-earnings-row-hours">${fmtHM(Math.round(r.hours*3600))}h</div>
+        <div class="tt-earnings-row-amt">${r.hasRate ? r.net.toFixed(2)+' '+r.currency : '—'}</div>
+      </div>
+    `).join('');
+  }
+  $('tt-earnings-currency').addEventListener('change', (e)=>{
+    displayCurrency = e.target.value;
+    localStorage.setItem('tt-display-currency', displayCurrency);
+    renderEarningsPanel();
   });
 
   // ---------------- Admin: full-page panel ----------------
@@ -2562,6 +2915,8 @@
   function activeDoc(uid){ return doc(db, 'users', uid, 'meta', 'active'); }
   function presetsDoc(uid){ return doc(db, 'users', uid, 'meta', 'presets'); }
   function prefsDoc(uid){ return doc(db, 'users', uid, 'meta', 'prefs'); }
+  function taxTemplatesDoc(uid){ return doc(db, 'users', uid, 'meta', 'taxTemplates'); }
+  function ratesDoc(uid){ return doc(db, 'users', uid, 'meta', 'rates'); }
 
   function attachListeners(uid){
     detachListeners();
@@ -2589,6 +2944,20 @@
       renderProjectSelect();
     }, (err)=> console.error('prefs listener error', err));
 
+    unsubTaxTemplates = onSnapshot(taxTemplatesDoc(uid), (snap)=>{
+      taxTemplates = (snap.exists() && Array.isArray(snap.data().list)) ? snap.data().list : [];
+      renderPresetManager();
+      renderTaxTemplateManager();
+      renderEarningsPanel();
+    }, (err)=> console.error('tax templates listener error', err));
+
+    unsubRates = onSnapshot(ratesDoc(uid), (snap)=>{
+      const d = snap.exists() ? snap.data() : {};
+      rates = { RON:1, USD: Number(d.USD)||4.6, EUR: Number(d.EUR)||4.97, GBP: Number(d.GBP)||5.8 };
+      renderRatesForm();
+      renderEarningsPanel();
+    }, (err)=> console.error('rates listener error', err));
+
     scheduleTick();
   }
 
@@ -2597,10 +2966,16 @@
     if(unsubActive){ unsubActive(); unsubActive = null; }
     if(unsubPresets){ unsubPresets(); unsubPresets = null; }
     if(unsubPrefs){ unsubPrefs(); unsubPrefs = null; }
+    if(unsubTaxTemplates){ unsubTaxTemplates(); unsubTaxTemplates = null; }
+    if(unsubRates){ unsubRates(); unsubRates = null; }
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
     presets = [];
+    taxTemplates = [];
+    rates = { RON:1, USD:4.6, EUR:4.97, GBP:5.8 };
+    editingTaxTemplateId = null;
+    taxTemplateDraftTaxes = [];
     lastProjectPref = '';
     delete $('tt-note').dataset.touched;
   }
@@ -2641,9 +3016,13 @@
     $('tt-digits').textContent = fmtHMS(liveSec);
     $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
     $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
+    renderEarningsPanel();
 
     renderCurrentView();
   }
+
+  function presetName(p){ return typeof p === 'string' ? p : (p && p.name) || ''; }
+  function findPresetMeta(name){ return presets.find(p => presetName(p) === name); }
 
   function renderProjectSelect(){
     const sel = $('tt-note');
@@ -2654,7 +3033,7 @@
 
     // build option list from presets, plus the current value if it's no longer a saved preset
     // (e.g. a project that was later removed, or a legacy free-text note on an active timer)
-    const optionValues = [...presets];
+    const optionValues = presets.map(presetName);
     if(currentVal && !optionValues.includes(currentVal)) optionValues.push(currentVal);
 
     sel.innerHTML = '<option value="">No project</option>' +
@@ -2856,6 +3235,7 @@
         $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
         $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
         $('tt-rangetotal').textContent = `${fmtHM(getRangeDates().reduce((s,d)=>s+secondsForDate(d),0))} h logged`;
+        renderEarningsPanel();
       }
     }, 1000);
   }
