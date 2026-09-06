@@ -110,6 +110,8 @@
 
   #tt-panels-container{display:flex; gap:16px; align-items:flex-start;}
   .tt-panel-zone{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .tt-panel-zone:empty{display:none;}
+  body.tt-customizing .tt-panel-zone:empty{display:flex;}
   @media (max-width: 900px){
     #tt-panels-container{flex-direction:column;}
   }
@@ -503,13 +505,6 @@
 
   /* month nav */
   .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 12px;}
-  .tt-month-jump{
-    margin-top:4px; background:transparent; border:none; color:var(--paper-dim);
-    font-family:'Space Mono',monospace; font-size:10px; opacity:.6; cursor:pointer;
-    padding:2px 4px; transition:opacity .15s ease;
-  }
-  .tt-month-jump:hover{opacity:1;}
-  .tt-month-jump::-webkit-calendar-picker-indicator{filter:invert(.7); cursor:pointer;}
   .tt-navbtn{
     background:none;border:1px solid var(--line);color:var(--paper);
     width:32px;height:32px;border-radius:4px;cursor:pointer;font-size:15px;
@@ -1167,7 +1162,7 @@
       <div class="tt-panel-handle" title="Drag to reorder">&#10021;</div>
     <div class="tt-earnings" id="tt-earnings">
       <div class="tt-earnings-head">
-        <div class="tt-earnings-title">This month · estimated</div>
+        <div class="tt-earnings-title" id="tt-earnings-title">This month · estimated</div>
         <div style="display:flex; gap:6px; align-items:center;">
           <div class="tt-segment tt-earnings-mode-segment" id="tt-earnings-mode">
             <button data-val="net" class="active">Net</button><button data-val="gross">Gross</button>
@@ -1205,7 +1200,6 @@
       <div style="text-align:center;">
         <div class="tt-monthlabel" id="tt-rangelabel">—</div>
         <div class="tt-monthtotal" id="tt-rangetotal">0h logged</div>
-        <input type="month" id="tt-month-jump" class="tt-month-jump" aria-label="Jump to month" />
       </div>
       <button class="tt-navbtn" id="tt-next" aria-label="Next">&#8250;</button>
     </div>
@@ -1235,7 +1229,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.043</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.045</div>
   </div>
 </div>
 
@@ -1904,11 +1898,8 @@
   }
 
   function computeMonthlyEarnings(){
-    const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth();
-    const daysInMonth = new Date(y, m+1, 0).getDate();
-    const keys = new Set();
-    for(let d=1; d<=daysInMonth; d++) keys.add(dateKey(new Date(y, m, d)));
+    const dates = getRangeDates(); // whatever Day/Week/Month range is currently browsed
+    const keys = new Set(dates.map(dateKey));
 
     const byNote = {};
     entries.forEach(e=>{
@@ -1977,6 +1968,8 @@
     const curSel = $('tt-earnings-currency');
     if(curSel) curSel.value = displayCurrency;
     setActiveTab('tt-earnings-mode', earningsMode);
+
+    $('tt-earnings-title').textContent = `${getRangeLabel()} · estimated`;
 
     const currencies = Object.keys(netByCurrency);
     const hasAny = currencies.length > 0;
@@ -3185,8 +3178,13 @@
         if(Array.isArray(data.center)) center = data.center.filter(id=>known.includes(id));
         if(Array.isArray(data.right)) right = data.right.filter(id=>known.includes(id));
       }
-      const placed = new Set([...left, ...center, ...right]);
-      const missing = known.filter(id=>!placed.has(id));
+      // guard against any panel id ending up in more than one zone (e.g. a stale
+      // saved layout from an earlier 2-column version) — first zone wins
+      const seen = new Set();
+      left = left.filter(id=>{ if(seen.has(id)) return false; seen.add(id); return true; });
+      center = center.filter(id=>{ if(seen.has(id)) return false; seen.add(id); return true; });
+      right = right.filter(id=>{ if(seen.has(id)) return false; seen.add(id); return true; });
+      const missing = known.filter(id=>!seen.has(id));
       left = [...left, ...missing]; // any panel not yet in a saved layout defaults to the left column
       panelLayout = { left, center, right };
       if(!customizing) applyPanelLayout(panelLayout);
@@ -3291,7 +3289,7 @@
     $('tt-rangelabel').textContent = getRangeLabel();
     const rangeTotal = dates.reduce((s,d)=>s+secondsForDate(d), 0);
     $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} h logged`;
-    $('tt-month-jump').value = `${anchorDate.getFullYear()}-${pad(anchorDate.getMonth()+1)}`;
+    renderEarningsPanel();
 
     const labelWrap = $('tt-rangelabel').parentElement;
     labelWrap.classList.remove('tt-fade-in');
@@ -4093,16 +4091,6 @@
   });
   $('tt-prev').addEventListener('click', ()=> navShift(-1));
   $('tt-next').addEventListener('click', ()=> navShift(1));
-  $('tt-month-jump').addEventListener('change', ()=>{
-    const val = $('tt-month-jump').value; // "YYYY-MM"
-    if(!val) return;
-    const [y, m] = val.split('-').map(Number);
-    anchorDate = new Date(y, m-1, 1);
-    granularity = 'month';
-    setActiveTab('tt-granularity-tabs', 'month');
-    updateGranularityAvailability();
-    renderCurrentView();
-  });
 </script>
 </body>
 </html>
