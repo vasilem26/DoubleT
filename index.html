@@ -108,6 +108,24 @@
     .tt-customize-btn{ display:none !important; }
   }
 
+  #tt-panels-container{display:flex; gap:16px; align-items:flex-start;}
+  .tt-panel-zone{flex:1; min-width:0; display:flex; flex-direction:column;}
+  @media (max-width: 900px){
+    #tt-panels-container{flex-direction:column;}
+  }
+  body.tt-customizing .tt-panel-zone{
+    border:1px dashed var(--line); border-radius:8px; padding:10px; min-height:90px; gap:18px;
+  }
+  body.tt-customizing .tt-panel{margin-bottom:2px;}
+  body.tt-customizing .tt-panel-zone:empty::before{
+    content:'Drop a panel here';
+    display:block; text-align:center; padding:34px 10px;
+    color:var(--paper-dim); font-size:12px; opacity:.6;
+  }
+  body.tt-customizing .tt-panel-zone.tt-zone-hover{
+    border-color:var(--amber); background:rgba(232,163,61,.06); transition:border-color .1s ease, background .1s ease;
+  }
+
   .tt-panel{position:relative; transition:transform .15s ease, opacity .15s ease;}
   .tt-panel-handle{
     display:none; align-items:center; justify-content:center; gap:6px;
@@ -1106,6 +1124,7 @@
     </div>
 
     <div id="tt-panels-container">
+    <div class="tt-panel-zone" id="tt-panels-left" data-zone="left">
     <div class="tt-panel" data-panel="timer">
       <div class="tt-panel-handle" title="Drag to reorder">&#10021;</div>
     <div class="tt-clock">
@@ -1197,7 +1216,10 @@
     <div class="tt-calendar" id="tt-calendar" hidden></div>
     <div class="tt-chart" id="tt-chart" hidden></div>
     </div>
-    </div>
+    </div><!-- /tt-panels-left -->
+    <div class="tt-panel-zone" id="tt-panels-center" data-zone="center"></div>
+    <div class="tt-panel-zone" id="tt-panels-right" data-zone="right"></div>
+    </div><!-- /tt-panels-container -->
 
     <div class="tt-modal-backdrop" id="tt-modal-backdrop" hidden>
       <div class="tt-modal" role="alertdialog" aria-labelledby="tt-modal-title" aria-describedby="tt-modal-desc">
@@ -1213,7 +1235,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.041</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.043</div>
   </div>
 </div>
 
@@ -1257,7 +1279,7 @@
   let unsubPresets = null;
   let unsubPrefs = null;
   let unsubLayout = null;
-  let panelOrder = ['timer','totals','earnings','browser'];
+  let panelLayout = { left: ['timer','totals','earnings','browser'], center: [], right: [] };
   let customizing = false;
   let draggedPanel = null;
   let unsubTaxTemplates = null;
@@ -3156,9 +3178,18 @@
 
     unsubLayout = onSnapshot(layoutDoc(uid), (snap)=>{
       const known = ['timer','totals','earnings','browser'];
-      const saved = (snap.exists() && Array.isArray(snap.data().order)) ? snap.data().order : [];
-      panelOrder = [...saved.filter(id=>known.includes(id)), ...known.filter(id=>!saved.includes(id))];
-      if(!customizing) applyPanelOrder(panelOrder);
+      let left = [], center = [], right = [];
+      if(snap.exists()){
+        const data = snap.data();
+        if(Array.isArray(data.left)) left = data.left.filter(id=>known.includes(id));
+        if(Array.isArray(data.center)) center = data.center.filter(id=>known.includes(id));
+        if(Array.isArray(data.right)) right = data.right.filter(id=>known.includes(id));
+      }
+      const placed = new Set([...left, ...center, ...right]);
+      const missing = known.filter(id=>!placed.has(id));
+      left = [...left, ...missing]; // any panel not yet in a saved layout defaults to the left column
+      panelLayout = { left, center, right };
+      if(!customizing) applyPanelLayout(panelLayout);
     }, (err)=> console.error('layout listener error', err));
 
     scheduleTick();
@@ -3853,16 +3884,41 @@
   }
 
   // ---------------- Desktop-only dashboard customization ----------------
-  function panelsContainerEl(){ return document.getElementById('tt-panels-container'); }
-  function getPanelEls(){ return Array.from(panelsContainerEl().children); }
+  function panelZoneEls(){
+    return [
+      document.getElementById('tt-panels-left'),
+      document.getElementById('tt-panels-center'),
+      document.getElementById('tt-panels-right')
+    ];
+  }
+  function getAllPanelEls(){
+    return panelZoneEls().flatMap(zone=> Array.from(zone.children));
+  }
 
-  function applyPanelOrder(order){
-    const container = panelsContainerEl();
-    if(!container) return;
-    order.forEach(id=>{
-      const el = container.querySelector(`.tt-panel[data-panel="${id}"]`);
-      if(el) container.appendChild(el);
+  function applyPanelLayout(layout){
+    const [leftZone, centerZone, rightZone] = panelZoneEls();
+    if(!leftZone || !centerZone || !rightZone) return;
+    (layout.left||[]).forEach(id=>{
+      const el = document.querySelector(`.tt-panel[data-panel="${id}"]`);
+      if(el) leftZone.appendChild(el);
     });
+    (layout.center||[]).forEach(id=>{
+      const el = document.querySelector(`.tt-panel[data-panel="${id}"]`);
+      if(el) centerZone.appendChild(el);
+    });
+    (layout.right||[]).forEach(id=>{
+      const el = document.querySelector(`.tt-panel[data-panel="${id}"]`);
+      if(el) rightZone.appendChild(el);
+    });
+  }
+
+  function readCurrentLayout(){
+    const [leftZone, centerZone, rightZone] = panelZoneEls();
+    return {
+      left: Array.from(leftZone.children).map(el=>el.getAttribute('data-panel')),
+      center: Array.from(centerZone.children).map(el=>el.getAttribute('data-panel')),
+      right: Array.from(rightZone.children).map(el=>el.getAttribute('data-panel'))
+    };
   }
 
   function enterCustomizeMode(){
@@ -3870,7 +3926,7 @@
     document.body.classList.add('tt-customizing');
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
-    getPanelEls().forEach(el=> el.setAttribute('draggable','true'));
+    getAllPanelEls().forEach(el=> el.setAttribute('draggable','true'));
   }
 
   function exitCustomizeMode(){
@@ -3878,10 +3934,10 @@
     document.body.classList.remove('tt-customizing');
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
-    getPanelEls().forEach(el=> el.removeAttribute('draggable'));
-    panelOrder = getPanelEls().map(el=> el.getAttribute('data-panel'));
+    getAllPanelEls().forEach(el=> el.removeAttribute('draggable'));
+    panelLayout = readCurrentLayout();
     if(currentUid){
-      setDoc(layoutDoc(currentUid), { order: panelOrder }).catch(err=>{
+      setDoc(layoutDoc(currentUid), panelLayout).catch(err=>{
         console.error('Could not save panel layout', err);
       });
     }
@@ -3903,17 +3959,24 @@
   document.addEventListener('dragend', ()=>{
     if(draggedPanel) draggedPanel.classList.remove('tt-panel-dragging');
     draggedPanel = null;
+    panelZoneEls().forEach(z=> z.classList.remove('tt-zone-hover'));
   });
   document.addEventListener('dragover', (e)=>{
     if(!customizing || !draggedPanel) return;
-    const target = e.target.closest('.tt-panel');
-    if(!target || target===draggedPanel) return;
+    const zone = e.target.closest('.tt-panel-zone');
+    if(!zone) return;
     e.preventDefault();
-    const container = panelsContainerEl();
-    const rect = target.getBoundingClientRect();
-    const midpoint = rect.top + rect.height/2;
-    if(e.clientY < midpoint) container.insertBefore(draggedPanel, target);
-    else container.insertBefore(draggedPanel, target.nextSibling);
+    panelZoneEls().forEach(z=> z.classList.toggle('tt-zone-hover', z===zone));
+    const targetPanel = e.target.closest('.tt-panel');
+    if(targetPanel && targetPanel!==draggedPanel && zone.contains(targetPanel)){
+      const rect = targetPanel.getBoundingClientRect();
+      const midpoint = rect.top + rect.height/2;
+      if(e.clientY < midpoint) zone.insertBefore(draggedPanel, targetPanel);
+      else zone.insertBefore(draggedPanel, targetPanel.nextSibling);
+    } else if(!targetPanel){
+      // hovering empty space within this zone (or the empty-zone placeholder) — move here
+      if(draggedPanel.parentElement !== zone) zone.appendChild(draggedPanel);
+    }
   });
 
   function downloadTemplate(){
