@@ -81,6 +81,9 @@
     transition:background-color .2s ease, border-color .2s ease, color .2s ease;
   }
   .tt-wrap{max-width:640px;margin:0 auto;}
+  @media (min-width: 900px){
+    .tt-wrap{max-width:1500px;}
+  }
 
   .tt-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;}
   .tt-title{font-family:'Space Mono',monospace;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-dim);}
@@ -108,8 +111,8 @@
     .tt-customize-btn{ display:none !important; }
   }
 
-  #tt-panels-container{display:flex; gap:16px; align-items:flex-start;}
-  .tt-panel-zone{flex:1; min-width:0; display:flex; flex-direction:column;}
+  #tt-panels-container{display:flex; gap:16px; align-items:flex-start; justify-content:center; width:100%;}
+  .tt-panel-zone{flex:1; min-width:0; max-width:640px; display:flex; flex-direction:column;}
   .tt-panel-zone:empty{display:none;}
   body.tt-customizing .tt-panel-zone:empty{display:flex;}
   @media (max-width: 900px){
@@ -1229,7 +1232,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.045</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.046</div>
   </div>
 </div>
 
