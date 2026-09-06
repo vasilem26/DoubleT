@@ -157,11 +157,14 @@
   body.tt-customizing .tt-panel-resize-handle{display:block;}
 
   /* Alignment guides: shown only while actively dragging/resizing a panel, to
-     help line panels up with each other or match their width/height. */
-  .tt-align-guide{position:absolute; background:#3DDC84; z-index:100; pointer-events:none;}
-  .tt-align-guide-v{width:1px; top:0; bottom:0;}
-  .tt-align-guide-h{height:1px; left:0; right:0;}
-  .tt-panel.tt-panel-size-match{outline:2px solid #3DDC84; outline-offset:1px;}
+     help line panels up with each other or match their width/height. Made
+     deliberately bold/glowing since they often sit right at a panel's own
+     dashed customize-mode border and need to read as clearly separate from it. */
+  .tt-align-guide{position:absolute; background:#4CFF9E; z-index:200; pointer-events:none; box-shadow:0 0 6px 1px rgba(76,255,158,.85);}
+  .tt-align-guide-v{width:2px; top:0; bottom:0;}
+  .tt-align-guide-h{height:2px; left:0; right:0;}
+  .tt-align-guide-v.tt-align-guide-bounded{bottom:auto;}
+  .tt-align-guide-h.tt-align-guide-bounded{right:auto;}
 
   .tt-theme-switch{
     -webkit-appearance:none; appearance:none; border:none; cursor:pointer;
@@ -1262,7 +1265,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.058</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.060</div>
   </div>
 </div>
 
@@ -4059,7 +4062,6 @@
 
   function clearAlignGuides(){
     $('tt-align-guides').innerHTML = '';
-    getAllPanelEls().forEach(el=> el.classList.remove('tt-panel-size-match'));
   }
 
   function addGuideLine(type, pos){
@@ -4070,10 +4072,29 @@
     $('tt-align-guides').appendChild(guideEl);
   }
 
+  // A bounded segment — used for width/height matches, where the line should
+  // only span the matched panel's own edge, not the full canvas (that full-span
+  // style is reserved for actual position/edge alignment below).
+  function addGuideSegment(type, fixedPos, start, end){
+    const guideEl = document.createElement('div');
+    guideEl.className = (type==='v' ? 'tt-align-guide tt-align-guide-v' : 'tt-align-guide tt-align-guide-h') + ' tt-align-guide-bounded';
+    if(type==='v'){
+      guideEl.style.left = fixedPos + 'px';
+      guideEl.style.top = start + 'px';
+      guideEl.style.height = (end - start) + 'px';
+    } else {
+      guideEl.style.top = fixedPos + 'px';
+      guideEl.style.left = start + 'px';
+      guideEl.style.width = (end - start) + 'px';
+    }
+    $('tt-align-guides').appendChild(guideEl);
+  }
+
   // Called continuously while dragging (move) or resizing a panel — compares
   // its current box against every other panel and shows a green guide line
-  // wherever an edge lines up, plus a green outline on both panels when their
-  // width or height match exactly (even if their position doesn't).
+  // wherever an edge lines up (full-span, easy to see across the canvas), plus
+  // a short green line along just the matched edge when width or height match
+  // exactly (even if position doesn't) — never a box/outline around the panel.
   function checkAlignment(activePanel){
     clearAlignGuides();
     const container = panelsContainerEl();
@@ -4095,9 +4116,16 @@
       if(Math.abs(aTop-oTop) < ALIGN_THRESHOLD && !drawnH.has(Math.round(oTop))){ addGuideLine('h', oTop); drawnH.add(Math.round(oTop)); }
       if(Math.abs(aBottom-oBottom) < ALIGN_THRESHOLD && !drawnH.has(Math.round(oBottom))){ addGuideLine('h', oBottom); drawnH.add(Math.round(oBottom)); }
 
-      if(Math.abs(aWidth-Math.round(o.width)) < ALIGN_THRESHOLD || Math.abs(aHeight-Math.round(o.height)) < ALIGN_THRESHOLD){
-        activePanel.classList.add('tt-panel-size-match');
-        other.classList.add('tt-panel-size-match');
+      // width match: a short horizontal line along each panel's own top edge,
+      // spanning only that panel's width — not a box around it
+      if(Math.abs(aWidth-Math.round(o.width)) < ALIGN_THRESHOLD){
+        addGuideSegment('h', aTop, aLeft, aRight);
+        addGuideSegment('h', oTop, oLeft, oRight);
+      }
+      // height match: a short vertical line along each panel's own left edge
+      if(Math.abs(aHeight-Math.round(o.height)) < ALIGN_THRESHOLD){
+        addGuideSegment('v', aLeft, aTop, aBottom);
+        addGuideSegment('v', oLeft, oTop, oBottom);
       }
     });
   }
