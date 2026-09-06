@@ -131,19 +131,12 @@
     padding:6px 8px; margin-top:14px; cursor:grab; user-select:none;
   }
   .tt-panel-handle-icon{flex-shrink:0;}
+  .tt-panel-handle-hint{font-size:9px; opacity:.5; letter-spacing:.04em;}
   .tt-panel-handle:active{cursor:grabbing;}
-  .tt-panel-span-controls{display:flex; gap:3px;}
-  .tt-panel-span-controls button{
-    background:var(--panel); border:1px solid var(--line); color:var(--paper-dim);
-    width:20px; height:20px; border-radius:3px; font-size:10px; cursor:pointer; padding:0;
-    font-family:'Space Mono',monospace;
-  }
-  .tt-panel-span-controls button:hover{border-color:var(--amber-dim); color:var(--paper);}
-  .tt-panel-span-controls button.active{background:var(--amber); border-color:var(--amber); color:var(--ink);}
   body.tt-customizing .tt-panel-handle{display:flex;}
   body.tt-customizing .tt-panel{
     border:1px dashed var(--amber-dim); border-top:none; border-radius:0 0 5px 5px;
-    padding-bottom:6px; resize:vertical; overflow:auto; min-height:140px;
+    padding-bottom:6px; resize:both; overflow:auto; min-height:140px; min-width:200px;
   }
   body.tt-customizing .tt-panel > *:not(.tt-panel-handle):first-of-type{margin-top:0;}
   .tt-panel.tt-panel-dragging{opacity:.4;}
@@ -1127,11 +1120,9 @@
 
     <div id="tt-panels-container">
     <div class="tt-panel" data-panel="timer">
-      <div class="tt-panel-handle" title="Drag to reorder">
+      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
         <span class="tt-panel-handle-icon">&#10021;</span>
-        <div class="tt-panel-span-controls">
-          <button type="button" data-span="1">1</button><button type="button" data-span="2">2</button><button type="button" data-span="3">3</button>
-        </div>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
     <div class="tt-clock">
       <div class="tt-status" id="tt-status"><span class="dot"></span><span id="tt-status-text">Idle</span></div>
@@ -1146,11 +1137,9 @@
     </div>
 
     <div class="tt-panel" data-panel="today">
-      <div class="tt-panel-handle" title="Drag to reorder">
+      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
         <span class="tt-panel-handle-icon">&#10021;</span>
-        <div class="tt-panel-span-controls">
-          <button type="button" data-span="1">1</button><button type="button" data-span="2">2</button><button type="button" data-span="3">3</button>
-        </div>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
     <div class="tt-stat-grid tt-stat-grid-single">
       <div class="tt-stat-card tt-stat-card-accent">
@@ -1166,11 +1155,9 @@
     </div>
 
     <div class="tt-panel" data-panel="month">
-      <div class="tt-panel-handle" title="Drag to reorder">
+      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
         <span class="tt-panel-handle-icon">&#10021;</span>
-        <div class="tt-panel-span-controls">
-          <button type="button" data-span="1">1</button><button type="button" data-span="2">2</button><button type="button" data-span="3">3</button>
-        </div>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
     <div class="tt-stat-grid tt-stat-grid-single">
       <div class="tt-stat-card">
@@ -1186,11 +1173,9 @@
     </div>
 
     <div class="tt-panel" data-panel="earnings">
-      <div class="tt-panel-handle" title="Drag to reorder">
+      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
         <span class="tt-panel-handle-icon">&#10021;</span>
-        <div class="tt-panel-span-controls">
-          <button type="button" data-span="1">1</button><button type="button" data-span="2">2</button><button type="button" data-span="3">3</button>
-        </div>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
     <div class="tt-earnings" id="tt-earnings">
       <div class="tt-earnings-head">
@@ -1217,11 +1202,9 @@
     </div>
 
     <div class="tt-panel" data-panel="browser">
-      <div class="tt-panel-handle" title="Drag to reorder">
+      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
         <span class="tt-panel-handle-icon">&#10021;</span>
-        <div class="tt-panel-span-controls">
-          <button type="button" data-span="1">1</button><button type="button" data-span="2">2</button><button type="button" data-span="3">3</button>
-        </div>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
     <div class="tt-viewbar">
       <div class="tt-segment" id="tt-granularity-tabs">
@@ -1263,7 +1246,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.048</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.049</div>
   </div>
 </div>
 
@@ -3947,12 +3930,9 @@
       if(!el) return;
       const span = layout.spans[id] || 1;
       el.style.gridColumn = `span ${span}`;
-      el.querySelectorAll('.tt-panel-span-controls button').forEach(btn=>{
-        btn.classList.toggle('active', btn.getAttribute('data-span')===String(span));
-      });
+      el.style.width = ''; // width is governed by the grid span, never an inline value
       const savedHeight = layout.heights[id];
-      if(savedHeight) el.style.height = savedHeight;
-      else el.style.height = '';
+      el.style.height = savedHeight || '';
     });
   }
 
@@ -3971,6 +3951,23 @@
     return { order, spans, heights };
   }
 
+  // After a manual drag-resize, the browser leaves an inline width on the panel.
+  // Snap that width to the nearest whole column-span (1/2/3) and clear the inline
+  // width so the grid governs it cleanly again — height is left exactly as dragged.
+  function snapPanelWidthToGrid(el){
+    const container = panelsContainerEl();
+    const containerWidth = container.getBoundingClientRect().width;
+    const colCount = getComputedStyle(container).gridTemplateColumns.split(' ').length || 3;
+    if(colCount < 3) return; // mobile single-column view — nothing to snap
+    const gap = 16;
+    const colWidth = (containerWidth - gap*(colCount-1)) / colCount;
+    const currentWidth = el.getBoundingClientRect().width;
+    let span = Math.round((currentWidth + gap) / (colWidth + gap));
+    span = Math.max(1, Math.min(3, span));
+    el.style.gridColumn = `span ${span}`;
+    el.style.width = '';
+  }
+
   function enterCustomizeMode(){
     customizing = true;
     document.body.classList.add('tt-customizing');
@@ -3984,7 +3981,10 @@
     document.body.classList.remove('tt-customizing');
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
-    getAllPanelEls().forEach(el=> el.removeAttribute('draggable'));
+    getAllPanelEls().forEach(el=>{
+      snapPanelWidthToGrid(el);
+      el.removeAttribute('draggable');
+    });
     panelLayout = readCurrentLayout();
     if(currentUid){
       setDoc(layoutDoc(currentUid), panelLayout).catch(err=>{
@@ -3998,23 +3998,22 @@
     else enterCustomizeMode();
   });
 
-  // span controls (1/2/3 columns wide) — click updates immediately, doesn't need drag
-  panelsContainerEl().addEventListener('click', (e)=>{
+  // Snap width to the grid the moment the user releases a manual resize drag,
+  // rather than waiting until "Done" — so the layout never sits in a visually
+  // broken in-between state while still customizing.
+  document.addEventListener('mouseup', ()=>{
     if(!customizing) return;
-    const btn = e.target.closest('.tt-panel-span-controls button');
-    if(!btn) return;
-    const panel = btn.closest('.tt-panel');
-    panel.style.gridColumn = `span ${btn.getAttribute('data-span')}`;
-    panel.querySelectorAll('.tt-panel-span-controls button').forEach(b=>{
-      b.classList.toggle('active', b===btn);
-    });
+    getAllPanelEls().forEach(el=> snapPanelWidthToGrid(el));
   });
 
   document.addEventListener('dragstart', (e)=>{
     if(!customizing) return;
-    if(e.target.closest('.tt-panel-span-controls')) { e.preventDefault(); return; }
     const panel = e.target.closest('.tt-panel');
     if(!panel) return;
+    // don't start a reorder-drag if the mousedown was on the resize corner itself
+    const rect = panel.getBoundingClientRect();
+    const nearCorner = (rect.right - e.clientX < 20) && (rect.bottom - e.clientY < 20);
+    if(nearCorner){ e.preventDefault(); return; }
     draggedPanel = panel;
     panel.classList.add('tt-panel-dragging');
     e.dataTransfer.effectAllowed = 'move';
