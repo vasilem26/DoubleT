@@ -95,6 +95,34 @@
   }
   .tt-menu-btn:hover{background:var(--panel-2); border-color:var(--amber-dim); transform:translateY(-1px);}
   .tt-menu-btn:active{transform:scale(.92);}
+
+  .tt-customize-btn{
+    background:var(--panel); border:1px solid var(--line); border-radius:5px;
+    color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:11px; font-weight:600;
+    padding:7px 12px; cursor:pointer; flex-shrink:0; transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .tt-customize-btn:hover{background:var(--panel-2); border-color:var(--amber-dim); color:var(--paper);}
+  .tt-customize-btn.active{background:var(--amber); border-color:var(--amber); color:var(--ink);}
+  /* Customize is a desktop-only affordance — narrow/touch viewports never see it */
+  @media (max-width: 900px){
+    .tt-customize-btn{ display:none !important; }
+  }
+
+  .tt-panel{position:relative; transition:transform .15s ease, opacity .15s ease;}
+  .tt-panel-handle{
+    display:none; align-items:center; justify-content:center; gap:6px;
+    background:var(--panel-2); border:1px dashed var(--amber-dim); border-radius:5px 5px 0 0;
+    color:var(--paper-dim); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    padding:6px; margin-top:14px; cursor:grab; user-select:none;
+  }
+  .tt-panel-handle:active{cursor:grabbing;}
+  body.tt-customizing .tt-panel-handle{display:flex;}
+  body.tt-customizing .tt-panel{
+    border:1px dashed var(--amber-dim); border-top:none; border-radius:0 0 5px 5px; padding-bottom:6px;
+  }
+  body.tt-customizing .tt-panel > *:not(.tt-panel-handle):first-of-type{margin-top:0;}
+  .tt-panel.tt-panel-dragging{opacity:.4;}
+  .tt-panel-drop-indicator{height:3px; background:var(--amber); border-radius:2px; margin:6px 0;}
   .tt-theme-switch{
     -webkit-appearance:none; appearance:none; border:none; cursor:pointer;
     width:52px; height:28px; border-radius:999px; flex-shrink:0;
@@ -762,6 +790,7 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
+        <button id="tt-customize-btn" class="tt-customize-btn" type="button">Customize</button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
@@ -1076,6 +1105,9 @@
       </div>
     </div>
 
+    <div id="tt-panels-container">
+    <div class="tt-panel" data-panel="timer">
+      <div class="tt-panel-handle" title="Drag to reorder">&#10021;</div>
     <div class="tt-clock">
       <div class="tt-status" id="tt-status"><span class="dot"></span><span id="tt-status-text">Idle</span></div>
       <div class="tt-digits" id="tt-digits">00:00:00</div>
@@ -1086,7 +1118,10 @@
         </select>
       </div>
     </div>
+    </div>
 
+    <div class="tt-panel" data-panel="totals">
+      <div class="tt-panel-handle" title="Drag to reorder">&#10021;</div>
     <div class="tt-stat-grid">
       <div class="tt-stat-card tt-stat-card-accent">
         <div class="tt-stat-icon">
@@ -1107,7 +1142,10 @@
         </div>
       </div>
     </div>
+    </div>
 
+    <div class="tt-panel" data-panel="earnings">
+      <div class="tt-panel-handle" title="Drag to reorder">&#10021;</div>
     <div class="tt-earnings" id="tt-earnings">
       <div class="tt-earnings-head">
         <div class="tt-earnings-title">This month · estimated</div>
@@ -1130,7 +1168,10 @@
       <div class="tt-earnings-list-label">Per project · gross → net</div>
       <div class="tt-earnings-list" id="tt-earnings-list"></div>
     </div>
+    </div>
 
+    <div class="tt-panel" data-panel="browser">
+      <div class="tt-panel-handle" title="Drag to reorder">&#10021;</div>
     <div class="tt-viewbar">
       <div class="tt-segment" id="tt-granularity-tabs">
         <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
@@ -1155,6 +1196,8 @@
     </div>
     <div class="tt-calendar" id="tt-calendar" hidden></div>
     <div class="tt-chart" id="tt-chart" hidden></div>
+    </div>
+    </div>
 
     <div class="tt-modal-backdrop" id="tt-modal-backdrop" hidden>
       <div class="tt-modal" role="alertdialog" aria-labelledby="tt-modal-title" aria-describedby="tt-modal-desc">
@@ -1170,7 +1213,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.040</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.041</div>
   </div>
 </div>
 
@@ -1213,6 +1256,10 @@
   let unsubActive = null;
   let unsubPresets = null;
   let unsubPrefs = null;
+  let unsubLayout = null;
+  let panelOrder = ['timer','totals','earnings','browser'];
+  let customizing = false;
+  let draggedPanel = null;
   let unsubTaxTemplates = null;
   let presets = [];
   let taxTemplates = []; // [{id, name, taxes:[{name,pct}]}] — taxes applied in order, each on what's left after the previous
@@ -3072,6 +3119,7 @@
   function presetsDoc(uid){ return doc(db, 'users', uid, 'meta', 'presets'); }
   function prefsDoc(uid){ return doc(db, 'users', uid, 'meta', 'prefs'); }
   function taxTemplatesDoc(uid){ return doc(db, 'users', uid, 'meta', 'taxTemplates'); }
+  function layoutDoc(uid){ return doc(db, 'users', uid, 'meta', 'layout'); }
 
   function attachListeners(uid){
     detachListeners();
@@ -3106,6 +3154,13 @@
       renderEarningsPanel();
     }, (err)=> console.error('tax templates listener error', err));
 
+    unsubLayout = onSnapshot(layoutDoc(uid), (snap)=>{
+      const known = ['timer','totals','earnings','browser'];
+      const saved = (snap.exists() && Array.isArray(snap.data().order)) ? snap.data().order : [];
+      panelOrder = [...saved.filter(id=>known.includes(id)), ...known.filter(id=>!saved.includes(id))];
+      if(!customizing) applyPanelOrder(panelOrder);
+    }, (err)=> console.error('layout listener error', err));
+
     scheduleTick();
   }
 
@@ -3115,6 +3170,7 @@
     if(unsubPresets){ unsubPresets(); unsubPresets = null; }
     if(unsubPrefs){ unsubPrefs(); unsubPrefs = null; }
     if(unsubTaxTemplates){ unsubTaxTemplates(); unsubTaxTemplates = null; }
+    if(unsubLayout){ unsubLayout(); unsubLayout = null; }
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
@@ -3795,6 +3851,70 @@
     setActiveTab('tt-viewmode-tabs', 'calendar');
     updateGranularityAvailability();
   }
+
+  // ---------------- Desktop-only dashboard customization ----------------
+  function panelsContainerEl(){ return document.getElementById('tt-panels-container'); }
+  function getPanelEls(){ return Array.from(panelsContainerEl().children); }
+
+  function applyPanelOrder(order){
+    const container = panelsContainerEl();
+    if(!container) return;
+    order.forEach(id=>{
+      const el = container.querySelector(`.tt-panel[data-panel="${id}"]`);
+      if(el) container.appendChild(el);
+    });
+  }
+
+  function enterCustomizeMode(){
+    customizing = true;
+    document.body.classList.add('tt-customizing');
+    $('tt-customize-btn').textContent = 'Done';
+    $('tt-customize-btn').classList.add('active');
+    getPanelEls().forEach(el=> el.setAttribute('draggable','true'));
+  }
+
+  function exitCustomizeMode(){
+    customizing = false;
+    document.body.classList.remove('tt-customizing');
+    $('tt-customize-btn').textContent = 'Customize';
+    $('tt-customize-btn').classList.remove('active');
+    getPanelEls().forEach(el=> el.removeAttribute('draggable'));
+    panelOrder = getPanelEls().map(el=> el.getAttribute('data-panel'));
+    if(currentUid){
+      setDoc(layoutDoc(currentUid), { order: panelOrder }).catch(err=>{
+        console.error('Could not save panel layout', err);
+      });
+    }
+  }
+
+  $('tt-customize-btn').addEventListener('click', ()=>{
+    if(customizing) exitCustomizeMode();
+    else enterCustomizeMode();
+  });
+
+  document.addEventListener('dragstart', (e)=>{
+    if(!customizing) return;
+    const panel = e.target.closest('.tt-panel');
+    if(!panel) return;
+    draggedPanel = panel;
+    panel.classList.add('tt-panel-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  document.addEventListener('dragend', ()=>{
+    if(draggedPanel) draggedPanel.classList.remove('tt-panel-dragging');
+    draggedPanel = null;
+  });
+  document.addEventListener('dragover', (e)=>{
+    if(!customizing || !draggedPanel) return;
+    const target = e.target.closest('.tt-panel');
+    if(!target || target===draggedPanel) return;
+    e.preventDefault();
+    const container = panelsContainerEl();
+    const rect = target.getBoundingClientRect();
+    const midpoint = rect.top + rect.height/2;
+    if(e.clientY < midpoint) container.insertBefore(draggedPanel, target);
+    else container.insertBefore(draggedPanel, target.nextSibling);
+  });
 
   function downloadTemplate(){
     const csv = 'date,start,stop,notes\n2026-07-01,09:00,17:30,Example entry\n2026-07-02,09:15,12:00,Half day - merchant calls\n';
