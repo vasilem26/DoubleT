@@ -1274,7 +1274,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.055</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.056</div>
   </div>
 </div>
 
@@ -3963,7 +3963,7 @@
   // values remove that failure mode entirely. A panel taller than its default
   // is still fully visible (see overflow:visible below) and can be resized
   // larger any time.
-  const DEFAULT_HEIGHT = { timer:320, today:120, month:120, earnings:480, browser:700 };
+  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, browser:700 };
 
   function computeDefaultPositions(missingIds, existingPositions){
     let startY = 0;
@@ -4121,12 +4121,39 @@
   }
 
   $('tt-reset-layout-btn').addEventListener('click', async ()=>{
+    // Phase 1: clear everything, set x/width per panel (width affects wrapping,
+    // so it must be right before we measure height).
     KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
-      if(el){ el.style.left=''; el.style.top=''; el.style.width=''; el.style.height=''; }
+      if(!el) return;
+      const xw = DEFAULT_XW[id] || {x:0,width:100};
+      el.style.left = xw.x+'%'; el.style.width = xw.width+'%'; el.style.top=''; el.style.height='';
     });
-    const defaults = computeDefaultPositions(KNOWN_PANELS, {});
-    panelLayout = { positions: defaults };
+    // Phase 2: now that every panel is at its real width with natural (auto)
+    // height, measure its ACTUAL rendered height — this is the only way to
+    // guarantee correct stacking, since guessed fixed heights (used as a
+    // fallback elsewhere) don't reliably match real content and can leave
+    // panels overlapping.
+    const gap = 16;
+    let y = 0;
+    const positions = {};
+    let i = 0;
+    while(i < KNOWN_PANELS.length){
+      const id = KNOWN_PANELS[i];
+      if(id==='today' && KNOWN_PANELS[i+1]==='month'){
+        const h = Math.max(panelEl('today').offsetHeight, panelEl('month').offsetHeight);
+        positions.today = { ...DEFAULT_XW.today, y, height:null };
+        positions.month = { ...DEFAULT_XW.month, y, height:null };
+        y += h + gap;
+        i += 2;
+      } else {
+        const h = panelEl(id).offsetHeight;
+        positions[id] = { ...DEFAULT_XW[id], y, height:null };
+        y += h + gap;
+        i += 1;
+      }
+    }
+    panelLayout = { positions };
     applyPanelLayout(panelLayout);
     if(currentUid){
       try{ await setDoc(layoutDoc(currentUid), panelLayout); }
