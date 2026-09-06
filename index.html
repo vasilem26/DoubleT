@@ -156,20 +156,13 @@
   }
   body.tt-customizing .tt-panel-resize-handle{display:block;}
 
-  /* Blank spacer panels: pure empty space outside customize mode — no border,
-     no background, just the room they occupy. In customize mode they show the
-     same dashed outline as every other panel, plus a remove button. */
-  .tt-panel-blank-content{width:100%; height:100%; min-height:60px;}
-  .tt-panel-remove-blank{
-    display:none; background:none; border:none; color:var(--paper-dim);
-    font-size:16px; line-height:1; cursor:pointer; padding:0 2px; flex-shrink:0;
-  }
-  .tt-panel-remove-blank:hover{color:#E7A29D;}
-  body.tt-customizing .tt-panel-blank .tt-panel-remove-blank{display:block;}
-  body.tt-customizing .tt-panel-blank .tt-panel-blank-content{
-    background:repeating-linear-gradient(45deg, var(--panel), var(--panel) 8px, var(--panel-2) 8px, var(--panel-2) 16px);
-    opacity:.35;
-  }
+  /* Alignment guides: shown only while actively dragging/resizing a panel, to
+     help line panels up with each other or match their width/height. */
+  .tt-align-guide{position:absolute; background:#3DDC84; z-index:100; pointer-events:none;}
+  .tt-align-guide-v{width:1px; top:0; bottom:0;}
+  .tt-align-guide-h{height:1px; left:0; right:0;}
+  .tt-panel.tt-panel-size-match{outline:2px solid #3DDC84; outline-offset:1px;}
+
   .tt-theme-switch{
     -webkit-appearance:none; appearance:none; border:none; cursor:pointer;
     width:52px; height:28px; border-radius:999px; flex-shrink:0;
@@ -831,7 +824,6 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
-        <button id="tt-add-blank-btn" class="tt-customize-btn" type="button" hidden>+ Blank space</button>
         <button id="tt-customize-btn" class="tt-customize-btn" type="button">Customize</button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -1148,6 +1140,7 @@
     </div>
 
     <div id="tt-panels-container">
+    <div id="tt-align-guides"></div>
     <div class="tt-panel" data-panel="timer">
       <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
@@ -1280,7 +1273,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.053</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.054</div>
   </div>
 </div>
 
@@ -1328,7 +1321,6 @@
   // x/width are percentages of the canvas width (responsive); y/height are pixels.
   // height:null means "auto" — sized to content until the user explicitly resizes it.
   let panelLayout = { positions: {} }; // populated on first load — see computeDefaultPositions()
-  let blankPanelIds = []; // user-added spacer panels — dynamic, unlike the 5 fixed ones above
   let customizing = false;
   let dragState = null;
   let resizeState = null;
@@ -3227,37 +3219,26 @@
 
     unsubLayout = onSnapshot(layoutDoc(uid), (snap)=>{
       let positions = {};
-      let blanks = [];
       if(snap.exists()){
         const data = snap.data();
         if(data.positions && typeof data.positions==='object'){
           // current format
-          if(Array.isArray(data.blanks)) blanks = data.blanks.filter(id=>typeof id==='string');
-          const allIds = [...KNOWN_PANELS, ...blanks];
-          allIds.forEach(id=>{
+          KNOWN_PANELS.forEach(id=>{
             const p = data.positions[id];
             if(p && typeof p==='object' && typeof p.x==='number' && typeof p.width==='number'){
               positions[id] = { x:p.x, y:(typeof p.y==='number'?p.y:null), width:p.width, height:(typeof p.height==='number'?p.height:null) };
             }
           });
         }
-        // (an older order/spans/left-center-right saved layout is simply discarded here —
-        // this is a genuinely different layout model, not a convertible one; anything
-        // missing below gets a fresh, sensible computed default instead)
+        // (an older order/spans/left-center-right/blanks saved layout is simply discarded
+        // here — a genuinely different model, not a convertible one; anything missing
+        // below gets a fresh, sensible computed default instead)
       }
-      // sync blank panel DOM elements to match the saved list before positioning anything
-      blankPanelIds.slice().forEach(id=>{ if(!blanks.includes(id)) removeBlankPanelEl(id); });
-      blanks.forEach(id=>{ if(!blankPanelIds.includes(id)) createBlankPanelEl(id); });
-      blankPanelIds = blanks;
-
       const missing = KNOWN_PANELS.filter(id=>!positions[id]);
       if(missing.length){
         const defaults = computeDefaultPositions(missing, positions);
         Object.assign(positions, defaults);
       }
-      blankPanelIds.forEach(id=>{
-        if(!positions[id]) positions[id] = { x:10, y:0, width:80, height:80 };
-      });
       panelLayout = { positions };
       if(!customizing) applyPanelLayout(panelLayout);
       document.getElementById('tt-panels-container').classList.add('tt-panels-ready');
@@ -4013,7 +3994,7 @@
   function applyPanelLayout(layout){
     const container = panelsContainerEl();
     if(!container) return;
-    [...KNOWN_PANELS, ...blankPanelIds].forEach(id=>{
+    KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
       const pos = layout.positions[id];
       if(!el || !pos) return;
@@ -4027,7 +4008,7 @@
     // overflow is visible, not clipped) — the drag handle then sits on an
     // empty box in one spot while the visible content sits somewhere else
     // entirely. If that's happened, drop back to natural height.
-    [...KNOWN_PANELS, ...blankPanelIds].forEach(id=>{
+    KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
       if(!el || !el.style.height) return;
       if(el.scrollHeight > el.offsetHeight + 40){
@@ -4063,60 +4044,62 @@
         height: heightPx
       };
     });
-    return { positions, blanks: blankPanelIds.slice() };
+    return { positions };
   }
 
-  function createBlankPanelEl(id){
-    if(panelEl(id)) return; // already exists
+  // ---- Alignment guides: green lines when edges/width/height match another panel ----
+  const ALIGN_THRESHOLD = 5; // px
+
+  function clearAlignGuides(){
+    $('tt-align-guides').innerHTML = '';
+    getAllPanelEls().forEach(el=> el.classList.remove('tt-panel-size-match'));
+  }
+
+  function addGuideLine(type, pos){
+    const guideEl = document.createElement('div');
+    guideEl.className = type==='v' ? 'tt-align-guide tt-align-guide-v' : 'tt-align-guide tt-align-guide-h';
+    if(type==='v') guideEl.style.left = pos + 'px';
+    else guideEl.style.top = pos + 'px';
+    $('tt-align-guides').appendChild(guideEl);
+  }
+
+  // Called continuously while dragging (move) or resizing a panel — compares
+  // its current box against every other panel and shows a green guide line
+  // wherever an edge lines up, plus a green outline on both panels when their
+  // width or height match exactly (even if their position doesn't).
+  function checkAlignment(activePanel){
+    clearAlignGuides();
     const container = panelsContainerEl();
-    const el = document.createElement('div');
-    el.className = 'tt-panel tt-panel-blank';
-    el.setAttribute('data-panel', id);
-    el.innerHTML = `
-      <div class="tt-panel-handle" title="Drag to move">
-        <span class="tt-panel-handle-icon">&#10021;</span>
-        <button type="button" class="tt-panel-remove-blank" title="Remove this blank space">&times;</button>
-      </div>
-      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
-      <div class="tt-panel-blank-content"></div>
-    `;
-    container.appendChild(el);
-    if(!blankPanelIds.includes(id)) blankPanelIds.push(id);
+    const containerRect = container.getBoundingClientRect();
+    const a = activePanel.getBoundingClientRect();
+    const aLeft = a.left - containerRect.left, aRight = a.right - containerRect.left;
+    const aTop = a.top - containerRect.top, aBottom = a.bottom - containerRect.top;
+    const aWidth = Math.round(a.width), aHeight = Math.round(a.height);
+
+    const drawnV = new Set(), drawnH = new Set();
+    getAllPanelEls().forEach(other=>{
+      if(other===activePanel) return;
+      const o = other.getBoundingClientRect();
+      const oLeft = o.left - containerRect.left, oRight = o.right - containerRect.left;
+      const oTop = o.top - containerRect.top, oBottom = o.bottom - containerRect.top;
+
+      if(Math.abs(aLeft-oLeft) < ALIGN_THRESHOLD && !drawnV.has(Math.round(oLeft))){ addGuideLine('v', oLeft); drawnV.add(Math.round(oLeft)); }
+      if(Math.abs(aRight-oRight) < ALIGN_THRESHOLD && !drawnV.has(Math.round(oRight))){ addGuideLine('v', oRight); drawnV.add(Math.round(oRight)); }
+      if(Math.abs(aTop-oTop) < ALIGN_THRESHOLD && !drawnH.has(Math.round(oTop))){ addGuideLine('h', oTop); drawnH.add(Math.round(oTop)); }
+      if(Math.abs(aBottom-oBottom) < ALIGN_THRESHOLD && !drawnH.has(Math.round(oBottom))){ addGuideLine('h', oBottom); drawnH.add(Math.round(oBottom)); }
+
+      if(Math.abs(aWidth-Math.round(o.width)) < ALIGN_THRESHOLD || Math.abs(aHeight-Math.round(o.height)) < ALIGN_THRESHOLD){
+        activePanel.classList.add('tt-panel-size-match');
+        other.classList.add('tt-panel-size-match');
+      }
+    });
   }
-
-  function removeBlankPanelEl(id){
-    const el = panelEl(id);
-    if(el) el.remove();
-    blankPanelIds = blankPanelIds.filter(x=>x!==id);
-  }
-
-  $('tt-add-blank-btn').addEventListener('click', ()=>{
-    const id = 'blank-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-    createBlankPanelEl(id);
-    const el = panelEl(id);
-    el.style.left = '10%';
-    el.style.width = '30%';
-    el.style.top = '0px';
-    el.style.height = '80px';
-    el.setAttribute('draggable', 'false');
-    updateContainerHeight();
-  });
-
-  panelsContainerEl().addEventListener('click', (e)=>{
-    const removeBtn = e.target.closest('.tt-panel-remove-blank');
-    if(!removeBtn || !customizing) return;
-    const panel = removeBtn.closest('.tt-panel');
-    const id = panel.getAttribute('data-panel');
-    removeBlankPanelEl(id);
-    updateContainerHeight();
-  });
 
   function enterCustomizeMode(){
     customizing = true;
     document.body.classList.add('tt-customizing');
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
-    $('tt-add-blank-btn').hidden = false;
   }
 
   function exitCustomizeMode(){
@@ -4124,7 +4107,7 @@
     document.body.classList.remove('tt-customizing');
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
-    $('tt-add-blank-btn').hidden = true;
+    clearAlignGuides();
     panelLayout = readCurrentLayout();
     updateContainerHeight();
     if(currentUid){
@@ -4173,15 +4156,42 @@
     if(dragState){
       const dx = e.clientX - dragState.startMouseX;
       const dy = e.clientY - dragState.startMouseY;
-      dragState.panel.style.left = (dragState.startLeftPx + dx) + 'px'; // px during drag, converted to % on release
-      dragState.panel.style.top = Math.max(0, dragState.startTopPx + dy) + 'px';
+      let newLeft = dragState.startLeftPx + dx;
+      let newTop = Math.max(0, dragState.startTopPx + dy);
+      dragState.panel.style.left = newLeft + 'px';
+      dragState.panel.style.top = newTop + 'px';
+      checkAlignment(dragState.panel);
+      // snap to whichever edge a guide line just appeared on, for a magnetic feel
+      const container = panelsContainerEl();
+      const containerRect = container.getBoundingClientRect();
+      const a = dragState.panel.getBoundingClientRect();
+      getAllPanelEls().forEach(other=>{
+        if(other===dragState.panel) return;
+        const o = other.getBoundingClientRect();
+        if(Math.abs((a.left-containerRect.left)-(o.left-containerRect.left)) < ALIGN_THRESHOLD) newLeft = o.left - containerRect.left;
+        if(Math.abs((a.top-containerRect.top)-(o.top-containerRect.top)) < ALIGN_THRESHOLD) newTop = o.top - containerRect.top;
+      });
+      dragState.panel.style.left = newLeft + 'px';
+      dragState.panel.style.top = Math.max(0, newTop) + 'px';
       updateContainerHeight();
     }
     if(resizeState){
       const dx = e.clientX - resizeState.startMouseX;
       const dy = e.clientY - resizeState.startMouseY;
-      resizeState.panel.style.width = Math.max(200, resizeState.startWidthPx + dx) + 'px';
-      resizeState.panel.style.height = Math.max(100, resizeState.startHeightPx + dy) + 'px';
+      let newWidth = Math.max(200, resizeState.startWidthPx + dx);
+      let newHeight = Math.max(100, resizeState.startHeightPx + dy);
+      resizeState.panel.style.width = newWidth + 'px';
+      resizeState.panel.style.height = newHeight + 'px';
+      checkAlignment(resizeState.panel);
+      // snap width/height to another panel's if we just matched it, same magnetic feel
+      getAllPanelEls().forEach(other=>{
+        if(other===resizeState.panel) return;
+        const o = other.getBoundingClientRect();
+        if(Math.abs(newWidth-o.width) < ALIGN_THRESHOLD) newWidth = o.width;
+        if(Math.abs(newHeight-o.height) < ALIGN_THRESHOLD) newHeight = o.height;
+      });
+      resizeState.panel.style.width = newWidth + 'px';
+      resizeState.panel.style.height = newHeight + 'px';
       updateContainerHeight();
     }
   });
@@ -4196,6 +4206,7 @@
       panel.style.zIndex = '';
       panel.classList.remove('tt-panel-dragging');
       dragState = null;
+      clearAlignGuides();
       updateContainerHeight();
     }
     if(resizeState){
@@ -4206,6 +4217,7 @@
       panel.style.width = ((widthPx/containerWidth)*100) + '%';
       panel.style.zIndex = '';
       resizeState = null;
+      clearAlignGuides();
       updateContainerHeight();
     }
   });
