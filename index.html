@@ -1274,7 +1274,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.056</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.057</div>
   </div>
 </div>
 
@@ -3948,10 +3948,27 @@
   // stays responsive) and y/height (pixels). Panels never auto-flow around each
   // other — placing one directly under another is just setting its y, nothing
   // "blocks" that. DOM order never changes; only inline position/size does.
-  const DEFAULT_XW = {
-    timer:{x:0,width:100}, today:{x:0,width:48}, month:{x:52,width:48},
-    earnings:{x:0,width:100}, browser:{x:0,width:100}
-  };
+  const ORIGINAL_COLUMN_PX = 640; // the app's original single-column width, before this feature existed
+
+  // Computes x/width (in % of the canvas) for a centered column matching the
+  // app's original narrow layout — full-width panels sit in one centered
+  // ~640px band, Today/Month sit side by side within that same band, and the
+  // canvas sides on either side stay blank, exactly like before this feature.
+  function getCenteredColumnXW(){
+    const containerWidth = panelsContainerEl().getBoundingClientRect().width || ORIGINAL_COLUMN_PX;
+    const colWidthPx = Math.min(ORIGINAL_COLUMN_PX, containerWidth);
+    const colXPx = (containerWidth - colWidthPx) / 2;
+    const gapPx = 12;
+    const halfWidthPx = (colWidthPx - gapPx) / 2;
+    const pct = px => +((px/containerWidth)*100).toFixed(3);
+    return {
+      timer:    { x: pct(colXPx), width: pct(colWidthPx) },
+      today:    { x: pct(colXPx), width: pct(halfWidthPx) },
+      month:    { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
+      earnings: { x: pct(colXPx), width: pct(colWidthPx) },
+      browser:  { x: pct(colXPx), width: pct(colWidthPx) }
+    };
+  }
 
   function panelsContainerEl(){ return document.getElementById('tt-panels-container'); }
   function getAllPanelEls(){ return Array.from(panelsContainerEl().children).filter(el=>el.classList.contains('tt-panel')); }
@@ -3966,6 +3983,7 @@
   const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, browser:700 };
 
   function computeDefaultPositions(missingIds, existingPositions){
+    const xw = getCenteredColumnXW();
     let startY = 0;
     Object.values(existingPositions).forEach(p=>{
       if(p && p.y!=null) startY = Math.max(startY, p.y + (p.height || DEFAULT_HEIGHT[p.id] || 200) + 16);
@@ -3979,12 +3997,12 @@
       const id = order[i];
       if(id==='today' && order[i+1]==='month'){
         const h = Math.max(DEFAULT_HEIGHT.today, DEFAULT_HEIGHT.month);
-        positions.today = { ...DEFAULT_XW.today, y, height:null };
-        positions.month = { ...DEFAULT_XW.month, y, height:null };
+        positions.today = { ...xw.today, y, height:null };
+        positions.month = { ...xw.month, y, height:null };
         y += h + gap;
         i += 2;
       } else {
-        positions[id] = { ...DEFAULT_XW[id], y, height:null };
+        positions[id] = { ...xw[id], y, height:null };
         y += DEFAULT_HEIGHT[id] + gap;
         i += 1;
       }
@@ -4121,13 +4139,14 @@
   }
 
   $('tt-reset-layout-btn').addEventListener('click', async ()=>{
-    // Phase 1: clear everything, set x/width per panel (width affects wrapping,
-    // so it must be right before we measure height).
+    // Phase 1: clear everything, set x/width per panel to the centered-column
+    // layout (width affects wrapping, so it must be right before we measure height).
+    const xw = getCenteredColumnXW();
     KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
       if(!el) return;
-      const xw = DEFAULT_XW[id] || {x:0,width:100};
-      el.style.left = xw.x+'%'; el.style.width = xw.width+'%'; el.style.top=''; el.style.height='';
+      const p = xw[id] || {x:0,width:100};
+      el.style.left = p.x+'%'; el.style.width = p.width+'%'; el.style.top=''; el.style.height='';
     });
     // Phase 2: now that every panel is at its real width with natural (auto)
     // height, measure its ACTUAL rendered height — this is the only way to
@@ -4142,13 +4161,13 @@
       const id = KNOWN_PANELS[i];
       if(id==='today' && KNOWN_PANELS[i+1]==='month'){
         const h = Math.max(panelEl('today').offsetHeight, panelEl('month').offsetHeight);
-        positions.today = { ...DEFAULT_XW.today, y, height:null };
-        positions.month = { ...DEFAULT_XW.month, y, height:null };
+        positions.today = { ...xw.today, y, height:null };
+        positions.month = { ...xw.month, y, height:null };
         y += h + gap;
         i += 2;
       } else {
         const h = panelEl(id).offsetHeight;
-        positions[id] = { ...DEFAULT_XW[id], y, height:null };
+        positions[id] = { ...xw[id], y, height:null };
         y += h + gap;
         i += 1;
       }
