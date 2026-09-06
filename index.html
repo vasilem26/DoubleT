@@ -142,16 +142,16 @@
   body.tt-customizing .tt-panel-handle{display:flex;}
   body.tt-customizing .tt-panel{
     border:1px dashed var(--amber-dim); border-top:none; border-radius:0 0 5px 5px;
-    padding-bottom:6px; overflow:auto; min-height:140px; min-width:200px;
+    padding-bottom:6px; overflow:visible; min-height:140px; min-width:200px;
   }
   body.tt-customizing .tt-panel > *:not(.tt-panel-handle):first-of-type{margin-top:0;}
   .tt-panel.tt-panel-dragging{opacity:.6; z-index:50;}
   .tt-panel-resize-handle{
-    display:none; position:absolute; right:0; bottom:0; width:18px; height:18px;
-    cursor:nwse-resize; z-index:5;
+    display:none; position:absolute; right:-4px; bottom:-4px; width:26px; height:26px;
+    cursor:nwse-resize; z-index:20;
   }
   .tt-panel-resize-handle::before{
-    content:''; position:absolute; right:3px; bottom:3px; width:9px; height:9px;
+    content:''; position:absolute; right:6px; bottom:6px; width:9px; height:9px;
     border-right:2px solid var(--amber-dim); border-bottom:2px solid var(--amber-dim);
   }
   body.tt-customizing .tt-panel-resize-handle{display:block;}
@@ -1264,7 +1264,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.050</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.051</div>
   </div>
 </div>
 
@@ -3947,18 +3947,18 @@
   function getAllPanelEls(){ return Array.from(panelsContainerEl().children).filter(el=>el.classList.contains('tt-panel')); }
   function panelEl(id){ return panelsContainerEl().querySelector(`.tt-panel[data-panel="${id}"]`); }
 
-  // Computes sensible default positions for any panel(s) missing a saved one —
-  // measures real content height at the intended width, so it's never a guess.
+  // Fixed default heights (generous, safe estimates) — deliberately NOT measured
+  // at runtime. Runtime measurement depends on the panel already being at its
+  // final width when read, which isn't guaranteed at every call site; fixed
+  // values remove that failure mode entirely. A panel taller than its default
+  // is still fully visible (see overflow:visible below) and can be resized
+  // larger any time.
+  const DEFAULT_HEIGHT = { timer:320, today:120, month:120, earnings:480, browser:700 };
+
   function computeDefaultPositions(missingIds, existingPositions){
-    missingIds.forEach(id=>{
-      const el = panelEl(id);
-      if(!el) return;
-      const xw = DEFAULT_XW[id] || {x:0,width:100};
-      el.style.left = xw.x+'%'; el.style.width = xw.width+'%'; el.style.height = '';
-    });
     let startY = 0;
     Object.values(existingPositions).forEach(p=>{
-      if(p && p.y!=null) startY = Math.max(startY, p.y + (p.height||0) + 16);
+      if(p && p.y!=null) startY = Math.max(startY, p.y + (p.height || DEFAULT_HEIGHT[p.id] || 200) + 16);
     });
     const gap = 16;
     let y = startY;
@@ -3968,15 +3968,14 @@
     while(i < order.length){
       const id = order[i];
       if(id==='today' && order[i+1]==='month'){
-        const h = Math.max(panelEl('today').offsetHeight, panelEl('month').offsetHeight);
+        const h = Math.max(DEFAULT_HEIGHT.today, DEFAULT_HEIGHT.month);
         positions.today = { ...DEFAULT_XW.today, y, height:null };
         positions.month = { ...DEFAULT_XW.month, y, height:null };
         y += h + gap;
         i += 2;
       } else {
-        const h = panelEl(id).offsetHeight;
         positions[id] = { ...DEFAULT_XW[id], y, height:null };
-        y += h + gap;
+        y += DEFAULT_HEIGHT[id] + gap;
         i += 1;
       }
     }
