@@ -155,6 +155,21 @@
     border-right:2px solid var(--amber-dim); border-bottom:2px solid var(--amber-dim);
   }
   body.tt-customizing .tt-panel-resize-handle{display:block;}
+
+  /* Blank spacer panels: pure empty space outside customize mode — no border,
+     no background, just the room they occupy. In customize mode they show the
+     same dashed outline as every other panel, plus a remove button. */
+  .tt-panel-blank-content{width:100%; height:100%; min-height:60px;}
+  .tt-panel-remove-blank{
+    display:none; background:none; border:none; color:var(--paper-dim);
+    font-size:16px; line-height:1; cursor:pointer; padding:0 2px; flex-shrink:0;
+  }
+  .tt-panel-remove-blank:hover{color:#E7A29D;}
+  body.tt-customizing .tt-panel-blank .tt-panel-remove-blank{display:block;}
+  body.tt-customizing .tt-panel-blank .tt-panel-blank-content{
+    background:repeating-linear-gradient(45deg, var(--panel), var(--panel) 8px, var(--panel-2) 8px, var(--panel-2) 16px);
+    opacity:.35;
+  }
   .tt-theme-switch{
     -webkit-appearance:none; appearance:none; border:none; cursor:pointer;
     width:52px; height:28px; border-radius:999px; flex-shrink:0;
@@ -816,6 +831,7 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
+        <button id="tt-add-blank-btn" class="tt-customize-btn" type="button" hidden>+ Blank space</button>
         <button id="tt-customize-btn" class="tt-customize-btn" type="button">Customize</button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -1264,7 +1280,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.051</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.052</div>
   </div>
 </div>
 
@@ -1312,6 +1328,7 @@
   // x/width are percentages of the canvas width (responsive); y/height are pixels.
   // height:null means "auto" — sized to content until the user explicitly resizes it.
   let panelLayout = { positions: {} }; // populated on first load — see computeDefaultPositions()
+  let blankPanelIds = []; // user-added spacer panels — dynamic, unlike the 5 fixed ones above
   let customizing = false;
   let dragState = null;
   let resizeState = null;
@@ -3210,11 +3227,14 @@
 
     unsubLayout = onSnapshot(layoutDoc(uid), (snap)=>{
       let positions = {};
+      let blanks = [];
       if(snap.exists()){
         const data = snap.data();
         if(data.positions && typeof data.positions==='object'){
           // current format
-          KNOWN_PANELS.forEach(id=>{
+          if(Array.isArray(data.blanks)) blanks = data.blanks.filter(id=>typeof id==='string');
+          const allIds = [...KNOWN_PANELS, ...blanks];
+          allIds.forEach(id=>{
             const p = data.positions[id];
             if(p && typeof p==='object' && typeof p.x==='number' && typeof p.width==='number'){
               positions[id] = { x:p.x, y:(typeof p.y==='number'?p.y:null), width:p.width, height:(typeof p.height==='number'?p.height:null) };
@@ -3225,11 +3245,19 @@
         // this is a genuinely different layout model, not a convertible one; anything
         // missing below gets a fresh, sensible computed default instead)
       }
+      // sync blank panel DOM elements to match the saved list before positioning anything
+      blankPanelIds.slice().forEach(id=>{ if(!blanks.includes(id)) removeBlankPanelEl(id); });
+      blanks.forEach(id=>{ if(!blankPanelIds.includes(id)) createBlankPanelEl(id); });
+      blankPanelIds = blanks;
+
       const missing = KNOWN_PANELS.filter(id=>!positions[id]);
       if(missing.length){
         const defaults = computeDefaultPositions(missing, positions);
         Object.assign(positions, defaults);
       }
+      blankPanelIds.forEach(id=>{
+        if(!positions[id]) positions[id] = { x:10, y:0, width:80, height:80 };
+      });
       panelLayout = { positions };
       if(!customizing) applyPanelLayout(panelLayout);
       document.getElementById('tt-panels-container').classList.add('tt-panels-ready');
@@ -3985,7 +4013,7 @@
   function applyPanelLayout(layout){
     const container = panelsContainerEl();
     if(!container) return;
-    KNOWN_PANELS.forEach(id=>{
+    [...KNOWN_PANELS, ...blankPanelIds].forEach(id=>{
       const el = panelEl(id);
       const pos = layout.positions[id];
       if(!el || !pos) return;
@@ -4011,9 +4039,8 @@
     const container = panelsContainerEl();
     const containerWidth = container.getBoundingClientRect().width;
     const positions = {};
-    KNOWN_PANELS.forEach(id=>{
-      const el = panelEl(id);
-      if(!el) return;
+    getAllPanelEls().forEach(el=>{
+      const id = el.getAttribute('data-panel');
       const leftPx = el.offsetLeft;
       const widthPx = el.offsetWidth;
       const heightPx = el.style.height ? el.offsetHeight : null; // only persist a real custom height
@@ -4024,14 +4051,60 @@
         height: heightPx
       };
     });
-    return { positions };
+    return { positions, blanks: blankPanelIds.slice() };
   }
+
+  function createBlankPanelEl(id){
+    if(panelEl(id)) return; // already exists
+    const container = panelsContainerEl();
+    const el = document.createElement('div');
+    el.className = 'tt-panel tt-panel-blank';
+    el.setAttribute('data-panel', id);
+    el.innerHTML = `
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <button type="button" class="tt-panel-remove-blank" title="Remove this blank space">&times;</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-panel-blank-content"></div>
+    `;
+    container.appendChild(el);
+    if(!blankPanelIds.includes(id)) blankPanelIds.push(id);
+  }
+
+  function removeBlankPanelEl(id){
+    const el = panelEl(id);
+    if(el) el.remove();
+    blankPanelIds = blankPanelIds.filter(x=>x!==id);
+  }
+
+  $('tt-add-blank-btn').addEventListener('click', ()=>{
+    const id = 'blank-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    createBlankPanelEl(id);
+    const el = panelEl(id);
+    el.style.left = '10%';
+    el.style.width = '30%';
+    el.style.top = '0px';
+    el.style.height = '80px';
+    el.setAttribute('draggable', 'false');
+    updateContainerHeight();
+  });
+
+  panelsContainerEl().addEventListener('click', (e)=>{
+    const removeBtn = e.target.closest('.tt-panel-remove-blank');
+    if(!removeBtn || !customizing) return;
+    const panel = removeBtn.closest('.tt-panel');
+    const id = panel.getAttribute('data-panel');
+    removeBlankPanelEl(id);
+    updateContainerHeight();
+  });
 
   function enterCustomizeMode(){
     customizing = true;
     document.body.classList.add('tt-customizing');
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
+    $('tt-add-blank-btn').hidden = false;
   }
 
   function exitCustomizeMode(){
@@ -4039,6 +4112,7 @@
     document.body.classList.remove('tt-customizing');
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
+    $('tt-add-blank-btn').hidden = true;
     panelLayout = readCurrentLayout();
     updateContainerHeight();
     if(currentUid){
