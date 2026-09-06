@@ -112,23 +112,29 @@
   }
 
   #tt-panels-container{
-    display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; width:100%;
-    max-width:1500px; margin:0 auto; opacity:0; transition:opacity .15s ease; align-items:start;
+    position:relative; width:100%; max-width:1500px; margin:0 auto;
+    opacity:0; transition:opacity .15s ease;
   }
   #tt-panels-container.tt-panels-ready{opacity:1;}
+  /* On narrow/mobile screens the canvas is abandoned entirely — panels render
+     as a plain static stack, full width, in document order. Customize never
+     appears below 900px, so this is the only layout those screens ever see. */
   @media (max-width: 900px){
-    #tt-panels-container{grid-template-columns:1fr;}
+    #tt-panels-container{position:static; height:auto !important;}
+    #tt-panels-container .tt-panel{
+      position:static !important; width:100% !important; height:auto !important;
+      left:auto !important; top:auto !important;
+    }
   }
 
   .tt-panel{
-    position:relative; grid-column:span 1; transition:transform .15s ease, opacity .15s ease;
-    min-width:0;
+    position:absolute; transition:opacity .15s ease; min-width:0; box-sizing:border-box;
   }
   .tt-panel-handle{
     display:none; align-items:center; justify-content:space-between; gap:8px;
     background:var(--panel-2); border:1px dashed var(--amber-dim); border-radius:5px 5px 0 0;
     color:var(--paper-dim); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
-    padding:6px 8px; margin-top:14px; cursor:grab; user-select:none;
+    padding:6px 8px; cursor:grab; user-select:none;
   }
   .tt-panel-handle-icon{flex-shrink:0;}
   .tt-panel-handle-hint{font-size:9px; opacity:.5; letter-spacing:.04em;}
@@ -136,12 +142,19 @@
   body.tt-customizing .tt-panel-handle{display:flex;}
   body.tt-customizing .tt-panel{
     border:1px dashed var(--amber-dim); border-top:none; border-radius:0 0 5px 5px;
-    padding-bottom:6px; resize:both; overflow:auto; min-height:140px; min-width:200px;
+    padding-bottom:6px; overflow:auto; min-height:140px; min-width:200px;
   }
   body.tt-customizing .tt-panel > *:not(.tt-panel-handle):first-of-type{margin-top:0;}
-  .tt-panel.tt-panel-dragging{opacity:.4;}
-  .tt-panel.tt-panel-dragover-before{box-shadow:inset 3px 0 0 var(--amber);}
-  .tt-panel.tt-panel-dragover-after{box-shadow:inset -3px 0 0 var(--amber);}
+  .tt-panel.tt-panel-dragging{opacity:.6; z-index:50;}
+  .tt-panel-resize-handle{
+    display:none; position:absolute; right:0; bottom:0; width:18px; height:18px;
+    cursor:nwse-resize; z-index:5;
+  }
+  .tt-panel-resize-handle::before{
+    content:''; position:absolute; right:3px; bottom:3px; width:9px; height:9px;
+    border-right:2px solid var(--amber-dim); border-bottom:2px solid var(--amber-dim);
+  }
+  body.tt-customizing .tt-panel-resize-handle{display:block;}
   .tt-theme-switch{
     -webkit-appearance:none; appearance:none; border:none; cursor:pointer;
     width:52px; height:28px; border-radius:999px; flex-shrink:0;
@@ -1120,10 +1133,11 @@
 
     <div id="tt-panels-container">
     <div class="tt-panel" data-panel="timer">
-      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
+      <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
         <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-clock">
       <div class="tt-status" id="tt-status"><span class="dot"></span><span id="tt-status-text">Idle</span></div>
       <div class="tt-digits" id="tt-digits">00:00:00</div>
@@ -1137,10 +1151,11 @@
     </div>
 
     <div class="tt-panel" data-panel="today">
-      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
+      <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
         <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-stat-grid tt-stat-grid-single">
       <div class="tt-stat-card tt-stat-card-accent">
         <div class="tt-stat-icon">
@@ -1155,10 +1170,11 @@
     </div>
 
     <div class="tt-panel" data-panel="month">
-      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
+      <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
         <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-stat-grid tt-stat-grid-single">
       <div class="tt-stat-card">
         <div class="tt-stat-icon">
@@ -1173,10 +1189,11 @@
     </div>
 
     <div class="tt-panel" data-panel="earnings">
-      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
+      <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
         <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-earnings" id="tt-earnings">
       <div class="tt-earnings-head">
         <div class="tt-earnings-title" id="tt-earnings-title">This month · estimated</div>
@@ -1202,10 +1219,11 @@
     </div>
 
     <div class="tt-panel" data-panel="browser">
-      <div class="tt-panel-handle" title="Drag to reorder — resize from the bottom-right corner">
+      <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
         <span class="tt-panel-handle-hint">drag corner to resize</span>
       </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-viewbar">
       <div class="tt-segment" id="tt-granularity-tabs">
         <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
@@ -1246,7 +1264,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.049</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.050</div>
   </div>
 </div>
 
@@ -1291,13 +1309,12 @@
   let unsubPrefs = null;
   let unsubLayout = null;
   const KNOWN_PANELS = ['timer','today','month','earnings','browser'];
-  let panelLayout = {
-    order: ['timer','today','month','earnings','browser'],
-    spans: { timer:3, today:1, month:1, earnings:3, browser:3 },
-    heights: {}
-  };
+  // x/width are percentages of the canvas width (responsive); y/height are pixels.
+  // height:null means "auto" — sized to content until the user explicitly resizes it.
+  let panelLayout = { positions: {} }; // populated on first load — see computeDefaultPositions()
   let customizing = false;
-  let draggedPanel = null;
+  let dragState = null;
+  let resizeState = null;
   let unsubTaxTemplates = null;
   let presets = [];
   let taxTemplates = []; // [{id, name, taxes:[{name,pct}]}] — taxes applied in order, each on what's left after the previous
@@ -3192,26 +3209,28 @@
     }, (err)=> console.error('tax templates listener error', err));
 
     unsubLayout = onSnapshot(layoutDoc(uid), (snap)=>{
-      let order = [], spans = {}, heights = {};
+      let positions = {};
       if(snap.exists()){
         const data = snap.data();
-        if(Array.isArray(data.order)){
+        if(data.positions && typeof data.positions==='object'){
           // current format
-          order = data.order.filter(id=>KNOWN_PANELS.includes(id));
-          spans = (data.spans && typeof data.spans==='object') ? data.spans : {};
-          heights = (data.heights && typeof data.heights==='object') ? data.heights : {};
-        } else if(Array.isArray(data.left) || Array.isArray(data.center) || Array.isArray(data.right)){
-          // migrate an older left/center/right saved layout (from an earlier version)
-          order = [...(data.left||[]), ...(data.center||[]), ...(data.right||[])]
-            .filter(id=> KNOWN_PANELS.includes(id) && id!=='totals');
+          KNOWN_PANELS.forEach(id=>{
+            const p = data.positions[id];
+            if(p && typeof p==='object' && typeof p.x==='number' && typeof p.width==='number'){
+              positions[id] = { x:p.x, y:(typeof p.y==='number'?p.y:null), width:p.width, height:(typeof p.height==='number'?p.height:null) };
+            }
+          });
         }
+        // (an older order/spans/left-center-right saved layout is simply discarded here —
+        // this is a genuinely different layout model, not a convertible one; anything
+        // missing below gets a fresh, sensible computed default instead)
       }
-      const seen = new Set(order);
-      const missing = KNOWN_PANELS.filter(id=>!seen.has(id));
-      order = [...order, ...missing]; // any panel not yet in a saved layout defaults to the end
-      const mergedSpans = {};
-      KNOWN_PANELS.forEach(id=>{ mergedSpans[id] = spans[id] || panelLayout.spans[id] || 1; });
-      panelLayout = { order, spans: mergedSpans, heights };
+      const missing = KNOWN_PANELS.filter(id=>!positions[id]);
+      if(missing.length){
+        const defaults = computeDefaultPositions(missing, positions);
+        Object.assign(positions, defaults);
+      }
+      panelLayout = { positions };
       if(!customizing) applyPanelLayout(panelLayout);
       document.getElementById('tt-panels-container').classList.add('tt-panels-ready');
     }, (err)=> {
@@ -3915,57 +3934,98 @@
   }
 
   // ---------------- Desktop-only dashboard customization ----------------
+  // Free-form canvas: every panel has an explicit x/width (% of canvas, so it
+  // stays responsive) and y/height (pixels). Panels never auto-flow around each
+  // other — placing one directly under another is just setting its y, nothing
+  // "blocks" that. DOM order never changes; only inline position/size does.
+  const DEFAULT_XW = {
+    timer:{x:0,width:100}, today:{x:0,width:48}, month:{x:52,width:48},
+    earnings:{x:0,width:100}, browser:{x:0,width:100}
+  };
+
   function panelsContainerEl(){ return document.getElementById('tt-panels-container'); }
-  function getAllPanelEls(){ return Array.from(panelsContainerEl().children); }
+  function getAllPanelEls(){ return Array.from(panelsContainerEl().children).filter(el=>el.classList.contains('tt-panel')); }
+  function panelEl(id){ return panelsContainerEl().querySelector(`.tt-panel[data-panel="${id}"]`); }
+
+  // Computes sensible default positions for any panel(s) missing a saved one —
+  // measures real content height at the intended width, so it's never a guess.
+  function computeDefaultPositions(missingIds, existingPositions){
+    missingIds.forEach(id=>{
+      const el = panelEl(id);
+      if(!el) return;
+      const xw = DEFAULT_XW[id] || {x:0,width:100};
+      el.style.left = xw.x+'%'; el.style.width = xw.width+'%'; el.style.height = '';
+    });
+    let startY = 0;
+    Object.values(existingPositions).forEach(p=>{
+      if(p && p.y!=null) startY = Math.max(startY, p.y + (p.height||0) + 16);
+    });
+    const gap = 16;
+    let y = startY;
+    const positions = {};
+    const order = KNOWN_PANELS.filter(id=>missingIds.includes(id));
+    let i = 0;
+    while(i < order.length){
+      const id = order[i];
+      if(id==='today' && order[i+1]==='month'){
+        const h = Math.max(panelEl('today').offsetHeight, panelEl('month').offsetHeight);
+        positions.today = { ...DEFAULT_XW.today, y, height:null };
+        positions.month = { ...DEFAULT_XW.month, y, height:null };
+        y += h + gap;
+        i += 2;
+      } else {
+        const h = panelEl(id).offsetHeight;
+        positions[id] = { ...DEFAULT_XW[id], y, height:null };
+        y += h + gap;
+        i += 1;
+      }
+    }
+    return positions;
+  }
 
   function applyPanelLayout(layout){
     const container = panelsContainerEl();
     if(!container) return;
-    layout.order.forEach(id=>{
-      const el = container.querySelector(`.tt-panel[data-panel="${id}"]`);
-      if(el) container.appendChild(el);
-    });
     KNOWN_PANELS.forEach(id=>{
-      const el = container.querySelector(`.tt-panel[data-panel="${id}"]`);
-      if(!el) return;
-      const span = layout.spans[id] || 1;
-      el.style.gridColumn = `span ${span}`;
-      el.style.width = ''; // width is governed by the grid span, never an inline value
-      const savedHeight = layout.heights[id];
-      el.style.height = savedHeight || '';
+      const el = panelEl(id);
+      const pos = layout.positions[id];
+      if(!el || !pos) return;
+      el.style.left = pos.x + '%';
+      el.style.width = pos.width + '%';
+      el.style.top = (pos.y||0) + 'px';
+      el.style.height = pos.height!=null ? pos.height + 'px' : '';
     });
+    updateContainerHeight();
+  }
+
+  function updateContainerHeight(){
+    const container = panelsContainerEl();
+    let maxBottom = 0;
+    getAllPanelEls().forEach(el=>{
+      const bottom = el.offsetTop + el.offsetHeight;
+      if(bottom > maxBottom) maxBottom = bottom;
+    });
+    container.style.height = maxBottom + 'px';
   }
 
   function readCurrentLayout(){
     const container = panelsContainerEl();
-    const order = Array.from(container.children).map(el=>el.getAttribute('data-panel'));
-    const spans = {};
-    const heights = {};
-    getAllPanelEls().forEach(el=>{
-      const id = el.getAttribute('data-panel');
-      const match = /span\s+(\d)/.exec(el.style.gridColumn||'');
-      spans[id] = match ? +match[1] : (panelLayout.spans[id]||1);
-      // only persist a custom height if the user actually resized it away from auto
-      if(el.style.height && el.style.height!=='auto') heights[id] = el.style.height;
-    });
-    return { order, spans, heights };
-  }
-
-  // After a manual drag-resize, the browser leaves an inline width on the panel.
-  // Snap that width to the nearest whole column-span (1/2/3) and clear the inline
-  // width so the grid governs it cleanly again — height is left exactly as dragged.
-  function snapPanelWidthToGrid(el){
-    const container = panelsContainerEl();
     const containerWidth = container.getBoundingClientRect().width;
-    const colCount = getComputedStyle(container).gridTemplateColumns.split(' ').length || 3;
-    if(colCount < 3) return; // mobile single-column view — nothing to snap
-    const gap = 16;
-    const colWidth = (containerWidth - gap*(colCount-1)) / colCount;
-    const currentWidth = el.getBoundingClientRect().width;
-    let span = Math.round((currentWidth + gap) / (colWidth + gap));
-    span = Math.max(1, Math.min(3, span));
-    el.style.gridColumn = `span ${span}`;
-    el.style.width = '';
+    const positions = {};
+    KNOWN_PANELS.forEach(id=>{
+      const el = panelEl(id);
+      if(!el) return;
+      const leftPx = el.offsetLeft;
+      const widthPx = el.offsetWidth;
+      const heightPx = el.style.height ? el.offsetHeight : null; // only persist a real custom height
+      positions[id] = {
+        x: +((leftPx/containerWidth)*100).toFixed(2),
+        width: +((widthPx/containerWidth)*100).toFixed(2),
+        y: el.offsetTop,
+        height: heightPx
+      };
+    });
+    return { positions };
   }
 
   function enterCustomizeMode(){
@@ -3973,7 +4033,6 @@
     document.body.classList.add('tt-customizing');
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
-    getAllPanelEls().forEach(el=> el.setAttribute('draggable','true'));
   }
 
   function exitCustomizeMode(){
@@ -3981,11 +4040,8 @@
     document.body.classList.remove('tt-customizing');
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
-    getAllPanelEls().forEach(el=>{
-      snapPanelWidthToGrid(el);
-      el.removeAttribute('draggable');
-    });
     panelLayout = readCurrentLayout();
+    updateContainerHeight();
     if(currentUid){
       setDoc(layoutDoc(currentUid), panelLayout).catch(err=>{
         console.error('Could not save panel layout', err);
@@ -3998,43 +4054,75 @@
     else enterCustomizeMode();
   });
 
-  // Snap width to the grid the moment the user releases a manual resize drag,
-  // rather than waiting until "Done" — so the layout never sits in a visually
-  // broken in-between state while still customizing.
-  document.addEventListener('mouseup', ()=>{
+  document.addEventListener('mousedown', (e)=>{
     if(!customizing) return;
-    getAllPanelEls().forEach(el=> snapPanelWidthToGrid(el));
+
+    const rHandle = e.target.closest('.tt-panel-resize-handle');
+    if(rHandle){
+      const panel = rHandle.closest('.tt-panel');
+      const rect = panel.getBoundingClientRect();
+      resizeState = { panel, startMouseX:e.clientX, startMouseY:e.clientY, startWidthPx:rect.width, startHeightPx:rect.height };
+      panel.style.zIndex = 50;
+      e.preventDefault(); e.stopPropagation();
+      return;
+    }
+
+    const handle = e.target.closest('.tt-panel-handle');
+    if(handle){
+      const panel = handle.closest('.tt-panel');
+      const container = panelsContainerEl();
+      const containerRect = container.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      dragState = {
+        panel, startMouseX:e.clientX, startMouseY:e.clientY,
+        startLeftPx: panelRect.left - containerRect.left,
+        startTopPx: panelRect.top - containerRect.top
+      };
+      panel.classList.add('tt-panel-dragging');
+      panel.style.zIndex = 50;
+      e.preventDefault();
+    }
   });
 
-  document.addEventListener('dragstart', (e)=>{
-    if(!customizing) return;
-    const panel = e.target.closest('.tt-panel');
-    if(!panel) return;
-    // don't start a reorder-drag if the mousedown was on the resize corner itself
-    const rect = panel.getBoundingClientRect();
-    const nearCorner = (rect.right - e.clientX < 20) && (rect.bottom - e.clientY < 20);
-    if(nearCorner){ e.preventDefault(); return; }
-    draggedPanel = panel;
-    panel.classList.add('tt-panel-dragging');
-    e.dataTransfer.effectAllowed = 'move';
+  document.addEventListener('mousemove', (e)=>{
+    if(dragState){
+      const dx = e.clientX - dragState.startMouseX;
+      const dy = e.clientY - dragState.startMouseY;
+      dragState.panel.style.left = (dragState.startLeftPx + dx) + 'px'; // px during drag, converted to % on release
+      dragState.panel.style.top = Math.max(0, dragState.startTopPx + dy) + 'px';
+      updateContainerHeight();
+    }
+    if(resizeState){
+      const dx = e.clientX - resizeState.startMouseX;
+      const dy = e.clientY - resizeState.startMouseY;
+      resizeState.panel.style.width = Math.max(200, resizeState.startWidthPx + dx) + 'px';
+      resizeState.panel.style.height = Math.max(100, resizeState.startHeightPx + dy) + 'px';
+      updateContainerHeight();
+    }
   });
-  document.addEventListener('dragend', ()=>{
-    if(draggedPanel) draggedPanel.classList.remove('tt-panel-dragging');
-    draggedPanel = null;
-    getAllPanelEls().forEach(el=> el.classList.remove('tt-panel-dragover-before','tt-panel-dragover-after'));
-  });
-  document.addEventListener('dragover', (e)=>{
-    if(!customizing || !draggedPanel) return;
-    const container = panelsContainerEl();
-    const targetPanel = e.target.closest('.tt-panel');
-    if(!targetPanel || targetPanel===draggedPanel) return;
-    e.preventDefault();
-    const rect = targetPanel.getBoundingClientRect();
-    const before = e.clientX < rect.left + rect.width/2;
-    getAllPanelEls().forEach(el=> el.classList.remove('tt-panel-dragover-before','tt-panel-dragover-after'));
-    targetPanel.classList.add(before ? 'tt-panel-dragover-before' : 'tt-panel-dragover-after');
-    if(before) container.insertBefore(draggedPanel, targetPanel);
-    else container.insertBefore(draggedPanel, targetPanel.nextSibling);
+
+  document.addEventListener('mouseup', ()=>{
+    if(dragState){
+      const container = panelsContainerEl();
+      const containerWidth = container.getBoundingClientRect().width;
+      const panel = dragState.panel;
+      const leftPx = parseFloat(panel.style.left) || 0;
+      panel.style.left = ((leftPx/containerWidth)*100) + '%';
+      panel.style.zIndex = '';
+      panel.classList.remove('tt-panel-dragging');
+      dragState = null;
+      updateContainerHeight();
+    }
+    if(resizeState){
+      const container = panelsContainerEl();
+      const containerWidth = container.getBoundingClientRect().width;
+      const panel = resizeState.panel;
+      const widthPx = parseFloat(panel.style.width) || 200;
+      panel.style.width = ((widthPx/containerWidth)*100) + '%';
+      panel.style.zIndex = '';
+      resizeState = null;
+      updateContainerHeight();
+    }
   });
 
   function downloadTemplate(){
