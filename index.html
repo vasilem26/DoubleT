@@ -1280,7 +1280,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.052</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.053</div>
   </div>
 </div>
 
@@ -4021,6 +4021,18 @@
       el.style.width = pos.width + '%';
       el.style.top = (pos.y||0) + 'px';
       el.style.height = pos.height!=null ? pos.height + 'px' : '';
+    });
+    // Safety net: a stored height that's much smaller than the panel's real
+    // content leaves that content spilling far outside its own box (since
+    // overflow is visible, not clipped) — the drag handle then sits on an
+    // empty box in one spot while the visible content sits somewhere else
+    // entirely. If that's happened, drop back to natural height.
+    [...KNOWN_PANELS, ...blankPanelIds].forEach(id=>{
+      const el = panelEl(id);
+      if(!el || !el.style.height) return;
+      if(el.scrollHeight > el.offsetHeight + 40){
+        el.style.height = '';
+      }
     });
     updateContainerHeight();
   }
