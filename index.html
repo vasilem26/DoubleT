@@ -221,6 +221,7 @@
     background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
     color:var(--paper); font-family:'Space Mono',monospace; font-size:11px; padding:4px 8px; cursor:pointer;
   }
+  .tt-earnings-mode-segment button{font-size:10px; padding:4px 9px;}
   .tt-earnings-total{font-family:'Space Mono',monospace; font-size:28px; font-weight:700; color:var(--amber); margin-top:8px; font-variant-numeric:tabular-nums;}
   .tt-earnings-total-label{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-top:1px; min-height:12px;}
   .tt-earnings-sub{font-size:11px; color:var(--paper-dim); margin-top:6px; line-height:1.5;}
@@ -456,6 +457,13 @@
 
   /* month nav */
   .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 12px;}
+  .tt-month-jump{
+    margin-top:4px; background:transparent; border:none; color:var(--paper-dim);
+    font-family:'Space Mono',monospace; font-size:10px; opacity:.6; cursor:pointer;
+    padding:2px 4px; transition:opacity .15s ease;
+  }
+  .tt-month-jump:hover{opacity:1;}
+  .tt-month-jump::-webkit-calendar-picker-indicator{filter:invert(.7); cursor:pointer;}
   .tt-navbtn{
     background:none;border:1px solid var(--line);color:var(--paper);
     width:32px;height:32px;border-radius:4px;cursor:pointer;font-size:15px;
@@ -1103,12 +1111,17 @@
     <div class="tt-earnings" id="tt-earnings">
       <div class="tt-earnings-head">
         <div class="tt-earnings-title">This month · estimated</div>
-        <select id="tt-earnings-currency" class="tt-earnings-currency-select">
-          <option value="RON">RON</option>
-          <option value="EUR">EUR</option>
-          <option value="USD">USD</option>
-          <option value="GBP">GBP</option>
-        </select>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <div class="tt-segment tt-earnings-mode-segment" id="tt-earnings-mode">
+            <button data-val="net" class="active">Net</button><button data-val="gross">Gross</button>
+          </div>
+          <select id="tt-earnings-currency" class="tt-earnings-currency-select">
+            <option value="RON">RON</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+          </select>
+        </div>
       </div>
       <div class="tt-earnings-total" id="tt-earnings-total">—</div>
       <div class="tt-earnings-total-label" id="tt-earnings-total-label"></div>
@@ -1132,6 +1145,7 @@
       <div style="text-align:center;">
         <div class="tt-monthlabel" id="tt-rangelabel">—</div>
         <div class="tt-monthtotal" id="tt-rangetotal">0h logged</div>
+        <input type="month" id="tt-month-jump" class="tt-month-jump" aria-label="Jump to month" />
       </div>
       <button class="tt-navbtn" id="tt-next" aria-label="Next">&#8250;</button>
     </div>
@@ -1156,7 +1170,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.038</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.040</div>
   </div>
 </div>
 
@@ -1169,7 +1183,7 @@
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, doc, addDoc, deleteDoc, setDoc,
-    onSnapshot, query, orderBy, writeBatch, collectionGroup, getDocs, where
+    onSnapshot, query, orderBy, writeBatch, collectionGroup, getDocs, getDoc, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ====================================================================
@@ -1204,6 +1218,7 @@
   let taxTemplates = []; // [{id, name, taxes:[{name,pct}]}] — taxes applied in order, each on what's left after the previous
   let rates = { RON:1, USD:4.6, EUR:4.97, GBP:5.8 }; // manual, RON-per-1-unit; RON is always 1
   let displayCurrency = localStorage.getItem('tt-display-currency') || 'RON';
+  let earningsMode = localStorage.getItem('tt-earnings-mode') || 'net'; // 'net' | 'gross'
   let editingTaxTemplateId = null; // null | 'new' | <id>
   let taxTemplateDraftTaxes = [];
   let lastProjectPref = '';
@@ -1869,13 +1884,19 @@
       }
     });
 
-    let convertedTotal = 0;
+    let grossConvertedTotal = 0;
+    let netConvertedTotal = 0;
     const excluded = [];
-    Object.entries(netByCurrency).forEach(([cur, amt])=>{
+    Object.keys({...grossByCurrency, ...netByCurrency}).forEach(cur=>{
       const rFrom = rates[cur], rTo = rates[displayCurrency];
-      if(rFrom && rTo) convertedTotal += (amt*rFrom)/rTo;
-      else excluded.push(cur);
+      if(rFrom && rTo){
+        if(grossByCurrency[cur]) grossConvertedTotal += (grossByCurrency[cur]*rFrom)/rTo;
+        if(netByCurrency[cur]) netConvertedTotal += (netByCurrency[cur]*rFrom)/rTo;
+      } else {
+        excluded.push(cur);
+      }
     });
+    const convertedTotal = earningsMode==='gross' ? grossConvertedTotal : netConvertedTotal;
 
     return { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded };
   }
@@ -1886,11 +1907,12 @@
     const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = computeMonthlyEarnings();
     const curSel = $('tt-earnings-currency');
     if(curSel) curSel.value = displayCurrency;
+    setActiveTab('tt-earnings-mode', earningsMode);
 
     const currencies = Object.keys(netByCurrency);
     const hasAny = currencies.length > 0;
     $('tt-earnings-total').textContent = hasAny ? `${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
-    $('tt-earnings-total-label').textContent = hasAny ? 'net, converted' : '';
+    $('tt-earnings-total-label').textContent = hasAny ? `${earningsMode}, converted` : '';
 
     if(!hasAny){
       $('tt-earnings-sub').textContent = 'Set an hourly rate on a project to see estimates';
@@ -1940,6 +1962,13 @@
   $('tt-earnings-currency').addEventListener('change', (e)=>{
     displayCurrency = e.target.value;
     localStorage.setItem('tt-display-currency', displayCurrency);
+    renderEarningsPanel();
+  });
+  $('tt-earnings-mode').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(!btn) return;
+    earningsMode = btn.dataset.val;
+    localStorage.setItem('tt-earnings-mode', earningsMode);
     renderEarningsPanel();
   });
 
@@ -2160,9 +2189,17 @@
           const timeRange = (s && st) ? `${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : '';
           if(adminEditingRefId===refId){
             const stopVal = st ? st.toTimeString().slice(0,5) : '';
+            const currentNote = e.note || '';
+            const projectOptions = [...adminSelectedUserPresets];
+            if(currentNote && !projectOptions.includes(currentNote)) projectOptions.push(currentNote);
+            const optionsHtml = '<option value="">No project</option>' +
+              projectOptions.map(p=>`<option value="${escapeHtml(p)}" ${p===currentNote?'selected':''}>${escapeHtml(p)}</option>`).join('');
             rows += `<div class="tt-detail-row tt-admin-entry-editing" style="display:block;">
               <div class="tt-admin-edit-form">
-                <div class="tt-admin-entry-note">${escapeHtml(e.note||'No note')}</div>
+                <div class="tt-admin-edit-row">
+                  <span class="tt-admin-edit-label">Project:</span>
+                  <select class="tt-admin-edit-time" id="tt-admin-edit-project-${escapeHtml(refId)}">${optionsHtml}</select>
+                </div>
                 <div class="tt-admin-edit-row">
                   <span class="tt-admin-edit-label">Started ${s?s.toTimeString().slice(0,5):'—'}. New end time:</span>
                   <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-input-${escapeHtml(refId)}" value="${stopVal}" />
@@ -2225,6 +2262,7 @@
         if(!entry) return;
         const errEl = $(`tt-admin-edit-error-${refId}`);
         const timeVal = $(`tt-admin-edit-input-${refId}`).value;
+        const newNote = $(`tt-admin-edit-project-${refId}`).value;
         if(!timeVal){ errEl.textContent = 'Please choose an end time.'; return; }
         const startDT = new Date(entry.startISO);
         const [hh, mm] = timeVal.split(':').map(Number);
@@ -2234,7 +2272,7 @@
         try{
           const updated = {
             date: entry.date, startISO: entry.startISO, stopISO: newStopDT.toISOString(),
-            durationSec: newDurationSec, note: entry.note || '', uid: entry.uid
+            durationSec: newDurationSec, note: newNote || '', uid: entry.uid
           };
           await setDoc(entry.ref, updated);
           Object.assign(entry, updated);
@@ -2351,6 +2389,8 @@
   $('tt-admin-mg-search').addEventListener('input', ()=>{ adminMgExpandedDay = null; adminMgRenderCurrentView(); });
   $('tt-admin-manage-back-users').addEventListener('click', ()=> go({ view:'admin', screen:'manage-users' }));
 
+  let adminSelectedUserPresets = [];
+
   async function selectUserForManage(user){
     adminSelectedUser = user;
     showAdminScreen('manage-entries');
@@ -2362,13 +2402,20 @@
     adminMgViewMode = 'calendar';
     adminMgExpandedDay = null;
     adminEditingRefId = null;
+    adminSelectedUserPresets = [];
     setActiveTab('tt-admin-mg-granularity-tabs', 'month');
     setActiveTab('tt-admin-mg-viewmode-tabs', 'calendar');
     adminMgUpdateGranularityAvailability();
     $('tt-admin-mg-ledger').innerHTML = '<div class="tt-preset-empty" style="padding:14px;">Loading entries…</div>';
     try{
-      await ensureAllEntriesLoaded();
+      const [_, presetsSnap] = await Promise.all([
+        ensureAllEntriesLoaded(),
+        getDoc(doc(db, 'users', user.uid, 'meta', 'presets')).catch(()=>null)
+      ]);
       adminEntries = getEntriesForUid(user.uid);
+      if(presetsSnap && presetsSnap.exists && presetsSnap.exists() && Array.isArray(presetsSnap.data().list)){
+        adminSelectedUserPresets = presetsSnap.data().list;
+      }
       adminMgRenderCurrentView();
     }catch(err){
       console.error('Could not load entries for user', err);
@@ -3157,6 +3204,7 @@
     $('tt-rangelabel').textContent = getRangeLabel();
     const rangeTotal = dates.reduce((s,d)=>s+secondsForDate(d), 0);
     $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} h logged`;
+    $('tt-month-jump').value = `${anchorDate.getFullYear()}-${pad(anchorDate.getMonth()+1)}`;
 
     const labelWrap = $('tt-rangelabel').parentElement;
     labelWrap.classList.remove('tt-fade-in');
@@ -3862,6 +3910,16 @@
   });
   $('tt-prev').addEventListener('click', ()=> navShift(-1));
   $('tt-next').addEventListener('click', ()=> navShift(1));
+  $('tt-month-jump').addEventListener('change', ()=>{
+    const val = $('tt-month-jump').value; // "YYYY-MM"
+    if(!val) return;
+    const [y, m] = val.split('-').map(Number);
+    anchorDate = new Date(y, m-1, 1);
+    granularity = 'month';
+    setActiveTab('tt-granularity-tabs', 'month');
+    updateGranularityAvailability();
+    renderCurrentView();
+  });
 </script>
 </body>
 </html>
