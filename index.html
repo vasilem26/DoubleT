@@ -824,6 +824,7 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
+        <button id="tt-reset-layout-btn" class="tt-customize-btn" type="button" hidden>Reset layout</button>
         <button id="tt-customize-btn" class="tt-customize-btn" type="button">Customize</button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
           <span></span><span></span><span></span>
@@ -1273,7 +1274,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.054</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.055</div>
   </div>
 </div>
 
@@ -4100,6 +4101,7 @@
     document.body.classList.add('tt-customizing');
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
+    $('tt-reset-layout-btn').hidden = false;
   }
 
   function exitCustomizeMode(){
@@ -4107,6 +4109,7 @@
     document.body.classList.remove('tt-customizing');
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
+    $('tt-reset-layout-btn').hidden = true;
     clearAlignGuides();
     panelLayout = readCurrentLayout();
     updateContainerHeight();
@@ -4116,6 +4119,20 @@
       });
     }
   }
+
+  $('tt-reset-layout-btn').addEventListener('click', async ()=>{
+    KNOWN_PANELS.forEach(id=>{
+      const el = panelEl(id);
+      if(el){ el.style.left=''; el.style.top=''; el.style.width=''; el.style.height=''; }
+    });
+    const defaults = computeDefaultPositions(KNOWN_PANELS, {});
+    panelLayout = { positions: defaults };
+    applyPanelLayout(panelLayout);
+    if(currentUid){
+      try{ await setDoc(layoutDoc(currentUid), panelLayout); }
+      catch(err){ console.error('Could not save reset layout', err); }
+    }
+  });
 
   $('tt-customize-btn').addEventListener('click', ()=>{
     if(customizing) exitCustomizeMode();
@@ -4182,13 +4199,18 @@
       let newHeight = Math.max(100, resizeState.startHeightPx + dy);
       resizeState.panel.style.width = newWidth + 'px';
       resizeState.panel.style.height = newHeight + 'px';
+      // hard floor: never let the box get shorter than what its own content
+      // actually needs — this is what used to let content spill outside the
+      // box entirely, detaching the handle from the visible panel
+      newHeight = Math.max(newHeight, resizeState.panel.scrollHeight);
+      resizeState.panel.style.height = newHeight + 'px';
       checkAlignment(resizeState.panel);
       // snap width/height to another panel's if we just matched it, same magnetic feel
       getAllPanelEls().forEach(other=>{
         if(other===resizeState.panel) return;
         const o = other.getBoundingClientRect();
         if(Math.abs(newWidth-o.width) < ALIGN_THRESHOLD) newWidth = o.width;
-        if(Math.abs(newHeight-o.height) < ALIGN_THRESHOLD) newHeight = o.height;
+        if(Math.abs(newHeight-o.height) < ALIGN_THRESHOLD) newHeight = Math.max(o.height, resizeState.panel.scrollHeight);
       });
       resizeState.panel.style.width = newWidth + 'px';
       resizeState.panel.style.height = newHeight + 'px';
