@@ -328,6 +328,12 @@
   .tt-admin-user-name{font-size:13px; font-weight:600; color:var(--paper);}
   .tt-admin-user-email{font-size:11px; color:var(--paper-dim); opacity:.75;}
   .tt-admin-user-chevron{color:var(--paper-dim); font-size:16px; flex-shrink:0;}
+  .tt-admin-user-checkbox{flex-shrink:0; width:16px; height:16px; accent-color:var(--amber); cursor:pointer;}
+  .tt-admin-multiselect-bar{
+    display:flex; flex-direction:column; gap:10px; align-items:center;
+    margin-top:10px; padding-top:14px; border-top:1px solid var(--line); text-align:center;
+  }
+  .tt-admin-multiselect-hint{font-size:11px; color:var(--paper-dim);}
   .tt-admin-entries-list{display:flex; flex-direction:column; gap:0;}
   .tt-admin-entry-row{
     display:flex; justify-content:space-between; align-items:center; gap:10px;
@@ -529,6 +535,14 @@
 
   /* month nav */
   .tt-monthbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0 12px;}
+  .tt-custom-range-bar{margin:12px 0;}
+  .tt-custom-range-fields{display:flex; gap:10px; justify-content:center;}
+  .tt-custom-range-field{display:flex; flex-direction:column; gap:3px; align-items:flex-start;}
+  .tt-custom-range-field label{font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em;}
+  .tt-custom-range-field input{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    color:var(--paper); font-family:'Space Mono',monospace; font-size:13px; padding:7px 9px;
+  }
   .tt-navbtn{
     background:none;border:1px solid var(--line);color:var(--paper);
     width:32px;height:32px;border-radius:4px;cursor:pointer;font-size:15px;
@@ -1120,7 +1134,19 @@
           <div class="tt-menu-section">
             <div class="tt-menu-label">Period</div>
             <div class="tt-segment tt-export-segment" id="tt-admin-export-period">
-              <button data-val="day">Day</button><button data-val="week">Week</button><button data-val="month" class="active">Month</button><button data-val="year">Year</button>
+              <button data-val="day">Day</button><button data-val="week">Week</button><button data-val="month" class="active">Month</button><button data-val="year">Year</button><button data-val="custom">Custom</button>
+            </div>
+            <div class="tt-custom-range-bar" id="tt-custom-export-range-bar" hidden style="margin-top:10px;">
+              <div class="tt-custom-range-fields">
+                <div class="tt-custom-range-field">
+                  <label>From</label>
+                  <input type="date" id="tt-admin-export-custom-from" />
+                </div>
+                <div class="tt-custom-range-field">
+                  <label>To</label>
+                  <input type="date" id="tt-admin-export-custom-to" />
+                </div>
+              </div>
             </div>
             <div class="tt-menu-desc" id="tt-admin-export-preview" style="margin-top:8px; margin-bottom:0;"></div>
           </div>
@@ -1227,20 +1253,33 @@
       <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-viewbar">
       <div class="tt-segment" id="tt-granularity-tabs">
-        <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button>
+        <button data-g="day">Day</button><button data-g="week">Week</button><button data-g="month" class="active">Month</button><button data-g="custom">Custom</button>
       </div>
       <div class="tt-segment" id="tt-viewmode-tabs">
         <button data-v="list">List</button><button data-v="calendar" class="active">Calendar</button><button data-v="chart">Chart</button>
       </div>
     </div>
 
-    <div class="tt-monthbar">
+    <div class="tt-monthbar" id="tt-monthbar-normal">
       <button class="tt-navbtn" id="tt-prev" aria-label="Previous">&#8249;</button>
       <div style="text-align:center;">
         <div class="tt-monthlabel" id="tt-rangelabel">—</div>
         <div class="tt-monthtotal" id="tt-rangetotal">0h logged</div>
       </div>
       <button class="tt-navbtn" id="tt-next" aria-label="Next">&#8250;</button>
+    </div>
+
+    <div class="tt-custom-range-bar" id="tt-custom-range-bar" hidden>
+      <div class="tt-custom-range-fields">
+        <div class="tt-custom-range-field">
+          <label>From</label>
+          <input type="date" id="tt-custom-from" />
+        </div>
+        <div class="tt-custom-range-field">
+          <label>To</label>
+          <input type="date" id="tt-custom-to" />
+        </div>
+      </div>
     </div>
 
     <div class="tt-ledger" id="tt-ledger">
@@ -1265,7 +1304,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.060</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.061</div>
   </div>
 </div>
 
@@ -1301,7 +1340,9 @@
   let entries = [];
   let active = null; // { startISO, note }
   let anchorDate = new Date(); // representative date for whatever range is being browsed
-  let granularity = 'month'; // 'day' | 'week' | 'month'
+  let granularity = 'month'; // 'day' | 'week' | 'month' | 'custom'
+  let customFromDate = null; // Date — set when the user picks a custom range
+  let customToDate = null;
   let viewMode = 'calendar'; // 'list' | 'calendar' | 'chart'
   let tickHandle = null;
   let unsubEntries = null;
@@ -1381,6 +1422,17 @@
       for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
       return out;
     }
+    if(granularity==='custom'){
+      const from = customFromDate || new Date();
+      const to = customToDate || from;
+      const start = from <= to ? from : to;
+      const end = from <= to ? to : from;
+      const out = [];
+      const cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      while(cur <= last){ out.push(new Date(cur)); cur.setDate(cur.getDate()+1); }
+      return out;
+    }
     // month
     const y = anchorDate.getFullYear(), m = anchorDate.getMonth();
     const daysInMonth = new Date(y, m+1, 0).getDate();
@@ -1401,10 +1453,20 @@
       const eFmt = e.toLocaleDateString(undefined, sameMonth ? {day:'numeric', year:'numeric'} : {month:'short', day:'numeric', year:'numeric'});
       return `${sFmt} – ${eFmt}`;
     }
+    if(granularity==='custom'){
+      if(dates.length===0) return 'Pick a date range';
+      const s = dates[0], e = dates[dates.length-1];
+      if(dates.length===1) return s.toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
+      const sameYear = s.getFullYear()===e.getFullYear();
+      const sFmt = s.toLocaleDateString(undefined, sameYear ? {month:'short', day:'numeric'} : {month:'short', day:'numeric', year:'numeric'});
+      const eFmt = e.toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
+      return `${sFmt} – ${eFmt}`;
+    }
     return `${monthNames[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
   }
 
   function navShift(delta){
+    if(granularity==='custom') return; // custom ranges are set via the date inputs, not prev/next
     const d = new Date(anchorDate);
     if(granularity==='day') d.setDate(d.getDate()+delta);
     else if(granularity==='week') d.setDate(d.getDate()+delta*7);
@@ -2077,8 +2139,9 @@
   // ---------------- Admin: full-page panel ----------------
   let adminMode = null; // 'manage' | 'export'
   let adminScreen = 'root';
-  let adminSelectedUser = null; // { uid, email, displayName }
-  let adminEntries = []; // full entries for the selected user
+  let adminSelectedUser = null; // { uid, email, displayName } — used by Manage Data (always exactly one user)
+  let adminSelectedExportUsers = []; // used by Export Data — one or more users
+  let adminEntries = []; // full entries for the selected user(s); export entries carry an ownerName when 2+ users are combined
   let adminAllEntriesCache = null; // every entry across every user, fetched once per admin session
   let adminDirectoryCache = null;  // uid -> { uid, email, displayName }, same lifetime as above
   let adminEditingRefId = null;
@@ -2091,9 +2154,17 @@
     'export-entries': 'Export data'
   };
 
+  function adminExportLabel(){
+    return adminSelectedExportUsers.map(u=>u.displayName||u.email).join(' & ') || 'user';
+  }
+  function adminExportSafeName(){
+    return adminSelectedExportUsers.map(u=>(u.email||'user').replace(/[^\w-]+/g,'_')).join('_and_') || 'user';
+  }
+
   function openAdminPage(){
     adminMode = null;
     adminSelectedUser = null;
+    adminSelectedExportUsers = [];
     adminEntries = [];
     adminAllEntriesCache = null;
     adminDirectoryCache = null;
@@ -2146,7 +2217,8 @@
     return adminDirectoryCache;
   }
 
-  async function loadUsersInto(listElId, onSelect){
+  async function loadUsersInto(listElId, onSelect, opts){
+    opts = opts || {};
     const el = $(listElId);
     el.innerHTML = '<div class="tt-preset-empty">Loading users…</div>';
     try{
@@ -2157,10 +2229,14 @@
         return;
       }
       users.sort((a,b)=> (a.email||'').localeCompare(b.email||''));
-      el.innerHTML = users.map(u=>{
+      const rowsHtml = users.map(u=>{
         const count = (adminAllEntriesCache||[]).filter(e=>e.uid===u.uid).length;
+        const checkbox = opts.multiSelect
+          ? `<input type="checkbox" class="tt-admin-user-checkbox" data-uid="${escapeHtml(u.uid)}" />`
+          : '';
         return `
         <div class="tt-admin-user-row" data-uid="${escapeHtml(u.uid)}" data-email="${escapeHtml(u.email||'')}" data-name="${escapeHtml(u.displayName||'')}">
+          ${checkbox}
           <div>
             <div class="tt-admin-user-name">${escapeHtml(u.displayName || u.email || 'Unnamed user')}</div>
             <div class="tt-admin-user-email">${escapeHtml(u.email||'')} · ${count} entr${count===1?'y':'ies'}</div>
@@ -2168,8 +2244,40 @@
           <span class="tt-admin-user-chevron">&#8250;</span>
         </div>
       `;}).join('');
+      if(opts.multiSelect){
+        el.innerHTML = rowsHtml + `
+          <div class="tt-admin-multiselect-bar">
+            <span class="tt-admin-multiselect-hint" id="tt-admin-multiselect-hint">Check 2+ users for a combined export, or tap one for a single export.</span>
+            <button type="button" class="tt-btn primary tt-menu-btn-inline" id="tt-admin-multiselect-continue" hidden>Continue</button>
+          </div>`;
+      } else {
+        el.innerHTML = rowsHtml;
+      }
+      const rowsForUser = (uid)=>({
+        uid,
+        email: el.querySelector(`.tt-admin-user-row[data-uid="${uid}"]`).getAttribute('data-email'),
+        displayName: el.querySelector(`.tt-admin-user-row[data-uid="${uid}"]`).getAttribute('data-name')
+      });
+      if(opts.multiSelect){
+        const updateContinueBtn = ()=>{
+          const checked = Array.from(el.querySelectorAll('.tt-admin-user-checkbox:checked'));
+          const btn = $('tt-admin-multiselect-continue');
+          btn.hidden = checked.length < 2;
+          btn.textContent = `Continue with ${checked.length} users`;
+        };
+        el.querySelectorAll('.tt-admin-user-checkbox').forEach(cb=>{
+          cb.addEventListener('click', (e)=> e.stopPropagation());
+          cb.addEventListener('change', updateContinueBtn);
+        });
+        $('tt-admin-multiselect-continue').addEventListener('click', ()=>{
+          const checked = Array.from(el.querySelectorAll('.tt-admin-user-checkbox:checked'));
+          const users = checked.map(cb=> rowsForUser(cb.getAttribute('data-uid')));
+          opts.onContinue(users);
+        });
+      }
       el.querySelectorAll('.tt-admin-user-row').forEach(row=>{
-        row.addEventListener('click', ()=>{
+        row.addEventListener('click', (e)=>{
+          if(e.target.classList.contains('tt-admin-user-checkbox')) return;
           onSelect({
             uid: row.getAttribute('data-uid'),
             email: row.getAttribute('data-email'),
@@ -2562,6 +2670,8 @@
   let adminExportType = 'detailed';
   let adminExportPeriod = 'month';
   let adminExportAnchorDate = new Date();
+  let adminExportCustomFrom = null;
+  let adminExportCustomTo = null;
 
   $('tt-admin-export-back-users').addEventListener('click', ()=> go({ view:'admin', screen:'export-users' }));
 
@@ -2572,6 +2682,17 @@
       start.setDate(start.getDate() - mondayIndex(start));
       const out = [];
       for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); out.push(d); }
+      return out;
+    }
+    if(period==='custom'){
+      const from = adminExportCustomFrom || new Date();
+      const to = adminExportCustomTo || from;
+      const start = from <= to ? from : to;
+      const end = from <= to ? to : from;
+      const out = [];
+      const cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      while(cur <= last){ out.push(new Date(cur)); cur.setDate(cur.getDate()+1); }
       return out;
     }
     if(period==='year'){
@@ -2594,15 +2715,27 @@
     const dates = adminGetExportDates(period, anchor);
     if(period==='day') return dates[0].toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
     if(period==='week') return `${dates[0].toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${dates[6].toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
+    if(period==='custom'){
+      if(dates.length===0) return 'Pick a date range';
+      const s = dates[0], e = dates[dates.length-1];
+      if(dates.length===1) return s.toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
+      const sameYear = s.getFullYear()===e.getFullYear();
+      const sFmt = s.toLocaleDateString(undefined, sameYear ? {month:'short', day:'numeric'} : {month:'short', day:'numeric', year:'numeric'});
+      const eFmt = e.toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'});
+      return `${sFmt} – ${eFmt}`;
+    }
     if(period==='year') return `${anchor.getFullYear()}`;
     return `${monthNames[anchor.getMonth()]} ${anchor.getFullYear()}`;
   }
 
   function adminBuildDetailedRows(entriesArr, dates){
     const keys = new Set(dates.map(dateKey));
+    const hasOwners = entriesArr.some(e=>e.ownerName);
     return entriesArr.filter(e=>keys.has(e.date)).sort((a,b)=>(a.startISO||'').localeCompare(b.startISO||'')).map(e=>{
       const s = new Date(e.startISO), st = new Date(e.stopISO);
-      return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
+      const row = [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
+      if(hasOwners) row.push(e.ownerName || '');
+      return row;
     });
   }
 
@@ -2702,16 +2835,41 @@
       if(id==='tt-admin-export-format') adminExportFormat = btn.dataset.val;
       else if(id==='tt-admin-export-view') adminExportView = btn.dataset.val;
       else if(id==='tt-admin-export-type') adminExportType = btn.dataset.val;
-      else adminExportPeriod = btn.dataset.val;
+      else {
+        adminExportPeriod = btn.dataset.val;
+        $('tt-custom-export-range-bar').hidden = adminExportPeriod!=='custom';
+        if(adminExportPeriod==='custom' && (!adminExportCustomFrom || !adminExportCustomTo)){
+          adminExportCustomTo = new Date();
+          adminExportCustomFrom = new Date();
+          adminExportCustomFrom.setDate(adminExportCustomFrom.getDate()-6);
+          $('tt-admin-export-custom-from').value = dateKey(adminExportCustomFrom);
+          $('tt-admin-export-custom-to').value = dateKey(adminExportCustomTo);
+        }
+      }
       adminUpdateExportControlsAvailability();
       adminUpdateExportPreview();
     });
   });
 
+  $('tt-admin-export-custom-from').addEventListener('change', ()=>{
+    const val = $('tt-admin-export-custom-from').value;
+    if(!val) return;
+    const [y,m,d] = val.split('-').map(Number);
+    adminExportCustomFrom = new Date(y, m-1, d);
+    adminUpdateExportPreview();
+  });
+  $('tt-admin-export-custom-to').addEventListener('change', ()=>{
+    const val = $('tt-admin-export-custom-to').value;
+    if(!val) return;
+    const [y,m,d] = val.split('-').map(Number);
+    adminExportCustomTo = new Date(y, m-1, d);
+    adminUpdateExportPreview();
+  });
+
   function renderAdminAnalytics(){
     const el = $('tt-admin-analytics');
     if(adminEntries.length===0){
-      el.innerHTML = '<div class="tt-preset-empty">No entries for this user.</div>';
+      el.innerHTML = '<div class="tt-preset-empty">No entries for these users.</div>';
       return;
     }
     const totalSec = adminEntries.reduce((s,e)=>s+(e.durationSec||0), 0);
@@ -2733,6 +2891,12 @@
       ['Last entry', lastDate || '—'],
       ['Top project/note', topProject ? `${topProject[0]} (${fmtHM(topProject[1])}h)` : '—']
     ];
+    if(adminSelectedExportUsers.length>1){
+      adminSelectedExportUsers.forEach(u=>{
+        const sec = adminEntries.filter(e=>e.ownerName===(u.displayName||u.email)).reduce((s,e)=>s+(e.durationSec||0),0);
+        stats.push([`Hours · ${u.displayName||u.email}`, fmtHM(sec)+'h']);
+      });
+    }
     el.innerHTML = stats.map(([label,val])=>`
       <div class="tt-today">
         <div class="tt-today-label">${escapeHtml(label)}</div>
@@ -2742,21 +2906,34 @@
   }
 
   async function selectUserForExport(user){
-    adminSelectedUser = user;
+    return selectUsersForExport([user]);
+  }
+
+  async function selectUsersForExport(users){
+    adminSelectedExportUsers = users;
     showAdminScreen('export-entries');
-    $('tt-admin-export-entries-label').textContent = user.displayName || 'Export';
-    $('tt-admin-export-entries-email').textContent = user.email || '';
+    const label = adminExportLabel();
+    $('tt-admin-export-entries-label').textContent = users.length>1 ? `${users.length} users` : (users[0].displayName || 'Export');
+    $('tt-admin-export-entries-email').textContent = users.length>1
+      ? users.map(u=>u.email).join(', ')
+      : (users[0].email || '');
     adminExportFormat = 'xlsx'; adminExportView = 'list'; adminExportType = 'detailed'; adminExportPeriod = 'month';
     adminExportAnchorDate = new Date();
     setActiveTab('tt-admin-export-format', 'xlsx');
     setActiveTab('tt-admin-export-view', 'list');
     setActiveTab('tt-admin-export-type', 'detailed');
     setActiveTab('tt-admin-export-period', 'month');
+    $('tt-custom-export-range-bar').hidden = true;
     const el = $('tt-admin-analytics');
     el.innerHTML = '<div class="tt-preset-empty">Loading analytics…</div>';
     try{
       await ensureAllEntriesLoaded();
-      adminEntries = getEntriesForUid(user.uid);
+      if(users.length>1){
+        adminEntries = users.flatMap(u=> getEntriesForUid(u.uid).map(e=>({...e, ownerName: u.displayName || u.email})));
+        adminEntries.sort((a,b)=> (b.startISO||'').localeCompare(a.startISO||''));
+      } else {
+        adminEntries = getEntriesForUid(users[0].uid);
+      }
       renderAdminAnalytics();
       adminUpdateExportControlsAvailability();
       adminUpdateExportPreview();
@@ -2769,28 +2946,29 @@
 
   function adminDoExportXlsx(entriesArr, dates, label){
     const wb = XLSX.utils.book_new();
+    const hasOwners = entriesArr.some(e=>e.ownerName);
     const headers = adminExportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'])
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(entriesArr,d), 0);
     const typeLabel = adminExportType==='detailed' ? 'Detailed' : 'Summary';
     const aoa = [
-      [`Double T — Entries for ${adminSelectedUser.displayName||adminSelectedUser.email} (${typeLabel} · ${label})`],
+      [`Double T — Entries for ${adminExportLabel()} (${typeLabel} · ${label})`],
       [], headers, ...rows, [], ['Total (h)', +(totalSec/3600).toFixed(2), fmtHMS(totalSec)]
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = adminExportType==='detailed'
-      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}]
+      ? (hasOwners ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}] : [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}])
       : [{wch:14},{wch:10},{wch:12}];
     XLSX.utils.book_append_sheet(wb, ws, 'Entries');
-    const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
-    XLSX.writeFile(wb, `Double_T_admin_${safeName}_${adminExportPeriod}.xlsx`);
+    XLSX.writeFile(wb, `Double_T_admin_${adminExportSafeName()}_${adminExportPeriod}.xlsx`);
   }
 
   function adminDoExportCsv(entriesArr, dates, label){
+    const hasOwners = entriesArr.some(e=>e.ownerName);
     const headers = adminExportType==='detailed'
-      ? ['date','start','stop','duration_h','duration_hms','notes']
+      ? (hasOwners ? ['date','start','stop','duration_h','duration_hms','notes','user'] : ['date','start','stop','duration_h','duration_hms','notes'])
       : (adminExportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const csvLines = [headers.join(',')];
@@ -2800,8 +2978,7 @@
         return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
       }).join(','));
     });
-    const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
-    triggerDownloadBlob('\uFEFF'+csvLines.join('\n'), `Double_T_admin_${safeName}_${adminExportPeriod}.csv`, 'text/csv;charset=utf-8');
+    triggerDownloadBlob('\uFEFF'+csvLines.join('\n'), `Double_T_admin_${adminExportSafeName()}_${adminExportPeriod}.csv`, 'text/csv;charset=utf-8');
   }
 
   function adminDoExportPdf(entriesArr, dates, label){
@@ -2810,6 +2987,7 @@
     const pageWidth = pdfDoc.internal.pageSize.getWidth();
     const typeLabel = (adminExportView==='chart') ? 'Chart' : (adminExportType==='detailed' ? 'Detailed' : 'Summary');
     const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(entriesArr,d), 0);
+    const hasOwners = entriesArr.some(e=>e.ownerName);
 
     pdfDoc.setFillColor(27,39,51);
     pdfDoc.rect(0, 0, pageWidth, 24, 'F');
@@ -2818,7 +2996,7 @@
 
     const infoY1 = 33, infoY2 = 40;
     const cols = [14, 14+(pageWidth-28)/3, 14+2*(pageWidth-28)/3];
-    const infoItems = [['USER', adminSelectedUser.displayName||adminSelectedUser.email], ['PERIOD', label], ['TOTAL', fmtHM(totalSec)+'h']];
+    const infoItems = [['USER', adminExportLabel()], ['PERIOD', label], ['TOTAL', fmtHM(totalSec)+'h']];
     infoItems.forEach(([lbl,val], i)=>{
       pdfDoc.setFontSize(8); pdfDoc.setTextColor(150); pdfDoc.text(lbl, cols[i], infoY1);
       pdfDoc.setFontSize(12); pdfDoc.setTextColor(30); pdfDoc.text(String(val), cols[i], infoY2);
@@ -2838,7 +3016,7 @@
       }
     }
 
-    const safeName = (adminSelectedUser.email||'user').replace(/[^\w-]+/g,'_');
+    const safeName = adminExportSafeName();
 
     if(adminExportView==='chart'){
       const chartDataUrl = adminRenderChartPNG(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
@@ -2860,7 +3038,7 @@
     }
 
     const headers = adminExportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'])
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     pdfDoc.autoTable({
@@ -2873,7 +3051,7 @@
   }
 
   $('tt-admin-export-btn').addEventListener('click', ()=>{
-    if(!adminSelectedUser) return;
+    if(adminSelectedExportUsers.length===0) return;
     const dates = adminGetExportDates(adminExportPeriod, adminExportAnchorDate);
     const label = adminGetExportLabel(adminExportPeriod, adminExportAnchorDate);
     if(adminExportFormat==='xlsx') adminDoExportXlsx(adminEntries, dates, label);
@@ -3063,12 +3241,16 @@
   // out from applyRoute because resolving a uid deep link needs an await.
   async function applyAdminRoute(route){
     const screen = route.screen;
-    const userMatches = !route.uid || (adminSelectedUser && adminSelectedUser.uid===route.uid);
+    const modeForMatch = ADMIN_SCREEN_SEGMENT[screen];
+    const userMatches = !route.uid || (modeForMatch==='manage'
+      ? (adminSelectedUser && adminSelectedUser.uid===route.uid)
+      : (adminSelectedExportUsers.length===1 && adminSelectedExportUsers[0].uid===route.uid));
     if(adminScreen===screen && userMatches) return;
 
     if(screen==='root'){
       adminMode = null;
       adminSelectedUser = null;
+      adminSelectedExportUsers = [];
       showAdminScreen('root');
       return;
     }
@@ -3078,9 +3260,13 @@
 
     if(screen==='manage-users' || screen==='export-users'){
       adminSelectedUser = null;
+      adminSelectedExportUsers = [];
       showAdminScreen(screen);
       if(mode==='manage') loadUsersInto('tt-admin-manage-users-list', openUserForManage);
-      else loadUsersInto('tt-admin-export-users-list', openUserForExport);
+      else loadUsersInto('tt-admin-export-users-list', openUserForExport, {
+        multiSelect: true,
+        onContinue: (users)=> selectUsersForExport(users)
+      });
       return;
     }
 
@@ -3341,6 +3527,11 @@
     $('tt-rangetotal').textContent = `${fmtHM(rangeTotal)} h logged`;
     renderEarningsPanel();
 
+    const isCustom = granularity==='custom';
+    $('tt-prev').hidden = isCustom;
+    $('tt-next').hidden = isCustom;
+    $('tt-custom-range-bar').hidden = !isCustom;
+
     const labelWrap = $('tt-rangelabel').parentElement;
     labelWrap.classList.remove('tt-fade-in');
     void labelWrap.offsetWidth;
@@ -3489,6 +3680,15 @@
       granularity = 'week';
       setActiveTab('tt-granularity-tabs', 'week');
     }
+
+    const calendarBtn = document.querySelector('#tt-viewmode-tabs button[data-v="calendar"]');
+    const customActive = granularity==='custom';
+    calendarBtn.disabled = customActive;
+    calendarBtn.classList.toggle('disabled', customActive);
+    if(customActive && viewMode==='calendar'){
+      viewMode = 'list';
+      setActiveTab('tt-viewmode-tabs', 'list');
+    }
   }
 
   $('tt-granularity-tabs').addEventListener('click', (e)=>{
@@ -3497,14 +3697,39 @@
     granularity = btn.dataset.g;
     setActiveTab('tt-granularity-tabs', granularity);
     expandedDay = null;
+    updateGranularityAvailability();
+    if(granularity==='custom'){
+      if(!customFromDate || !customToDate){
+        customToDate = new Date();
+        customFromDate = new Date();
+        customFromDate.setDate(customFromDate.getDate()-6);
+      }
+      $('tt-custom-from').value = dateKey(customFromDate);
+      $('tt-custom-to').value = dateKey(customToDate);
+    }
     renderCurrentView();
   });
   $('tt-viewmode-tabs').addEventListener('click', (e)=>{
     const btn = e.target.closest('button[data-v]');
-    if(!btn) return;
+    if(!btn || btn.disabled) return;
     viewMode = btn.dataset.v;
     setActiveTab('tt-viewmode-tabs', viewMode);
     updateGranularityAvailability();
+    renderCurrentView();
+  });
+
+  $('tt-custom-from').addEventListener('change', ()=>{
+    const val = $('tt-custom-from').value;
+    if(!val) return;
+    const [y,m,d] = val.split('-').map(Number);
+    customFromDate = new Date(y, m-1, d);
+    renderCurrentView();
+  });
+  $('tt-custom-to').addEventListener('change', ()=>{
+    const val = $('tt-custom-to').value;
+    if(!val) return;
+    const [y,m,d] = val.split('-').map(Number);
+    customToDate = new Date(y, m-1, d);
     renderCurrentView();
   });
 
