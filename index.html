@@ -1304,7 +1304,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.061</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.062</div>
   </div>
 </div>
 
@@ -2731,7 +2731,15 @@
   function adminBuildDetailedRows(entriesArr, dates){
     const keys = new Set(dates.map(dateKey));
     const hasOwners = entriesArr.some(e=>e.ownerName);
-    return entriesArr.filter(e=>keys.has(e.date)).sort((a,b)=>(a.startISO||'').localeCompare(b.startISO||'')).map(e=>{
+    const filtered = entriesArr.filter(e=>keys.has(e.date));
+    // When combining multiple users, group each person's entries together
+    // (sorted chronologically within their own block) rather than interleaving
+    // everyone by raw timestamp — much easier to read who did what.
+    filtered.sort((a,b)=>{
+      if(hasOwners && a.ownerName!==b.ownerName) return (a.ownerName||'').localeCompare(b.ownerName||'');
+      return (a.startISO||'').localeCompare(b.startISO||'');
+    });
+    return filtered.map(e=>{
       const s = new Date(e.startISO), st = new Date(e.stopISO);
       const row = [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
       if(hasOwners) row.push(e.ownerName || '');
@@ -3041,10 +3049,15 @@
       ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'])
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
+    const columnStyles = adminExportType==='detailed'
+      ? (hasOwners
+          ? { 0:{cellWidth:20}, 1:{cellWidth:15}, 2:{cellWidth:15}, 3:{cellWidth:16}, 4:{cellWidth:20}, 5:{cellWidth:'auto'}, 6:{cellWidth:34, fontStyle:'bold'} }
+          : { 0:{cellWidth:22}, 1:{cellWidth:18}, 2:{cellWidth:18}, 3:{cellWidth:20}, 4:{cellWidth:24}, 5:{cellWidth:'auto'} })
+      : {};
     pdfDoc.autoTable({
       head: [headers], body: rows, startY: contentStartY,
-      styles: { fontSize: 9 }, headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
-      alternateRowStyles: { fillColor: [245,245,245] }
+      styles: { fontSize: 9, overflow: 'linebreak' }, headStyles: { fillColor: [232,163,61], textColor: [27,39,51] },
+      alternateRowStyles: { fillColor: [245,245,245] }, columnStyles
     });
     addFooter();
     pdfDoc.save(`Double_T_admin_${safeName}_${adminExportPeriod}.pdf`);
