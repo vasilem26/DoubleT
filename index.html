@@ -146,8 +146,18 @@
   .tt-panel-hide-btn:hover{border-color:var(--stop); color:#E7A29D;}
   body.tt-customizing .tt-panel-hide-btn{display:inline-block;}
   .tt-panel.tt-panel-hidden{display:none !important;}
-  .tt-averages-title{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.08em; font-family:'Space Mono',monospace;}
-  .tt-averages .tt-stat-grid{margin-top:10px;}
+  .tt-restore-wrap{position:relative; flex-shrink:0;}
+  .tt-restore-menu{
+    position:absolute; top:calc(100% + 6px); right:0; z-index:300; min-width:190px;
+    background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:4px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .tt-restore-menu[hidden]{display:none;}
+  .tt-restore-menu button{
+    display:block; width:100%; text-align:left; background:none; border:none; color:var(--paper);
+    font-family:'Work Sans',sans-serif; font-size:12px; padding:8px 10px; border-radius:4px; cursor:pointer;
+  }
+  .tt-restore-menu button:hover{background:var(--panel-2); color:var(--amber);}
   .tt-stat-sub{font-size:11px; color:var(--paper-dim); margin-top:3px; line-height:1.4;}
   .tt-panel-handle:active{cursor:grabbing;}
   body.tt-customizing .tt-panel-handle{display:flex;}
@@ -840,7 +850,10 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
-        <button id="tt-show-averages-btn" class="tt-customize-btn" type="button" hidden>+ Averages</button>
+        <div class="tt-restore-wrap" id="tt-restore-wrap" hidden>
+          <button id="tt-restore-panels-btn" class="tt-customize-btn" type="button">+ Panels</button>
+          <div class="tt-restore-menu" id="tt-restore-menu" hidden></div>
+        </div>
         <button id="tt-reset-layout-btn" class="tt-customize-btn" type="button" hidden>Reset layout</button>
         <button id="tt-customize-btn" class="tt-customize-btn" type="button">Customize</button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
@@ -1257,35 +1270,85 @@
     </div>
     </div>
 
-    <div class="tt-panel" data-panel="averages">
+    <div class="tt-panel" data-panel="avgHours">
       <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
         <span class="tt-panel-handle-hint">drag corner to resize</span>
-        <button type="button" class="tt-panel-hide-btn" id="tt-averages-hide" title="Hide this panel">Hide</button>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
       </div>
       <div class="tt-panel-resize-handle" title="Drag to resize"></div>
-    <div class="tt-averages" id="tt-averages">
-      <div class="tt-averages-title" id="tt-averages-title">Averages</div>
-      <div class="tt-stat-grid">
-        <div class="tt-stat-card tt-stat-card-accent">
-          <div class="tt-stat-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-          </div>
-          <div class="tt-stat-body">
-            <div class="tt-today-label">Avg hours</div>
-            <div class="tt-today-val" id="tt-avg-hours">—</div>
-            <div class="tt-stat-sub" id="tt-avg-hours-sub"></div>
-          </div>
+    <div class="tt-stat-grid tt-stat-grid-single">
+      <div class="tt-stat-card tt-stat-card-accent">
+        <div class="tt-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         </div>
-        <div class="tt-stat-card">
-          <div class="tt-stat-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>
-          </div>
-          <div class="tt-stat-body">
-            <div class="tt-today-label" id="tt-avg-pay-label">Avg pay</div>
-            <div class="tt-today-val" id="tt-avg-pay">—</div>
-            <div class="tt-stat-sub" id="tt-avg-pay-sub"></div>
-          </div>
+        <div class="tt-stat-body">
+          <div class="tt-today-label">Avg hours</div>
+          <div class="tt-today-val" id="tt-avg-hours">—</div>
+          <div class="tt-stat-sub" id="tt-avg-hours-sub"></div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tt-panel" data-panel="avgPay">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+    <div class="tt-stat-grid tt-stat-grid-single">
+      <div class="tt-stat-card">
+        <div class="tt-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>
+        </div>
+        <div class="tt-stat-body">
+          <div class="tt-today-label" id="tt-avg-pay-label">Avg pay</div>
+          <div class="tt-today-val" id="tt-avg-pay">—</div>
+          <div class="tt-stat-sub" id="tt-avg-pay-sub"></div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tt-panel" data-panel="monthAvgHours">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+    <div class="tt-stat-grid tt-stat-grid-single">
+      <div class="tt-stat-card tt-stat-card-accent">
+        <div class="tt-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        </div>
+        <div class="tt-stat-body">
+          <div class="tt-today-label">Monthly avg hours</div>
+          <div class="tt-today-val" id="tt-mavg-hours">—</div>
+          <div class="tt-stat-sub" id="tt-mavg-hours-sub"></div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="tt-panel" data-panel="monthAvgPay">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+    <div class="tt-stat-grid tt-stat-grid-single">
+      <div class="tt-stat-card">
+        <div class="tt-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>
+        </div>
+        <div class="tt-stat-body">
+          <div class="tt-today-label" id="tt-mavg-pay-label">Monthly avg pay</div>
+          <div class="tt-today-val" id="tt-mavg-pay">—</div>
+          <div class="tt-stat-sub" id="tt-mavg-pay-sub"></div>
         </div>
       </div>
     </div>
@@ -1350,7 +1413,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.063</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.064</div>
   </div>
 </div>
 
@@ -1396,7 +1459,11 @@
   let unsubPresets = null;
   let unsubPrefs = null;
   let unsubLayout = null;
-  const KNOWN_PANELS = ['timer','today','month','earnings','averages','browser'];
+  const KNOWN_PANELS = ['timer','today','month','earnings','avgHours','avgPay','monthAvgHours','monthAvgPay','browser'];
+  // Panels the user may remove (and bring back from the "+ Panels" menu)
+  const HIDEABLE_PANELS = { avgHours:'Avg hours', avgPay:'Avg pay', monthAvgHours:'Monthly avg hours', monthAvgPay:'Monthly avg pay' };
+  // Panels that sit side by side as a row by default
+  const PANEL_PAIRS = { today:'month', avgHours:'avgPay', monthAvgHours:'monthAvgPay' };
   // x/width are percentages of the canvas width (responsive); y/height are pixels.
   // height:null means "auto" — sized to content until the user explicitly resizes it.
   let panelLayout = { positions: {}, hidden: [] }; // populated on first load — see computeDefaultPositions(); hidden = panels the user removed
@@ -2045,8 +2112,8 @@
     return { net: remaining, breakdown };
   }
 
-  function computeMonthlyEarnings(){
-    const dates = getRangeDates(); // whatever Day/Week/Month range is currently browsed
+  function computeMonthlyEarnings(dates){
+    dates = dates || getRangeDates(); // default: whatever Day/Week/Month/Custom range is currently browsed
     const keys = new Set(dates.map(dateKey));
 
     const byNote = {};
@@ -2109,39 +2176,85 @@
     return { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded };
   }
 
-  // Average hours + average pay per worked day for whatever range is being
-  // browsed. Same inputs as the Estimated panel (range, net/gross, display
-  // currency), so the two always agree. A "worked day" is any day in the range
-  // with logged time (including a running timer).
-  function renderAveragesPanel(earn){
-    if(!$('tt-averages')) return;
+  // ---- Averages ----------------------------------------------------------
+  // Two kinds, each split into an hours panel and a pay panel:
+  //  1) Avg per WORKED day, for whatever range is being browsed (a worked day
+  //     is any day with logged time, including a running timer).
+  //  2) Monthly avg: the whole month's total divided by ALL of that month's
+  //     working days (Mon-Fri), whether or not anything was logged on them.
+  // Pay follows the Net/Gross toggle and display currency, same as Estimated.
+  function workingDaysOfMonth(year, month){
+    const days = new Date(year, month+1, 0).getDate();
+    let n = 0;
+    for(let d=1; d<=days; d++){
+      const wd = new Date(year, month, d).getDay();
+      if(wd!==0 && wd!==6) n++;
+    }
+    return n;
+  }
+
+  // " · 12.00 EUR + 30.00 RON" — native-currency breakdown, only when mixed
+  function nativeAvgParts(byCurrency, divisor){
+    const curs = Object.keys(byCurrency).filter(c=>byCurrency[c]);
+    if(curs.length < 2) return '';
+    return ' · ' + curs.map(c=>`${(byCurrency[c]/divisor).toFixed(2)} ${c}`).join(' + ');
+  }
+  function notConvertedNote(earn){
+    return earn.excluded.length ? ` · ${earn.excluded.join(', ')} not converted (rate unavailable)` : '';
+  }
+
+  function renderAveragePanels(earn){
+    if(!$('tt-avg-hours')) return;
+    const modeLabel = earningsMode; // 'net' | 'gross'
+    const byCur = e => earningsMode==='gross' ? e.grossByCurrency : e.netByCurrency;
+
+    // 1) per worked day, browsed range
     const dates = getRangeDates();
+    const rangeLabel = getRangeLabel();
     let workedDays = 0, totalSec = 0;
     dates.forEach(d=>{
       const secs = secondsForDate(d);
       if(secs > 0){ workedDays++; totalSec += secs; }
     });
-    $('tt-averages-title').textContent = `${getRangeLabel()} · averages`;
-    $('tt-avg-pay-label').textContent = `Avg pay · ${earningsMode}`;
-
+    $('tt-avg-pay-label').textContent = `Avg pay · ${modeLabel}`;
     if(workedDays === 0){
       $('tt-avg-hours').textContent = '—';
-      $('tt-avg-hours-sub').textContent = 'No hours logged in this period';
+      $('tt-avg-hours-sub').textContent = `${rangeLabel} · no hours logged`;
       $('tt-avg-pay').textContent = '—';
-      $('tt-avg-pay-sub').textContent = '';
-      return;
-    }
-    const avgSec = Math.round(totalSec / workedDays);
-    $('tt-avg-hours').textContent = `${fmtHM(avgSec)} h`;
-    $('tt-avg-hours-sub').textContent = `per worked day · ${workedDays} of ${dates.length} day${dates.length===1?'':'s'}`;
-
-    const hasPay = Object.keys(earn.netByCurrency).length > 0;
-    if(!hasPay){
-      $('tt-avg-pay').textContent = '—';
-      $('tt-avg-pay-sub').textContent = 'Set an hourly rate on a project';
+      $('tt-avg-pay-sub').textContent = rangeLabel;
     } else {
-      $('tt-avg-pay').textContent = `${(earn.convertedTotal / workedDays).toFixed(2)} ${displayCurrency}`;
-      $('tt-avg-pay-sub').textContent = `per worked day · ${earningsMode}, converted`;
+      $('tt-avg-hours').textContent = `${fmtHM(Math.round(totalSec / workedDays))} h`;
+      $('tt-avg-hours-sub').textContent = `${rangeLabel} · per worked day · ${workedDays} of ${dates.length} day${dates.length===1?'':'s'}`;
+      if(Object.keys(earn.netByCurrency).length === 0){
+        $('tt-avg-pay').textContent = '—';
+        $('tt-avg-pay-sub').textContent = `${rangeLabel} · set an hourly rate on a project`;
+      } else {
+        $('tt-avg-pay').textContent = `${(earn.convertedTotal / workedDays).toFixed(2)} ${displayCurrency}`;
+        $('tt-avg-pay-sub').textContent = `${rangeLabel} · per worked day · ${modeLabel}, converted${nativeAvgParts(byCur(earn), workedDays)}${notConvertedNote(earn)}`;
+      }
+    }
+
+    // 2) monthly: month of the browsed date (custom ranges use their first day)
+    const ref = (granularity==='custom' && dates[0]) ? dates[0] : anchorDate;
+    const y = ref.getFullYear(), m = ref.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const monthDates = [];
+    for(let d=1; d<=daysInMonth; d++) monthDates.push(new Date(y, m, d));
+    const workingDays = workingDaysOfMonth(y, m);
+    let monthSec = 0;
+    monthDates.forEach(d=>{ monthSec += secondsForDate(d); });
+    const monthLabel = `${monthNames[m]} ${y}`;
+
+    $('tt-mavg-pay-label').textContent = `Monthly avg pay · ${modeLabel}`;
+    $('tt-mavg-hours').textContent = `${fmtHM(Math.round(monthSec / workingDays))} h`;
+    $('tt-mavg-hours-sub').textContent = `${monthLabel} · ${fmtHM(monthSec)} h ÷ ${workingDays} working days (Mon–Fri)`;
+    const mEarn = computeMonthlyEarnings(monthDates);
+    if(Object.keys(mEarn.netByCurrency).length === 0){
+      $('tt-mavg-pay').textContent = '—';
+      $('tt-mavg-pay-sub').textContent = `${monthLabel} · set an hourly rate on a project`;
+    } else {
+      $('tt-mavg-pay').textContent = `${(mEarn.convertedTotal / workingDays).toFixed(2)} ${displayCurrency}`;
+      $('tt-mavg-pay-sub').textContent = `${monthLabel} · ÷ ${workingDays} working days · ${modeLabel}, converted${nativeAvgParts(byCur(mEarn), workingDays)}${notConvertedNote(mEarn)}`;
     }
   }
 
@@ -2150,7 +2263,7 @@
     if(!panel) return;
     const earn = computeMonthlyEarnings();
     const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = earn;
-    renderAveragesPanel(earn);
+    renderAveragePanels(earn);
     const curSel = $('tt-earnings-currency');
     if(curSel) curSel.value = displayCurrency;
     setActiveTab('tt-earnings-mode', earningsMode);
@@ -3497,7 +3610,11 @@
       let hidden = [];
       if(snap.exists()){
         const data = snap.data();
-        if(Array.isArray(data.hidden)) hidden = data.hidden.filter(id=>KNOWN_PANELS.includes(id));
+        if(Array.isArray(data.hidden)){
+          // 'averages' was a single combined panel in an earlier version
+          hidden = data.hidden.flatMap(id=> id==='averages' ? ['avgHours','avgPay'] : [id])
+                              .filter(id=>KNOWN_PANELS.includes(id));
+        }
         if(data.positions && typeof data.positions==='object'){
           // current format
           KNOWN_PANELS.forEach(id=>{
@@ -3506,6 +3623,17 @@
               positions[id] = { x:p.x, y:(typeof p.y==='number'?p.y:null), width:p.width, height:(typeof p.height==='number'?p.height:null) };
             }
           });
+        }
+        // Carry a saved combined "averages" panel over: its spot becomes the
+        // hours panel (left half) and the pay panel (right half).
+        const legacy = data.positions && data.positions.averages;
+        if(legacy && typeof legacy.x==='number' && typeof legacy.width==='number' && typeof legacy.y==='number'
+           && !positions.avgHours && !positions.avgPay){
+          const cw = panelsContainerEl().getBoundingClientRect().width || 640;
+          const gapPct = +((12/cw)*100).toFixed(3);
+          const half = +((legacy.width - gapPct)/2).toFixed(3);
+          positions.avgHours = { x:legacy.x, width:half, y:legacy.y, height:null };
+          positions.avgPay   = { x:+(legacy.x + half + gapPct).toFixed(3), width:half, y:legacy.y, height:null };
         }
         // (an older order/spans/left-center-right/blanks saved layout is simply discarded
         // here — a genuinely different model, not a convertible one; anything missing
@@ -4287,7 +4415,10 @@
       today:    { x: pct(colXPx), width: pct(halfWidthPx) },
       month:    { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
       earnings: { x: pct(colXPx), width: pct(colWidthPx) },
-      averages: { x: pct(colXPx), width: pct(colWidthPx) },
+      avgHours: { x: pct(colXPx), width: pct(halfWidthPx) },
+      avgPay:   { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
+      monthAvgHours: { x: pct(colXPx), width: pct(halfWidthPx) },
+      monthAvgPay:   { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
       browser:  { x: pct(colXPx), width: pct(colWidthPx) }
     };
   }
@@ -4302,7 +4433,7 @@
   // values remove that failure mode entirely. A panel taller than its default
   // is still fully visible (see overflow:visible below) and can be resized
   // larger any time.
-  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, averages:150, browser:700 };
+  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, avgHours:130, avgPay:130, monthAvgHours:130, monthAvgPay:130, browser:700 };
 
   function computeDefaultPositions(missingIds, existingPositions){
     const xw = getCenteredColumnXW();
@@ -4321,10 +4452,11 @@
     let i = 0;
     while(i < order.length){
       const id = order[i];
-      if(id==='today' && order[i+1]==='month'){
-        const h = Math.max(DEFAULT_HEIGHT.today, DEFAULT_HEIGHT.month);
-        positions.today = { ...xw.today, y, height:null };
-        positions.month = { ...xw.month, y, height:null };
+      const partner = PANEL_PAIRS[id];
+      if(partner && order[i+1]===partner){
+        const h = Math.max(DEFAULT_HEIGHT[id], DEFAULT_HEIGHT[partner]);
+        positions[id] = { ...xw[id], y, height:null };
+        positions[partner] = { ...xw[partner], y, height:null };
         y += h + gap;
         i += 2;
       } else {
@@ -4485,36 +4617,62 @@
     updateRestoreButton();
   }
 
-  // The "+ Averages" button only exists while customizing AND the panel is hidden
+  // "+ Panels" appears only while customizing AND at least one removable panel is hidden
+  function hiddenHideablePanels(){
+    return (panelLayout.hidden||[]).filter(id=>HIDEABLE_PANELS[id]);
+  }
   function updateRestoreButton(){
-    const isHidden = (panelLayout.hidden||[]).includes('averages');
-    $('tt-show-averages-btn').hidden = !(customizing && isHidden);
+    const list = hiddenHideablePanels();
+    $('tt-restore-wrap').hidden = !(customizing && list.length);
+    const menu = $('tt-restore-menu');
+    if(!list.length) menu.hidden = true;
+    menu.innerHTML = list.map(id=>`<button type="button" data-restore="${id}">${escapeHtml(HIDEABLE_PANELS[id])}</button>`).join('');
   }
 
-  $('tt-averages-hide').addEventListener('click', ()=>{
-    if(!customizing) return;
-    const el = panelEl('averages');
+  function hidePanel(id){
+    const el = panelEl(id);
+    if(!el) return;
     const containerWidth = panelsContainerEl().getBoundingClientRect().width;
     // remember where it was, so showing it again puts it back there
-    panelLayout.positions['averages'] = readPanelPosition(el, containerWidth);
-    panelLayout.hidden = Array.from(new Set([...(panelLayout.hidden||[]), 'averages']));
+    panelLayout.positions[id] = readPanelPosition(el, containerWidth);
+    panelLayout.hidden = Array.from(new Set([...(panelLayout.hidden||[]), id]));
     el.classList.add('tt-panel-hidden');
     clearAlignGuides();
     updateContainerHeight();
     updateRestoreButton();
-  });
+  }
 
-  $('tt-show-averages-btn').addEventListener('click', ()=>{
-    panelLayout.hidden = (panelLayout.hidden||[]).filter(id=>id!=='averages');
-    const el = panelEl('averages');
+  function showPanel(id){
+    panelLayout.hidden = (panelLayout.hidden||[]).filter(x=>x!==id);
+    const el = panelEl(id);
+    if(!el) return;
     el.classList.remove('tt-panel-hidden');
     // only this panel is (re)applied — other panels may have unsaved moves in progress
-    if(!panelLayout.positions['averages']){
-      Object.assign(panelLayout.positions, computeDefaultPositions(['averages'], panelLayout.positions));
+    if(!panelLayout.positions[id]){
+      Object.assign(panelLayout.positions, computeDefaultPositions([id], panelLayout.positions));
     }
-    applyOnePanel('averages', panelLayout.positions['averages']);
+    applyOnePanel(id, panelLayout.positions[id]);
     updateContainerHeight();
     updateRestoreButton();
+  }
+
+  panelsContainerEl().addEventListener('click', (e)=>{
+    const btn = e.target.closest('.tt-panel-hide-btn');
+    if(!btn || !customizing) return;
+    hidePanel(btn.closest('.tt-panel').getAttribute('data-panel'));
+  });
+
+  $('tt-restore-panels-btn').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    $('tt-restore-menu').hidden = !$('tt-restore-menu').hidden;
+  });
+  $('tt-restore-menu').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-restore]');
+    if(!btn) return;
+    showPanel(btn.getAttribute('data-restore'));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#tt-restore-wrap')) $('tt-restore-menu').hidden = true;
   });
 
   function exitCustomizeMode(){
@@ -4523,7 +4681,7 @@
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
     $('tt-reset-layout-btn').hidden = true;
-    $('tt-show-averages-btn').hidden = true;
+    $('tt-restore-wrap').hidden = true;
     clearAlignGuides();
     panelLayout = readCurrentLayout();
     updateContainerHeight();
@@ -4556,10 +4714,11 @@
     let i = 0;
     while(i < KNOWN_PANELS.length){
       const id = KNOWN_PANELS[i];
-      if(id==='today' && KNOWN_PANELS[i+1]==='month'){
-        const h = Math.max(panelEl('today').offsetHeight, panelEl('month').offsetHeight);
-        positions.today = { ...xw.today, y, height:null };
-        positions.month = { ...xw.month, y, height:null };
+      const partner = PANEL_PAIRS[id];
+      if(partner && KNOWN_PANELS[i+1]===partner){
+        const h = Math.max(panelEl(id).offsetHeight, panelEl(partner).offsetHeight);
+        positions[id] = { ...xw[id], y, height:null };
+        positions[partner] = { ...xw[partner], y, height:null };
         y += h + gap;
         i += 2;
       } else {
