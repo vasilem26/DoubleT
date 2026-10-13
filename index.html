@@ -1270,6 +1270,38 @@
     </div>
     </div>
 
+    <div class="tt-panel" data-panel="monthAvgPay">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+    <div class="tt-earnings" id="tt-proj">
+      <div class="tt-earnings-head">
+        <div class="tt-earnings-title" id="tt-proj-title">This month · projected</div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <div class="tt-segment tt-earnings-mode-segment" id="tt-proj-mode">
+            <button data-val="net" class="active">Net</button><button data-val="gross">Gross</button>
+          </div>
+          <select id="tt-proj-currency" class="tt-earnings-currency-select">
+            <option value="RON">RON</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+          </select>
+        </div>
+      </div>
+      <div class="tt-earnings-total" id="tt-proj-total">—</div>
+      <div class="tt-earnings-total-label" id="tt-proj-total-label"></div>
+      <div class="tt-earnings-sub" id="tt-proj-basis"></div>
+      <div class="tt-earnings-sub" id="tt-proj-sub"></div>
+      <div class="tt-earnings-taxes" id="tt-proj-taxes" hidden></div>
+      <div class="tt-earnings-list-label">Per project · projected gross → net</div>
+      <div class="tt-earnings-list" id="tt-proj-list"></div>
+    </div>
+    </div>
+
     <div class="tt-panel" data-panel="avgHours">
       <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
@@ -1307,48 +1339,6 @@
           <div class="tt-today-label" id="tt-avg-pay-label">Avg pay</div>
           <div class="tt-today-val" id="tt-avg-pay">—</div>
           <div class="tt-stat-sub" id="tt-avg-pay-sub"></div>
-        </div>
-      </div>
-    </div>
-    </div>
-
-    <div class="tt-panel" data-panel="monthAvgHours">
-      <div class="tt-panel-handle" title="Drag to move">
-        <span class="tt-panel-handle-icon">&#10021;</span>
-        <span class="tt-panel-handle-hint">drag corner to resize</span>
-        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
-      </div>
-      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
-    <div class="tt-stat-grid tt-stat-grid-single">
-      <div class="tt-stat-card tt-stat-card-accent">
-        <div class="tt-stat-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-        </div>
-        <div class="tt-stat-body">
-          <div class="tt-today-label">Monthly avg hours</div>
-          <div class="tt-today-val" id="tt-mavg-hours">—</div>
-          <div class="tt-stat-sub" id="tt-mavg-hours-sub"></div>
-        </div>
-      </div>
-    </div>
-    </div>
-
-    <div class="tt-panel" data-panel="monthAvgPay">
-      <div class="tt-panel-handle" title="Drag to move">
-        <span class="tt-panel-handle-icon">&#10021;</span>
-        <span class="tt-panel-handle-hint">drag corner to resize</span>
-        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
-      </div>
-      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
-    <div class="tt-stat-grid tt-stat-grid-single">
-      <div class="tt-stat-card">
-        <div class="tt-stat-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>
-        </div>
-        <div class="tt-stat-body">
-          <div class="tt-today-label" id="tt-mavg-pay-label">Monthly avg pay</div>
-          <div class="tt-today-val" id="tt-mavg-pay">—</div>
-          <div class="tt-stat-sub" id="tt-mavg-pay-sub"></div>
         </div>
       </div>
     </div>
@@ -1413,7 +1403,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.064</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.065</div>
   </div>
 </div>
 
@@ -1459,11 +1449,11 @@
   let unsubPresets = null;
   let unsubPrefs = null;
   let unsubLayout = null;
-  const KNOWN_PANELS = ['timer','today','month','earnings','avgHours','avgPay','monthAvgHours','monthAvgPay','browser'];
+  const KNOWN_PANELS = ['timer','today','month','earnings','monthAvgPay','avgHours','avgPay','browser'];
   // Panels the user may remove (and bring back from the "+ Panels" menu)
-  const HIDEABLE_PANELS = { avgHours:'Avg hours', avgPay:'Avg pay', monthAvgHours:'Monthly avg hours', monthAvgPay:'Monthly avg pay' };
+  const HIDEABLE_PANELS = { monthAvgPay:'Month-end projection', avgHours:'Avg hours', avgPay:'Avg pay' };
   // Panels that sit side by side as a row by default
-  const PANEL_PAIRS = { today:'month', avgHours:'avgPay', monthAvgHours:'monthAvgPay' };
+  const PANEL_PAIRS = { today:'month', avgHours:'avgPay' };
   // x/width are percentages of the canvas width (responsive); y/height are pixels.
   // height:null means "auto" — sized to content until the user explicitly resizes it.
   let panelLayout = { positions: {}, hidden: [] }; // populated on first load — see computeDefaultPositions(); hidden = panels the user removed
@@ -2177,21 +2167,9 @@
   }
 
   // ---- Averages ----------------------------------------------------------
-  // Two kinds, each split into an hours panel and a pay panel:
-  //  1) Avg per WORKED day, for whatever range is being browsed (a worked day
-  //     is any day with logged time, including a running timer).
-  //  2) Monthly avg: the whole month's total divided by ALL of that month's
-  //     working days (Mon-Fri), whether or not anything was logged on them.
-  // Pay follows the Net/Gross toggle and display currency, same as Estimated.
-  function workingDaysOfMonth(year, month){
-    const days = new Date(year, month+1, 0).getDate();
-    let n = 0;
-    for(let d=1; d<=days; d++){
-      const wd = new Date(year, month, d).getDay();
-      if(wd!==0 && wd!==6) n++;
-    }
-    return n;
-  }
+  // Avg hours / Avg pay per WORKED day for whatever range is being browsed (a
+  // worked day is any day with logged time, including a running timer). Pay
+  // follows the Net/Gross toggle and display currency, same as Estimated.
 
   // " · 12.00 EUR + 30.00 RON" — native-currency breakdown, only when mixed
   function nativeAvgParts(byCurrency, divisor){
@@ -2207,8 +2185,6 @@
     if(!$('tt-avg-hours')) return;
     const modeLabel = earningsMode; // 'net' | 'gross'
     const byCur = e => earningsMode==='gross' ? e.grossByCurrency : e.netByCurrency;
-
-    // 1) per worked day, browsed range
     const dates = getRangeDates();
     const rangeLabel = getRangeLabel();
     let workedDays = 0, totalSec = 0;
@@ -2222,70 +2198,42 @@
       $('tt-avg-hours-sub').textContent = `${rangeLabel} · no hours logged`;
       $('tt-avg-pay').textContent = '—';
       $('tt-avg-pay-sub').textContent = rangeLabel;
-    } else {
-      $('tt-avg-hours').textContent = `${fmtHM(Math.round(totalSec / workedDays))} h`;
-      $('tt-avg-hours-sub').textContent = `${rangeLabel} · per worked day · ${workedDays} of ${dates.length} day${dates.length===1?'':'s'}`;
-      if(Object.keys(earn.netByCurrency).length === 0){
-        $('tt-avg-pay').textContent = '—';
-        $('tt-avg-pay-sub').textContent = `${rangeLabel} · set an hourly rate on a project`;
-      } else {
-        $('tt-avg-pay').textContent = `${(earn.convertedTotal / workedDays).toFixed(2)} ${displayCurrency}`;
-        $('tt-avg-pay-sub').textContent = `${rangeLabel} · per worked day · ${modeLabel}, converted${nativeAvgParts(byCur(earn), workedDays)}${notConvertedNote(earn)}`;
-      }
+      return;
     }
-
-    // 2) monthly: month of the browsed date (custom ranges use their first day)
-    const ref = (granularity==='custom' && dates[0]) ? dates[0] : anchorDate;
-    const y = ref.getFullYear(), m = ref.getMonth();
-    const daysInMonth = new Date(y, m+1, 0).getDate();
-    const monthDates = [];
-    for(let d=1; d<=daysInMonth; d++) monthDates.push(new Date(y, m, d));
-    const workingDays = workingDaysOfMonth(y, m);
-    let monthSec = 0;
-    monthDates.forEach(d=>{ monthSec += secondsForDate(d); });
-    const monthLabel = `${monthNames[m]} ${y}`;
-
-    $('tt-mavg-pay-label').textContent = `Monthly avg pay · ${modeLabel}`;
-    $('tt-mavg-hours').textContent = `${fmtHM(Math.round(monthSec / workingDays))} h`;
-    $('tt-mavg-hours-sub').textContent = `${monthLabel} · ${fmtHM(monthSec)} h ÷ ${workingDays} working days (Mon–Fri)`;
-    const mEarn = computeMonthlyEarnings(monthDates);
-    if(Object.keys(mEarn.netByCurrency).length === 0){
-      $('tt-mavg-pay').textContent = '—';
-      $('tt-mavg-pay-sub').textContent = `${monthLabel} · set an hourly rate on a project`;
+    $('tt-avg-hours').textContent = `${fmtHM(Math.round(totalSec / workedDays))} h`;
+    $('tt-avg-hours-sub').textContent = `${rangeLabel} · per worked day · ${workedDays} of ${dates.length} day${dates.length===1?'':'s'}`;
+    if(Object.keys(earn.netByCurrency).length === 0){
+      $('tt-avg-pay').textContent = '—';
+      $('tt-avg-pay-sub').textContent = `${rangeLabel} · set an hourly rate on a project`;
     } else {
-      $('tt-mavg-pay').textContent = `${(mEarn.convertedTotal / workingDays).toFixed(2)} ${displayCurrency}`;
-      $('tt-mavg-pay-sub').textContent = `${monthLabel} · ÷ ${workingDays} working days · ${modeLabel}, converted${nativeAvgParts(byCur(mEarn), workingDays)}${notConvertedNote(mEarn)}`;
+      $('tt-avg-pay').textContent = `${(earn.convertedTotal / workedDays).toFixed(2)} ${displayCurrency}`;
+      $('tt-avg-pay-sub').textContent = `${rangeLabel} · per worked day · ${modeLabel}, converted${nativeAvgParts(byCur(earn), workedDays)}${notConvertedNote(earn)}`;
     }
   }
 
-  function renderEarningsPanel(){
-    const panel = $('tt-earnings');
-    if(!panel) return;
-    const earn = computeMonthlyEarnings();
+  // ---- Earnings view (shared) --------------------------------------------
+  // Fills one earnings-style block: converted total, gross→net per currency,
+  // taxes withheld, per-project list. Used by the Estimated panel and by the
+  // month-end projection panel, so the two always look and behave alike.
+  function renderEarningsView(earn, ids, opts){
+    opts = opts || {};
     const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = earn;
-    renderAveragePanels(earn);
-    const curSel = $('tt-earnings-currency');
-    if(curSel) curSel.value = displayCurrency;
-    setActiveTab('tt-earnings-mode', earningsMode);
-
-    $('tt-earnings-title').textContent = `${getRangeLabel()} · estimated`;
-
     const currencies = Object.keys(netByCurrency);
     const hasAny = currencies.length > 0;
-    $('tt-earnings-total').textContent = hasAny ? `${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
-    $('tt-earnings-total-label').textContent = hasAny ? `${earningsMode}, converted` : '';
+    $(ids.total).textContent = hasAny ? `${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
+    $(ids.totalLabel).textContent = hasAny ? `${earningsMode}, converted${opts.labelSuffix||''}` : '';
 
     if(!hasAny){
-      $('tt-earnings-sub').textContent = 'Set an hourly rate on a project to see estimates';
+      $(ids.sub).textContent = 'Set an hourly rate on a project to see estimates';
     }else{
       const grossParts = currencies.map(cur=>`${grossByCurrency[cur].toFixed(2)} ${cur}`).join(' + ');
       const netParts = currencies.map(cur=>`${netByCurrency[cur].toFixed(2)} ${cur}`).join(' + ');
-      let sub = `Gross ${grossParts} → Net ${netParts}`;
+      let sub = `${opts.subPrefix||''}Gross ${grossParts} → Net ${netParts}`;
       if(excluded.length) sub += ` · ${excluded.join(', ')} not converted (rate unavailable)`;
-      $('tt-earnings-sub').textContent = sub;
+      $(ids.sub).textContent = sub;
     }
 
-    const taxEl = $('tt-earnings-taxes');
+    const taxEl = $(ids.taxes);
     const taxCurrencies = currencies.filter(cur => taxByCurrency[cur] && Object.keys(taxByCurrency[cur]).length);
     if(!taxCurrencies.length){
       taxEl.hidden = true;
@@ -2307,10 +2255,10 @@
     }
 
     if(!rows.length){
-      $('tt-earnings-list').innerHTML = '<div class="tt-preset-empty">No hours logged this month yet.</div>';
+      $(ids.list).innerHTML = '<div class="tt-preset-empty">No hours logged this month yet.</div>';
       return;
     }
-    $('tt-earnings-list').innerHTML = rows.map(r=>`
+    $(ids.list).innerHTML = rows.map(r=>`
       <div class="tt-earnings-row">
         <div class="tt-earnings-row-top">
           <div class="tt-earnings-row-name">${escapeHtml(r.note)}</div>
@@ -2320,17 +2268,109 @@
       </div>
     `).join('');
   }
-  $('tt-earnings-currency').addEventListener('change', (e)=>{
-    displayCurrency = e.target.value;
-    localStorage.setItem('tt-display-currency', displayCurrency);
-    renderEarningsPanel();
+
+  // Multiplies every amount in an earnings result by f. Exact for projections:
+  // pay is hours × rate and taxes are fixed percentages, so everything scales
+  // linearly with the number of days worked.
+  function scaleEarnings(earn, f){
+    const scaleMap = m => Object.fromEntries(Object.entries(m).map(([k,v])=>[k, v*f]));
+    const taxByCurrency = {};
+    Object.entries(earn.taxByCurrency).forEach(([cur, taxes])=>{
+      taxByCurrency[cur] = {};
+      Object.entries(taxes).forEach(([name, info])=>{
+        taxByCurrency[cur][name] = { amount: info.amount*f, pcts: info.pcts };
+      });
+    });
+    return {
+      rows: earn.rows.map(r=>({ ...r, hours:r.hours*f, gross:r.gross*f, net:r.net*f })),
+      grossByCurrency: scaleMap(earn.grossByCurrency),
+      netByCurrency: scaleMap(earn.netByCurrency),
+      taxByCurrency,
+      convertedTotal: earn.convertedTotal * f,
+      excluded: earn.excluded
+    };
+  }
+
+  // ---- Month-end projection ----------------------------------------------
+  // "If I keep earning my current average per worked day until the end of the
+  // month, what does the month come to?"
+  //   projected = earned so far + (earned so far ÷ worked days) × working days left
+  // Working days left = Mon–Fri after today, plus today itself if it's a
+  // weekday and nothing is logged on it yet. Public holidays aren't known, so
+  // they count as working days. A finished month simply shows what it earned;
+  // a month with nothing logged has no average to project from.
+  function renderProjectionPanel(){
+    if(!$('tt-proj')) return;
+    const ids = { total:'tt-proj-total', totalLabel:'tt-proj-total-label', sub:'tt-proj-sub', taxes:'tt-proj-taxes', list:'tt-proj-list' };
+    const dates = getRangeDates();
+    const ref = (granularity==='custom' && dates[0]) ? dates[0] : anchorDate;
+    const y = ref.getFullYear(), m = ref.getMonth();
+    const monthDates = [];
+    for(let d=1, n=new Date(y, m+1, 0).getDate(); d<=n; d++) monthDates.push(new Date(y, m, d));
+    const monthLabel = `${monthNames[m]} ${y}`;
+    $('tt-proj-title').textContent = `${monthLabel} · projected`;
+
+    const now = new Date();
+    const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const elapsed = monthDates.filter(d=> d <= todayMid);
+    const worked = elapsed.filter(d=> secondsForDate(d) > 0).length;
+    const todayLogged = secondsForDate(todayMid) > 0;
+    let remaining = 0;
+    monthDates.forEach(d=>{
+      const wd = d.getDay();
+      if(wd===0 || wd===6) return;
+      if(d > todayMid || (d.getTime()===todayMid.getTime() && !todayLogged)) remaining++;
+    });
+
+    const earn = computeMonthlyEarnings(elapsed);
+    const empty = (msg)=>{
+      $(ids.total).textContent = '—';
+      $(ids.totalLabel).textContent = '';
+      $('tt-proj-basis').textContent = msg;
+      $(ids.sub).textContent = '';
+      $(ids.taxes).hidden = true; $(ids.taxes).innerHTML = '';
+      $(ids.list).innerHTML = '';
+    };
+    if(worked === 0) return empty(`No hours logged in ${monthLabel} yet — nothing to project from`);
+    if(Object.keys(earn.netByCurrency).length === 0) return empty('Set an hourly rate on a project to see a projection');
+
+    const f = (worked + remaining) / worked;
+    renderEarningsView(scaleEarnings(earn, f), ids, { labelSuffix:' · projected', subPrefix:'Projected: ' });
+    const soFar = earn.convertedTotal;
+    $('tt-proj-basis').textContent =
+      `So far ${soFar.toFixed(2)} ${displayCurrency} (${earningsMode}) over ${worked} worked day${worked===1?'':'s'}`
+      + ` · avg ${(soFar/worked).toFixed(2)} per worked day`
+      + ` · ${remaining===0 ? 'no working days left' : `${remaining} working day${remaining===1?'':'s'} left, same average`}`;
+  }
+
+  function renderEarningsPanel(){
+    const panel = $('tt-earnings');
+    if(!panel) return;
+    const earn = computeMonthlyEarnings();
+    renderAveragePanels(earn);
+    // the Net/Gross toggle and currency picker exist on both money panels and share one setting
+    ['tt-earnings-currency','tt-proj-currency'].forEach(id=>{ const el=$(id); if(el) el.value = displayCurrency; });
+    ['tt-earnings-mode','tt-proj-mode'].forEach(id=>{ if($(id)) setActiveTab(id, earningsMode); });
+
+    $('tt-earnings-title').textContent = `${getRangeLabel()} · estimated`;
+    renderEarningsView(earn, { total:'tt-earnings-total', totalLabel:'tt-earnings-total-label', sub:'tt-earnings-sub', taxes:'tt-earnings-taxes', list:'tt-earnings-list' });
+    renderProjectionPanel();
+  }
+  ['tt-earnings-currency','tt-proj-currency'].forEach(id=>{
+    $(id).addEventListener('change', (e)=>{
+      displayCurrency = e.target.value;
+      localStorage.setItem('tt-display-currency', displayCurrency);
+      renderEarningsPanel();
+    });
   });
-  $('tt-earnings-mode').addEventListener('click', (e)=>{
-    const btn = e.target.closest('button[data-val]');
-    if(!btn) return;
-    earningsMode = btn.dataset.val;
-    localStorage.setItem('tt-earnings-mode', earningsMode);
-    renderEarningsPanel();
+  ['tt-earnings-mode','tt-proj-mode'].forEach(id=>{
+    $(id).addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-val]');
+      if(!btn) return;
+      earningsMode = btn.dataset.val;
+      localStorage.setItem('tt-earnings-mode', earningsMode);
+      renderEarningsPanel();
+    });
   });
 
   // ---------------- Admin: full-page panel ----------------
@@ -3624,6 +3664,10 @@
             }
           });
         }
+        // The monthly pay panel became a full Estimated-style projection (it was a
+        // small half-width card), so a spot saved for the old shape no longer fits.
+        // Drop it and let it be placed fresh below the rest.
+        if(data.layoutVersion !== 2) delete positions.monthAvgPay;
         // Carry a saved combined "averages" panel over: its spot becomes the
         // hours panel (left half) and the pay panel (right half).
         const legacy = data.positions && data.positions.averages;
@@ -3650,7 +3694,7 @@
         const defaults = computeDefaultPositions(missing, positions);
         Object.assign(positions, defaults);
       }
-      panelLayout = { positions, hidden };
+      panelLayout = { positions, hidden, layoutVersion: 2 };
       if(!customizing) applyPanelLayout(panelLayout);
       document.getElementById('tt-panels-container').classList.add('tt-panels-ready');
     }, (err)=> {
@@ -4417,8 +4461,7 @@
       earnings: { x: pct(colXPx), width: pct(colWidthPx) },
       avgHours: { x: pct(colXPx), width: pct(halfWidthPx) },
       avgPay:   { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
-      monthAvgHours: { x: pct(colXPx), width: pct(halfWidthPx) },
-      monthAvgPay:   { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
+      monthAvgPay: { x: pct(colXPx), width: pct(colWidthPx) },
       browser:  { x: pct(colXPx), width: pct(colWidthPx) }
     };
   }
@@ -4433,7 +4476,7 @@
   // values remove that failure mode entirely. A panel taller than its default
   // is still fully visible (see overflow:visible below) and can be resized
   // larger any time.
-  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, avgHours:130, avgPay:130, monthAvgHours:130, monthAvgPay:130, browser:700 };
+  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, monthAvgPay:560, avgHours:130, avgPay:130, browser:700 };
 
   function computeDefaultPositions(missingIds, existingPositions){
     const xw = getCenteredColumnXW();
@@ -4532,7 +4575,7 @@
     hidden.forEach(id=>{
       if(panelLayout.positions[id]) positions[id] = panelLayout.positions[id];
     });
-    return { positions, hidden };
+    return { positions, hidden, layoutVersion: 2 };
   }
 
   // ---- Alignment guides: green lines when edges/width/height match another panel ----
@@ -4728,7 +4771,7 @@
         i += 1;
       }
     }
-    panelLayout = { positions, hidden: [] };
+    panelLayout = { positions, hidden: [], layoutVersion: 2 };
     applyPanelLayout(panelLayout);
     updateRestoreButton();
     if(currentUid){
