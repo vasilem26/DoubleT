@@ -138,6 +138,17 @@
   }
   .tt-panel-handle-icon{flex-shrink:0;}
   .tt-panel-handle-hint{font-size:9px; opacity:.5; letter-spacing:.04em;}
+  .tt-panel-hide-btn{
+    display:none; background:var(--panel); border:1px solid var(--line); color:var(--paper-dim);
+    border-radius:3px; font-size:10px; padding:2px 8px; cursor:pointer; flex-shrink:0;
+    font-family:'Work Sans',sans-serif; text-transform:none; letter-spacing:0;
+  }
+  .tt-panel-hide-btn:hover{border-color:var(--stop); color:#E7A29D;}
+  body.tt-customizing .tt-panel-hide-btn{display:inline-block;}
+  .tt-panel.tt-panel-hidden{display:none !important;}
+  .tt-averages-title{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.08em; font-family:'Space Mono',monospace;}
+  .tt-averages .tt-stat-grid{margin-top:10px;}
+  .tt-stat-sub{font-size:11px; color:var(--paper-dim); margin-top:3px; line-height:1.4;}
   .tt-panel-handle:active{cursor:grabbing;}
   body.tt-customizing .tt-panel-handle{display:flex;}
   body.tt-customizing .tt-panel{
@@ -829,6 +840,7 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
+        <button id="tt-show-averages-btn" class="tt-customize-btn" type="button" hidden>+ Averages</button>
         <button id="tt-reset-layout-btn" class="tt-customize-btn" type="button" hidden>Reset layout</button>
         <button id="tt-customize-btn" class="tt-customize-btn" type="button">Customize</button>
         <button id="tt-menu-btn" class="tt-menu-btn" type="button" aria-label="Open menu">
@@ -1245,6 +1257,40 @@
     </div>
     </div>
 
+    <div class="tt-panel" data-panel="averages">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" id="tt-averages-hide" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+    <div class="tt-averages" id="tt-averages">
+      <div class="tt-averages-title" id="tt-averages-title">Averages</div>
+      <div class="tt-stat-grid">
+        <div class="tt-stat-card tt-stat-card-accent">
+          <div class="tt-stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </div>
+          <div class="tt-stat-body">
+            <div class="tt-today-label">Avg hours</div>
+            <div class="tt-today-val" id="tt-avg-hours">—</div>
+            <div class="tt-stat-sub" id="tt-avg-hours-sub"></div>
+          </div>
+        </div>
+        <div class="tt-stat-card">
+          <div class="tt-stat-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>
+          </div>
+          <div class="tt-stat-body">
+            <div class="tt-today-label" id="tt-avg-pay-label">Avg pay</div>
+            <div class="tt-today-val" id="tt-avg-pay">—</div>
+            <div class="tt-stat-sub" id="tt-avg-pay-sub"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
     <div class="tt-panel" data-panel="browser">
       <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
@@ -1304,7 +1350,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.062</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.063</div>
   </div>
 </div>
 
@@ -1350,10 +1396,10 @@
   let unsubPresets = null;
   let unsubPrefs = null;
   let unsubLayout = null;
-  const KNOWN_PANELS = ['timer','today','month','earnings','browser'];
+  const KNOWN_PANELS = ['timer','today','month','earnings','averages','browser'];
   // x/width are percentages of the canvas width (responsive); y/height are pixels.
   // height:null means "auto" — sized to content until the user explicitly resizes it.
-  let panelLayout = { positions: {} }; // populated on first load — see computeDefaultPositions()
+  let panelLayout = { positions: {}, hidden: [] }; // populated on first load — see computeDefaultPositions(); hidden = panels the user removed
   let customizing = false;
   let dragState = null;
   let resizeState = null;
@@ -2063,10 +2109,48 @@
     return { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded };
   }
 
+  // Average hours + average pay per worked day for whatever range is being
+  // browsed. Same inputs as the Estimated panel (range, net/gross, display
+  // currency), so the two always agree. A "worked day" is any day in the range
+  // with logged time (including a running timer).
+  function renderAveragesPanel(earn){
+    if(!$('tt-averages')) return;
+    const dates = getRangeDates();
+    let workedDays = 0, totalSec = 0;
+    dates.forEach(d=>{
+      const secs = secondsForDate(d);
+      if(secs > 0){ workedDays++; totalSec += secs; }
+    });
+    $('tt-averages-title').textContent = `${getRangeLabel()} · averages`;
+    $('tt-avg-pay-label').textContent = `Avg pay · ${earningsMode}`;
+
+    if(workedDays === 0){
+      $('tt-avg-hours').textContent = '—';
+      $('tt-avg-hours-sub').textContent = 'No hours logged in this period';
+      $('tt-avg-pay').textContent = '—';
+      $('tt-avg-pay-sub').textContent = '';
+      return;
+    }
+    const avgSec = Math.round(totalSec / workedDays);
+    $('tt-avg-hours').textContent = `${fmtHM(avgSec)} h`;
+    $('tt-avg-hours-sub').textContent = `per worked day · ${workedDays} of ${dates.length} day${dates.length===1?'':'s'}`;
+
+    const hasPay = Object.keys(earn.netByCurrency).length > 0;
+    if(!hasPay){
+      $('tt-avg-pay').textContent = '—';
+      $('tt-avg-pay-sub').textContent = 'Set an hourly rate on a project';
+    } else {
+      $('tt-avg-pay').textContent = `${(earn.convertedTotal / workedDays).toFixed(2)} ${displayCurrency}`;
+      $('tt-avg-pay-sub').textContent = `per worked day · ${earningsMode}, converted`;
+    }
+  }
+
   function renderEarningsPanel(){
     const panel = $('tt-earnings');
     if(!panel) return;
-    const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = computeMonthlyEarnings();
+    const earn = computeMonthlyEarnings();
+    const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = earn;
+    renderAveragesPanel(earn);
     const curSel = $('tt-earnings-currency');
     if(curSel) curSel.value = displayCurrency;
     setActiveTab('tt-earnings-mode', earningsMode);
@@ -3410,8 +3494,10 @@
 
     unsubLayout = onSnapshot(layoutDoc(uid), (snap)=>{
       let positions = {};
+      let hidden = [];
       if(snap.exists()){
         const data = snap.data();
+        if(Array.isArray(data.hidden)) hidden = data.hidden.filter(id=>KNOWN_PANELS.includes(id));
         if(data.positions && typeof data.positions==='object'){
           // current format
           KNOWN_PANELS.forEach(id=>{
@@ -3427,10 +3513,16 @@
       }
       const missing = KNOWN_PANELS.filter(id=>!positions[id]);
       if(missing.length){
+        // A panel added after this layout was saved (e.g. Averages): put the
+        // saved ones in place first so the new one can be stacked below
+        // whatever is really on the canvas, using measured heights.
+        if(missing.length < KNOWN_PANELS.length && !customizing){
+          applyPanelLayout({ positions, hidden });
+        }
         const defaults = computeDefaultPositions(missing, positions);
         Object.assign(positions, defaults);
       }
-      panelLayout = { positions };
+      panelLayout = { positions, hidden };
       if(!customizing) applyPanelLayout(panelLayout);
       document.getElementById('tt-panels-container').classList.add('tt-panels-ready');
     }, (err)=> {
@@ -4195,12 +4287,13 @@
       today:    { x: pct(colXPx), width: pct(halfWidthPx) },
       month:    { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
       earnings: { x: pct(colXPx), width: pct(colWidthPx) },
+      averages: { x: pct(colXPx), width: pct(colWidthPx) },
       browser:  { x: pct(colXPx), width: pct(colWidthPx) }
     };
   }
 
   function panelsContainerEl(){ return document.getElementById('tt-panels-container'); }
-  function getAllPanelEls(){ return Array.from(panelsContainerEl().children).filter(el=>el.classList.contains('tt-panel')); }
+  function getAllPanelEls(){ return Array.from(panelsContainerEl().children).filter(el=>el.classList.contains('tt-panel') && !el.classList.contains('tt-panel-hidden')); }
   function panelEl(id){ return panelsContainerEl().querySelector(`.tt-panel[data-panel="${id}"]`); }
 
   // Fixed default heights (generous, safe estimates) — deliberately NOT measured
@@ -4209,13 +4302,17 @@
   // values remove that failure mode entirely. A panel taller than its default
   // is still fully visible (see overflow:visible below) and can be resized
   // larger any time.
-  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, browser:700 };
+  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, averages:150, browser:700 };
 
   function computeDefaultPositions(missingIds, existingPositions){
     const xw = getCenteredColumnXW();
     let startY = 0;
-    Object.values(existingPositions).forEach(p=>{
-      if(p && p.y!=null) startY = Math.max(startY, p.y + (p.height || DEFAULT_HEIGHT[p.id] || 200) + 16);
+    Object.keys(existingPositions).forEach(id=>{
+      const p = existingPositions[id];
+      if(!p || p.y==null) return;
+      const el = panelEl(id);
+      const measured = (el && el.style.top && !el.classList.contains('tt-panel-hidden')) ? el.offsetHeight : 0;
+      startY = Math.max(startY, p.y + (p.height || measured || DEFAULT_HEIGHT[id] || 200) + 16);
     });
     const gap = 16;
     let y = startY;
@@ -4239,17 +4336,23 @@
     return positions;
   }
 
+  function applyOnePanel(id, pos){
+    const el = panelEl(id);
+    if(!el || !pos) return;
+    el.style.left = pos.x + '%';
+    el.style.width = pos.width + '%';
+    el.style.top = (pos.y||0) + 'px';
+    el.style.height = pos.height!=null ? pos.height + 'px' : '';
+  }
+
   function applyPanelLayout(layout){
     const container = panelsContainerEl();
     if(!container) return;
+    const hidden = new Set(layout.hidden || []);
     KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
-      const pos = layout.positions[id];
-      if(!el || !pos) return;
-      el.style.left = pos.x + '%';
-      el.style.width = pos.width + '%';
-      el.style.top = (pos.y||0) + 'px';
-      el.style.height = pos.height!=null ? pos.height + 'px' : '';
+      if(el) el.classList.toggle('tt-panel-hidden', hidden.has(id));
+      applyOnePanel(id, layout.positions[id]);
     });
     // Safety net: a stored height that's much smaller than the panel's real
     // content leaves that content spilling far outside its own box (since
@@ -4276,23 +4379,28 @@
     container.style.height = maxBottom + 'px';
   }
 
+  function readPanelPosition(el, containerWidth){
+    return {
+      x: +((el.offsetLeft/containerWidth)*100).toFixed(2),
+      width: +((el.offsetWidth/containerWidth)*100).toFixed(2),
+      y: el.offsetTop,
+      height: el.style.height ? el.offsetHeight : null // only persist a real custom height
+    };
+  }
+
   function readCurrentLayout(){
     const container = panelsContainerEl();
     const containerWidth = container.getBoundingClientRect().width;
     const positions = {};
     getAllPanelEls().forEach(el=>{
-      const id = el.getAttribute('data-panel');
-      const leftPx = el.offsetLeft;
-      const widthPx = el.offsetWidth;
-      const heightPx = el.style.height ? el.offsetHeight : null; // only persist a real custom height
-      positions[id] = {
-        x: +((leftPx/containerWidth)*100).toFixed(2),
-        width: +((widthPx/containerWidth)*100).toFixed(2),
-        y: el.offsetTop,
-        height: heightPx
-      };
+      positions[el.getAttribute('data-panel')] = readPanelPosition(el, containerWidth);
     });
-    return { positions };
+    // hidden panels aren't measurable — keep wherever they were last placed
+    const hidden = (panelLayout.hidden || []).filter(id=>KNOWN_PANELS.includes(id));
+    hidden.forEach(id=>{
+      if(panelLayout.positions[id]) positions[id] = panelLayout.positions[id];
+    });
+    return { positions, hidden };
   }
 
   // ---- Alignment guides: green lines when edges/width/height match another panel ----
@@ -4374,7 +4482,40 @@
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
     $('tt-reset-layout-btn').hidden = false;
+    updateRestoreButton();
   }
+
+  // The "+ Averages" button only exists while customizing AND the panel is hidden
+  function updateRestoreButton(){
+    const isHidden = (panelLayout.hidden||[]).includes('averages');
+    $('tt-show-averages-btn').hidden = !(customizing && isHidden);
+  }
+
+  $('tt-averages-hide').addEventListener('click', ()=>{
+    if(!customizing) return;
+    const el = panelEl('averages');
+    const containerWidth = panelsContainerEl().getBoundingClientRect().width;
+    // remember where it was, so showing it again puts it back there
+    panelLayout.positions['averages'] = readPanelPosition(el, containerWidth);
+    panelLayout.hidden = Array.from(new Set([...(panelLayout.hidden||[]), 'averages']));
+    el.classList.add('tt-panel-hidden');
+    clearAlignGuides();
+    updateContainerHeight();
+    updateRestoreButton();
+  });
+
+  $('tt-show-averages-btn').addEventListener('click', ()=>{
+    panelLayout.hidden = (panelLayout.hidden||[]).filter(id=>id!=='averages');
+    const el = panelEl('averages');
+    el.classList.remove('tt-panel-hidden');
+    // only this panel is (re)applied — other panels may have unsaved moves in progress
+    if(!panelLayout.positions['averages']){
+      Object.assign(panelLayout.positions, computeDefaultPositions(['averages'], panelLayout.positions));
+    }
+    applyOnePanel('averages', panelLayout.positions['averages']);
+    updateContainerHeight();
+    updateRestoreButton();
+  });
 
   function exitCustomizeMode(){
     customizing = false;
@@ -4382,6 +4523,7 @@
     $('tt-customize-btn').textContent = 'Customize';
     $('tt-customize-btn').classList.remove('active');
     $('tt-reset-layout-btn').hidden = true;
+    $('tt-show-averages-btn').hidden = true;
     clearAlignGuides();
     panelLayout = readCurrentLayout();
     updateContainerHeight();
@@ -4399,6 +4541,7 @@
     KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
       if(!el) return;
+      el.classList.remove('tt-panel-hidden'); // a hidden panel measures 0 tall
       const p = xw[id] || {x:0,width:100};
       el.style.left = p.x+'%'; el.style.width = p.width+'%'; el.style.top=''; el.style.height='';
     });
@@ -4426,8 +4569,9 @@
         i += 1;
       }
     }
-    panelLayout = { positions };
+    panelLayout = { positions, hidden: [] };
     applyPanelLayout(panelLayout);
+    updateRestoreButton();
     if(currentUid){
       try{ await setDoc(layoutDoc(currentUid), panelLayout); }
       catch(err){ console.error('Could not save reset layout', err); }
@@ -4452,6 +4596,7 @@
       return;
     }
 
+    if(e.target.closest('.tt-panel-hide-btn')) return;
     const handle = e.target.closest('.tt-panel-handle');
     if(handle){
       const panel = handle.closest('.tt-panel');
