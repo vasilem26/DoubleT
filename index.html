@@ -307,6 +307,16 @@
     padding:16px; margin-top:12px;
     box-shadow:0 6px 16px rgba(var(--shadow-rgb),.22);
   }
+  /* The month-end projection is a guess, not money earned: dashed outline + a
+     warning pill keep it from being mistaken for the Estimated / Avg panels. */
+  #tt-proj{border:1.5px dashed var(--amber-dim);}
+  .tt-proj-flag{
+    display:inline-flex; align-items:center; gap:6px; margin-bottom:12px; cursor:help;
+    background:rgba(232,163,61,.12); border:1px solid var(--amber-dim); color:var(--amber);
+    border-radius:999px; padding:4px 11px 4px 9px;
+    font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .tt-proj-flag svg{flex-shrink:0;}
   .tt-earnings-head{display:flex; justify-content:space-between; align-items:center; gap:10px;}
   .tt-earnings-title{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.08em; font-family:'Space Mono',monospace;}
   .tt-earnings-currency-select{
@@ -1278,6 +1288,10 @@
       </div>
       <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-earnings" id="tt-proj">
+      <div class="tt-proj-flag" title="Not real earnings. A projection that assumes you keep your current average per worked day until the end of the month.">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        Projection · not real earnings
+      </div>
       <div class="tt-earnings-head">
         <div class="tt-earnings-title" id="tt-proj-title">This month · projected</div>
         <div style="display:flex; gap:6px; align-items:center;">
@@ -1403,7 +1417,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.065</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.066</div>
   </div>
 </div>
 
@@ -2220,7 +2234,8 @@
     const { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded } = earn;
     const currencies = Object.keys(netByCurrency);
     const hasAny = currencies.length > 0;
-    $(ids.total).textContent = hasAny ? `${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
+    const ap = opts.approx ? '≈ ' : ''; // projected figures are approximate
+    $(ids.total).textContent = hasAny ? `${ap}${convertedTotal.toFixed(2)} ${displayCurrency}` : '—';
     $(ids.totalLabel).textContent = hasAny ? `${earningsMode}, converted${opts.labelSuffix||''}` : '';
 
     if(!hasAny){
@@ -2262,9 +2277,9 @@
       <div class="tt-earnings-row">
         <div class="tt-earnings-row-top">
           <div class="tt-earnings-row-name">${escapeHtml(r.note)}</div>
-          <div class="tt-earnings-row-hours">${fmtHM(Math.round(r.hours*3600))}h</div>
+          <div class="tt-earnings-row-hours">${ap}${fmtHM(Math.round(r.hours*3600))}h</div>
         </div>
-        <div class="tt-earnings-row-amt ${r.hasRate?'':'tt-earnings-row-amt-empty'}">${r.hasRate ? `${r.gross.toFixed(2)} → ${r.net.toFixed(2)} ${r.currency}` : 'No rate set'}</div>
+        <div class="tt-earnings-row-amt ${r.hasRate?'':'tt-earnings-row-amt-empty'}">${r.hasRate ? `${ap}${r.gross.toFixed(2)} → ${r.net.toFixed(2)} ${r.currency}` : 'No rate set'}</div>
       </div>
     `).join('');
   }
@@ -2335,7 +2350,7 @@
     if(Object.keys(earn.netByCurrency).length === 0) return empty('Set an hourly rate on a project to see a projection');
 
     const f = (worked + remaining) / worked;
-    renderEarningsView(scaleEarnings(earn, f), ids, { labelSuffix:' · projected', subPrefix:'Projected: ' });
+    renderEarningsView(scaleEarnings(earn, f), ids, { labelSuffix:' · projected', subPrefix:'Projected: ', approx:true });
     const soFar = earn.convertedTotal;
     $('tt-proj-basis').textContent =
       `So far ${soFar.toFixed(2)} ${displayCurrency} (${earningsMode}) over ${worked} worked day${worked===1?'':'s'}`
