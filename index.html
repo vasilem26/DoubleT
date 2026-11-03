@@ -202,12 +202,20 @@
   .tt-theme-switch-icons svg{opacity:.7;}
   .tt-theme-switch-knob{
     position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%;
-    background:var(--amber); color:var(--on-accent);
+    background-color:var(--amber); color:var(--on-accent);
+    background-image:
+      radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.55), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 48%, rgba(0,0,0,.16) 100%);
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 2px 6px rgba(var(--shadow-rgb),.35);
-    transition:transform .22s cubic-bezier(.2,.8,.2,1), background-color .2s ease;
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.7), inset 0 -2px 4px rgba(0,0,0,.2), 0 2px 6px rgba(var(--shadow-rgb),.35);
+    transition:transform .5s cubic-bezier(.34,1.56,.64,1), scale .28s cubic-bezier(.34,1.56,.64,1), background-color .2s ease;
   }
   html[data-theme="light"] .tt-theme-switch-knob{transform:translateX(24px);}
+  .tt-theme-switch:active .tt-theme-switch-knob{scale:1.3 1.12;}
+  .tt-theme-switch-knob.tt-knob-stretch{animation:tt-knob-stretch .55s ease;}
+  @keyframes tt-knob-stretch{
+    0%{scale:1 1;} 38%{scale:1.7 .86;} 100%{scale:1 1;}
+  }
   .tt-menu-btn span{width:15px; height:2px; background:var(--paper-dim); border-radius:1px;}
 
   .tt-menu-overlay{
@@ -438,20 +446,58 @@
   .tt-admin-summary strong{color:var(--amber);}
 
   .tt-viewbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:30px; flex-wrap:wrap;}
-  .tt-segment{display:flex; border:1px solid var(--line); border-radius:5px; overflow:hidden;}
-  .tt-segment button{
-    background:var(--panel); border:none; color:var(--paper-dim);
-    font-family:'Work Sans',sans-serif; font-size:11px; font-weight:600;
-    padding:6px 12px; cursor:pointer; border-right:1px solid var(--line);
-    transition:background .18s ease, color .18s ease;
+  /* ---- Segmented switches: liquid-glass thumb ----
+     A glossy pill sits behind the selected label (a .tt-seg-thumb that JS
+     injects and slides). Labels stay as real text on top of it. Before the JS
+     has run, the active button just gets a flat fill so nothing is ever unmarked. */
+  .tt-segment{
+    position:relative; display:flex; isolation:isolate; padding:2px;
+    border:1px solid var(--line); border-radius:999px; background:var(--panel);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.28), inset 0 -1px 0 rgba(255,255,255,.04);
   }
-  .tt-segment button:last-child{border-right:none;}
+  .tt-segment button{
+    position:relative; z-index:1; background:transparent; border:none; border-radius:999px;
+    color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:11px; font-weight:600;
+    padding:6px 13px; cursor:pointer;
+    transition:background .18s ease, color .25s ease;
+  }
   .tt-segment button:hover{background:var(--panel-2); color:var(--paper);}
   .tt-segment button:active{transform:scale(.96);}
-  .tt-segment button.active{background:var(--amber); color:var(--on-accent);}
-  .tt-segment button.active:hover{background:#f0b258;}
-  .tt-segment button:focus-visible{outline:none; box-shadow:inset 0 0 0 2px var(--amber);}
+  .tt-segment button.active{color:var(--on-accent);}
+  .tt-segment:not(.tt-liquid) button.active{background:var(--amber);}
+  .tt-segment.tt-liquid button.active,
+  .tt-segment.tt-liquid button.active:hover{background:transparent;}
+  .tt-segment button:focus-visible{outline:none; box-shadow:0 0 0 2px var(--amber);}
   .tt-segment button:disabled{opacity:.3; cursor:not-allowed;}
+
+  .tt-seg-thumb{
+    position:absolute; z-index:0; left:0; top:0; width:0; height:0; opacity:0;
+    pointer-events:none; border-radius:999px; transform-origin:center;
+    background-color:var(--amber);
+    background-image:
+      radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.55), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 48%, rgba(0,0,0,.16) 100%);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.7),
+      inset 0 -2px 5px rgba(0,0,0,.2),
+      0 4px 12px rgba(0,0,0,.25),
+      0 1px 2px rgba(0,0,0,.3);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,.7),
+      inset 0 -2px 5px rgba(0,0,0,.2),
+      0 4px 12px color-mix(in srgb, var(--amber) 45%, transparent),
+      0 1px 2px rgba(0,0,0,.3);
+    transition:transform .34s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;
+  }
+  /* light theme: the amber is darker, so keep the gloss from dimming the label sitting on it */
+  html[data-theme="light"] .tt-seg-thumb,
+  html[data-theme="light"] .tt-theme-switch-knob{
+    background-image:
+      radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.5), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 50%, rgba(0,0,0,.05) 100%);
+  }
+  /* pressing a switch makes the thumb swell like a drop of liquid */
+  .tt-segment:active .tt-seg-thumb{transform:scale(1.07,1.28);}
   .tt-export-segment{width:100%;}
   .tt-export-segment button{flex:1; text-align:center; padding:9px 8px;}
 
@@ -1417,7 +1463,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.068</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.070</div>
   </div>
 </div>
 
@@ -2409,8 +2455,23 @@
   function adminExportLabel(){
     return adminSelectedExportUsers.map(u=>u.displayName||u.email).join(' & ') || 'user';
   }
+  // Export filename part built from the people's names, e.g.
+  //   Casian_Antonie_Albu_&_Vasile_Marian
+  // Same alphabetical order as the numbered list in the PDF header. Characters a
+  // filename can't hold (\ / : * ? " < > |) are dropped, spaces become "_", and
+  // accented letters are kept as they are.
   function adminExportSafeName(){
-    return adminSelectedExportUsers.map(u=>(u.email||'user').replace(/[^\w-]+/g,'_')).join('_and_') || 'user';
+    const clean = n => String(n).trim().replace(/[\\/:*?"<>|\u0000-\u001f]+/g,'').replace(/\s+/g,'_');
+    const names = adminSelectedExportUsers
+      .map(u=>u.displayName||u.email||'user')
+      .sort((a,b)=>a.localeCompare(b))
+      .map(clean)
+      .filter(Boolean);
+    let joined = names.join('_&_');
+    if(joined.length > 120 && names.length > 2){
+      joined = `${names.slice(0,2).join('_&_')}_&_${names.length-2}_more`; // keep within filename limits
+    }
+    return joined.slice(0, 120) || 'user';
   }
 
   function openAdminPage(){
@@ -3626,6 +3687,71 @@
   }
 
   let lastAuthUid = null;
+
+  // ---------------- Liquid segmented switches ----------------
+  // Every .tt-segment gets a glossy thumb that sits behind the active label.
+  // When the active button changes, the thumb stretches across to cover both
+  // options (bulging a little taller), then settles on the new one with a small
+  // overshoot — like a drop of liquid moving. Labels are never touched.
+  const liquidReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function initLiquidSegment(seg){
+    if(seg.__liquid) return;
+    seg.__liquid = true;
+    const thumb = document.createElement('span');
+    thumb.className = 'tt-seg-thumb';
+    thumb.setAttribute('aria-hidden', 'true');
+    seg.insertBefore(thumb, seg.firstChild);
+    seg.classList.add('tt-liquid');
+    let placed = false;
+
+    function place(animate){
+      const btn = seg.querySelector('button.active');
+      if(!btn || !btn.offsetWidth){ thumb.style.opacity = '0'; placed = false; return; }
+      const to = { left:btn.offsetLeft, top:btn.offsetTop, width:btn.offsetWidth, height:btn.offsetHeight };
+      // where the thumb visually is right now (correct even mid-animation)
+      const cs = getComputedStyle(thumb);
+      const from = { left:parseFloat(cs.left)||0, width:parseFloat(cs.width)||0 };
+      const moved = Math.abs(from.left - to.left) > .5 || Math.abs(from.width - to.width) > .5;
+
+      thumb.getAnimations().forEach(a=>a.cancel());
+      thumb.style.opacity = '1';
+      thumb.style.top = to.top + 'px';
+      thumb.style.height = to.height + 'px';
+      thumb.style.left = to.left + 'px';
+      thumb.style.width = to.width + 'px';
+
+      if(animate && placed && moved && !liquidReducedMotion.matches && thumb.animate){
+        const minL = Math.min(from.left, to.left);
+        const maxR = Math.max(from.left + from.width, to.left + to.width);
+        thumb.animate([
+          { left:from.left+'px', width:from.width+'px', transform:'scale(1,1)', easing:'cubic-bezier(.4,0,.2,1)' },
+          { left:minL+'px', width:(maxR-minL)+'px', transform:'scale(1,1.24)', offset:.42, easing:'cubic-bezier(.34,1.56,.64,1)' },
+          { left:to.left+'px', width:to.width+'px', transform:'scale(1,1)' }
+        ], { duration:560 });
+      }
+      placed = true;
+    }
+
+    place(false);
+    new MutationObserver(()=>place(true)).observe(seg, { attributes:true, attributeFilter:['class','disabled'], subtree:true });
+    // size changes (first time shown, window resize, panel resize) re-seat it without animating
+    if(window.ResizeObserver) new ResizeObserver(()=>place(false)).observe(seg);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>place(false));
+  }
+  document.querySelectorAll('.tt-segment').forEach(initLiquidSegment);
+
+  // theme switch: the knob stretches as it travels
+  document.getElementById('tt-theme-toggle').addEventListener('click', ()=>{
+    const knob = document.querySelector('#tt-theme-toggle .tt-theme-switch-knob');
+    if(!knob || liquidReducedMotion.matches) return;
+    knob.classList.remove('tt-knob-stretch');
+    void knob.offsetWidth; // restart the animation if toggled quickly
+    knob.classList.add('tt-knob-stretch');
+  });
+  document.querySelector('#tt-theme-toggle .tt-theme-switch-knob').addEventListener('animationend', (e)=>{
+    e.currentTarget.classList.remove('tt-knob-stretch');
+  });
 
   onAuthStateChanged(auth, (user)=>{
     const uid = user ? user.uid : null;
