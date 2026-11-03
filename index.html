@@ -489,6 +489,65 @@
   .tt-admin-analytics-title{margin:4px 0 10px;}
   .tt-admin-export-nav[hidden]{display:none;}
 
+  /* ---- Companies ---- */
+  .tt-admin-page-inner.tt-admin-wide{max-width:1040px;}
+  .tt-co-list{display:flex; flex-direction:column; gap:10px; margin-bottom:22px;}
+  .tt-co-head{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
+  .tt-co-toolbar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
+  .tt-co-money{display:flex; gap:6px; align-items:center;}
+  .tt-co-nav[hidden]{display:none;}
+  .tt-co-section-label{margin:6px 0 10px;}
+  .tt-co-banners{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin:6px 0 24px;}
+  .tt-co-banner{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px; box-shadow:0 6px 16px rgba(var(--shadow-rgb),.22);
+    display:flex; flex-direction:column; gap:4px; min-width:0;
+  }
+  .tt-co-banner-label{font-family:'Space Mono',monospace; font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.1em;}
+  .tt-co-banner-val{font-family:'Space Mono',monospace; font-size:26px; font-weight:700; color:var(--amber); font-variant-numeric:tabular-nums; overflow-wrap:anywhere;}
+  .tt-co-banner-sub{font-size:11.5px; color:var(--paper-dim); line-height:1.5;}
+  .tt-co-banner.tt-co-proj{border:2px dashed rgba(232,163,61,.7);}
+  .tt-co-banner .tt-proj-flag{align-self:flex-start; margin-bottom:6px;}
+  .tt-co-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:12px;}
+  .tt-co-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px; box-shadow:0 4px 12px rgba(var(--shadow-rgb),.18); min-width:0;
+  }
+  .tt-co-card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:12px;}
+  .tt-co-card-name{font-weight:700; font-size:14px; color:var(--paper);}
+  .tt-co-card-email{font-size:11px; color:var(--paper-dim); overflow-wrap:anywhere;}
+  .tt-co-bar{height:6px; border-radius:999px; background:var(--panel-2); overflow:hidden;}
+  .tt-co-bar > span{display:block; height:100%; border-radius:inherit; background:var(--amber);}
+  .tt-co-bar-note{font-size:10.5px; color:var(--paper-dim); margin-top:5px;}
+  .tt-co-stats{display:grid; grid-template-columns:1fr 1fr; gap:12px 14px; margin-top:14px;}
+  .tt-co-stat-label{font-family:'Space Mono',monospace; font-size:10px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.08em;}
+  .tt-co-stat-val{font-family:'Space Mono',monospace; font-size:15px; font-weight:700; color:var(--paper); font-variant-numeric:tabular-nums; margin-top:2px; overflow-wrap:anywhere;}
+  .tt-co-stat-val.tt-co-approx{color:var(--amber);}
+  .tt-co-chip{
+    flex-shrink:0; font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    border-radius:999px; padding:3px 9px; border:1px solid var(--amber-dim); color:var(--amber);
+    background:rgba(232,163,61,.1); cursor:help;
+  }
+  .tt-co-chip.tt-co-chip-bad{border-color:var(--stop-dim); color:var(--err-text); background:rgba(214,69,65,.1);}
+  .tt-co-notice{
+    border:1px solid var(--stop-dim); background:rgba(214,69,65,.08); border-radius:var(--radius-md);
+    padding:12px 14px; margin-bottom:16px; font-size:12.5px; line-height:1.6; color:var(--paper);
+  }
+  .tt-co-notice .tt-btn{margin-top:8px;}
+  .tt-co-rules{margin-top:12px;}
+  .tt-co-rules pre{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+    font-family:'Space Mono',monospace; font-size:11px; line-height:1.6; overflow-x:auto; margin:6px 0 0; color:var(--paper);
+  }
+  .tt-co-member-list{display:flex; flex-direction:column; gap:8px;}
+  .tt-co-member-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+  }
+  .tt-co-member-row .tt-btn{flex:0 0 auto; width:auto; min-width:0; padding:6px 14px; font-size:11px;}
+  .tt-menu-row .tt-btn.tt-co-compact{flex:0 0 auto; width:auto; min-width:0; padding:9px 22px;}
+  @media (max-width:560px){ .tt-co-banners{grid-template-columns:1fr;} .tt-co-cards{grid-template-columns:1fr;} }
+
   .tt-admin-filterbar{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
     padding:12px; margin-bottom:14px; display:flex; flex-direction:column; gap:8px;
@@ -800,7 +859,7 @@
   .tt-modal-backdrop{
     position:fixed; inset:0; background:rgba(var(--backdrop-rgb),.72);
     display:flex; align-items:center; justify-content:center; padding:20px;
-    z-index:1000;
+    z-index:3500; /* above the admin page (3000): confirmations raised from inside it must be visible */
   }
   .tt-modal-backdrop[hidden]{display:none;}
   .tt-modal{
@@ -1016,6 +1075,13 @@
             </span>
             <span class="tt-menu-chevron">&#8250;</span>
           </button>
+          <button type="button" class="tt-menu-navrow" id="tt-company-navrow" hidden>
+            <span class="tt-menu-navrow-label">
+              <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>
+              Company
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
           <button type="button" class="tt-menu-navrow" id="tt-admin-navrow" hidden>
             <span class="tt-menu-navrow-label">
               <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 3.8 9 9 10 5.2-1 9-5 9-10V6z"/></svg>
@@ -1188,6 +1254,10 @@
             <div class="tt-admin-bigcard-title">Export data <span class="tt-menu-chevron">&#8250;</span></div>
             <div class="tt-admin-bigcard-desc">See usage analytics for any user and export their entries to Excel.</div>
           </button>
+          <button type="button" class="tt-admin-bigcard" data-adminscreen="companies">
+            <div class="tt-admin-bigcard-title">Companies <span class="tt-menu-chevron">&#8250;</span></div>
+            <div class="tt-admin-bigcard-desc">Create companies, add people to them, and see each company's hours and expected income.</div>
+          </button>
         </div>
 
         <div class="tt-admin-page-screen" id="tt-admin-page-manage-users" hidden>
@@ -1237,6 +1307,88 @@
               afterward to a completely empty account. There is no undo.
             </div>
             <button class="tt-btn danger tt-menu-bigbtn" id="tt-admin-wipe-user-btn">Delete all data for this user</button>
+          </div>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-companies" hidden>
+          <div id="tt-co-list" class="tt-co-list"></div>
+          <div class="tt-menu-section tt-co-create">
+            <div class="tt-menu-label">New company</div>
+            <div class="tt-menu-row">
+              <input class="tt-menu-input" id="tt-co-new-name" type="text" maxlength="60" placeholder="Company name" autocomplete="off" />
+              <button class="tt-btn primary tt-menu-btn-inline tt-co-compact" id="tt-co-create-btn" type="button">Create</button>
+            </div>
+            <div class="tt-menu-msg" id="tt-co-create-msg"></div>
+          </div>
+        </div>
+
+        <div class="tt-admin-page-screen" id="tt-admin-page-company" hidden>
+          <div class="tt-co-head">
+            <div class="tt-segment" id="tt-co-tabs">
+              <button data-val="dashboard" class="active">Dashboard</button><button data-val="members">Members</button>
+            </div>
+          </div>
+          <div id="tt-co-notice"></div>
+
+          <div id="tt-co-dashboard">
+            <div class="tt-co-toolbar">
+              <div class="tt-segment" id="tt-co-period">
+                <button data-val="day">Day</button><button data-val="week">Week</button><button data-val="month" class="active">Month</button><button data-val="custom">Custom</button>
+              </div>
+              <div class="tt-co-money">
+                <div class="tt-segment tt-earnings-mode-segment" id="tt-co-mode">
+                  <button data-val="net" class="active">Net</button><button data-val="gross">Gross</button>
+                </div>
+                <select id="tt-co-currency" class="tt-earnings-currency-select">
+                  <option value="RON">RON</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+            </div>
+            <div class="tt-monthbar tt-co-nav" id="tt-co-nav">
+              <button class="tt-navbtn" id="tt-co-prev" type="button" aria-label="Previous">&#8249;</button>
+              <div class="tt-monthlabel" id="tt-co-rangelabel" style="text-align:center;">—</div>
+              <button class="tt-navbtn" id="tt-co-next" type="button" aria-label="Next">&#8250;</button>
+            </div>
+            <div class="tt-custom-range-bar" id="tt-co-custom" hidden>
+              <div class="tt-custom-range-fields">
+                <div class="tt-custom-range-field"><label>From</label><input type="date" id="tt-co-custom-from" /></div>
+                <div class="tt-custom-range-field"><label>To</label><input type="date" id="tt-co-custom-to" /></div>
+              </div>
+            </div>
+            <div class="tt-co-banners" id="tt-co-banners"></div>
+            <div class="tt-menu-label tt-co-section-label">Members</div>
+            <div class="tt-co-cards" id="tt-co-cards"></div>
+          </div>
+
+          <div id="tt-co-members" hidden>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Add a member</div>
+              <div class="tt-menu-row">
+                <select class="tt-menu-input" id="tt-co-add-select"></select>
+                <button class="tt-btn primary tt-menu-btn-inline tt-co-compact" id="tt-co-add-btn" type="button">Add</button>
+              </div>
+              <div class="tt-menu-desc" style="margin:8px 0 0;">A person can belong to one company at a time, so their hours are never counted twice.</div>
+              <div class="tt-menu-msg" id="tt-co-members-msg"></div>
+            </div>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Members</div>
+              <div id="tt-co-member-list" class="tt-co-member-list"></div>
+            </div>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Company name</div>
+              <div class="tt-menu-row">
+                <input class="tt-menu-input" id="tt-co-rename-input" type="text" maxlength="60" autocomplete="off" />
+                <button class="tt-btn tt-menu-btn-inline tt-co-compact" id="tt-co-rename-btn" type="button">Save</button>
+              </div>
+            </div>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Danger zone</div>
+              <div class="tt-menu-desc">Deleting a company removes the grouping only. Nobody's account, entries or rates are touched.</div>
+              <button class="tt-btn danger tt-menu-bigbtn" id="tt-co-delete-btn" type="button">Delete this company</button>
+            </div>
           </div>
         </div>
 
@@ -1528,7 +1680,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.072</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.074</div>
   </div>
 </div>
 
@@ -1562,7 +1714,7 @@
   const db = getFirestore(app);
 
   let entries = [];
-  let active = null; // { startISO, note }
+  let active = null; // { startISO, note, tz }
   let anchorDate = new Date(); // representative date for whatever range is being browsed
   let granularity = 'month'; // 'day' | 'week' | 'month' | 'custom'
   let customFromDate = null; // Date — set when the user picks a custom range
@@ -1631,6 +1783,23 @@
 
   const $ = id => document.getElementById(id);
   const pad = n => String(n).padStart(2,'0');
+
+  // The browser's own IANA timezone, e.g. "Europe/Bucharest" ('' if it won't say).
+  // Stored on every entry so an export can say where the times were logged.
+  function browserTimeZone(){
+    try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }
+    catch(e){ return ''; }
+  }
+  // "HH:MM" of an instant as seen in `tz` (the entry's own timezone). Without a
+  // usable tz (older entries, unknown name) it falls back to the viewer's clock.
+  function clockTime(iso, tz){
+    const d = new Date(iso);
+    if(tz){
+      try{ return d.toLocaleTimeString('en-GB', { timeZone:tz, hour:'2-digit', minute:'2-digit', hourCycle:'h23' }); }
+      catch(e){ /* not a timezone this browser knows */ }
+    }
+    return d.toTimeString().slice(0,5);
+  }
   const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dowShort = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -1864,6 +2033,7 @@
     currentUid = user.uid;
     isAdmin = (user.email === ADMIN_EMAIL);
     $('tt-admin-navrow').hidden = !isAdmin;
+    $('tt-company-navrow').hidden = !isAdmin;
     setDoc(doc(db, 'directory', user.uid), {
       uid: user.uid, email: user.email, displayName: user.displayName || ''
     }).catch(err=> console.error('Could not update directory record', err));
@@ -2215,6 +2385,7 @@
     }
     renderFxStatus();
     renderEarningsPanel();
+    renderCompanyIfOpen();
   }
 
   const fxRefreshBtn = document.getElementById('tt-fx-refresh');
@@ -2223,8 +2394,8 @@
   setInterval(()=> refreshExchangeRates(false), 60*60*1000);
 
   // ---------------- Monthly earnings estimate ----------------
-  function applyTaxTemplate(gross, templateId){
-    const tpl = taxTemplates.find(t=>t.id===templateId);
+  function applyTaxTemplate(gross, templateId, templates){
+    const tpl = (templates || taxTemplates).find(t=>t.id===templateId);
     if(!tpl || !Array.isArray(tpl.taxes) || !tpl.taxes.length) return { net: gross, breakdown: [] };
     let remaining = gross;
     const breakdown = [];
@@ -2236,32 +2407,36 @@
     return { net: remaining, breakdown };
   }
 
-  function computeMonthlyEarnings(dates){
-    dates = dates || getRangeDates(); // default: whatever Day/Week/Month/Custom range is currently browsed
+  // The earnings calculation itself. `src` is one person's data:
+  //   { entries, active, presets, taxTemplates }
+  // the signed-in user's own for the dashboard, or any member's for the company view.
+  function computeEarningsFor(src, dates){
     const keys = new Set(dates.map(dateKey));
+    const srcPresets = src.presets || [];
+    const srcTemplates = src.taxTemplates || [];
 
     const byNote = {};
-    entries.forEach(e=>{
+    (src.entries || []).forEach(e=>{
       if(!keys.has(e.date)) return;
       const note = e.note || '(no project)';
       byNote[note] = (byNote[note]||0) + (e.durationSec||0);
     });
-    if(active && keys.has(dateKey(new Date(active.startISO)))){
-      const note = active.note || '(no project)';
-      const liveSec = Math.floor((Date.now() - new Date(active.startISO).getTime())/1000);
+    if(src.active && keys.has(dateKey(new Date(src.active.startISO)))){
+      const note = src.active.note || '(no project)';
+      const liveSec = Math.floor((Date.now() - new Date(src.active.startISO).getTime())/1000);
       byNote[note] = (byNote[note]||0) + liveSec;
     }
 
     const rows = Object.entries(byNote).map(([note, secs])=>{
       const hours = secs/3600;
-      const meta = findPresetMeta(note);
+      const meta = srcPresets.find(p => presetName(p) === note);
       const hasMeta = meta && typeof meta === 'object';
       const rate = hasMeta ? Number(meta.rate)||0 : 0;
       const currency = (hasMeta && meta.currency) || 'RON';
       const taxTemplateId = hasMeta ? meta.taxTemplateId : null;
       const hasRate = rate > 0;
       const gross = hasRate ? hours*rate : 0;
-      const { net, breakdown } = hasRate ? applyTaxTemplate(gross, taxTemplateId) : { net:0, breakdown:[] };
+      const { net, breakdown } = hasRate ? applyTaxTemplate(gross, taxTemplateId, srcTemplates) : { net:0, breakdown:[] };
       return { note, hours, rate, currency, gross, net, breakdown, hasRate };
     }).sort((a,b)=>b.hours-a.hours);
 
@@ -2297,7 +2472,13 @@
     });
     const convertedTotal = earningsMode==='gross' ? grossConvertedTotal : netConvertedTotal;
 
-    return { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, excluded };
+    return { rows, grossByCurrency, netByCurrency, taxByCurrency, convertedTotal, grossConvertedTotal, netConvertedTotal, excluded };
+  }
+
+  // The signed-in user's own earnings for a list of days (default: the browsed range)
+  function computeMonthlyEarnings(dates){
+    dates = dates || getRangeDates();
+    return computeEarningsFor({ entries, active, presets, taxTemplates }, dates);
   }
 
   // ---- Averages ----------------------------------------------------------
@@ -2422,11 +2603,45 @@
       netByCurrency: scaleMap(earn.netByCurrency),
       taxByCurrency,
       convertedTotal: earn.convertedTotal * f,
+      grossConvertedTotal: (earn.grossConvertedTotal||0) * f,
+      netConvertedTotal: (earn.netConvertedTotal||0) * f,
       excluded: earn.excluded
     };
   }
 
-  // ---- Month-end projection ----------------------------------------------
+  // The projection calculation, for any one person's data.
+  //   src        — { entries, active, presets, taxTemplates }
+  //   secondsFor — (Date) => seconds logged that day, for that person
+  //   ref        — any date inside the month to project
+  // Returns what was earned so far, the worked / remaining day counts, and the
+  // projected month (earned scaled by the day ratio), or null when there is
+  // nothing to project from (no worked days, or no rates).
+  function computeMonthProjection(src, secondsFor, ref){
+    const y = ref.getFullYear(), m = ref.getMonth();
+    const monthDates = [];
+    for(let d=1, n=new Date(y, m+1, 0).getDate(); d<=n; d++) monthDates.push(new Date(y, m, d));
+    const now = new Date();
+    const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const elapsed = monthDates.filter(d=> d <= todayMid);
+    const worked = elapsed.filter(d=> secondsFor(d) > 0).length;
+    const todayLogged = secondsFor(todayMid) > 0;
+    let remaining = 0;
+    monthDates.forEach(d=>{
+      const wd = d.getDay();
+      if(wd===0 || wd===6) return;
+      if(d > todayMid || (d.getTime()===todayMid.getTime() && !todayLogged)) remaining++;
+    });
+    const earn = computeEarningsFor(src, elapsed);
+    const hasPay = Object.keys(earn.netByCurrency).length > 0;
+    const factor = worked > 0 ? (worked + remaining) / worked : null;
+    return {
+      monthLabel: `${monthNames[m]} ${y}`,
+      worked, remaining, earn, factor,
+      projected: (factor && hasPay) ? scaleEarnings(earn, factor) : null
+    };
+  }
+
+  // ---- Month-end projection (personal panel) ------------------------------
   // "If I keep earning my current average per worked day until the end of the
   // month, what does the month come to?"
   //   projected = earned so far + (earned so far ÷ worked days) × working days left
@@ -2439,25 +2654,9 @@
     const ids = { total:'tt-proj-total', totalLabel:'tt-proj-total-label', sub:'tt-proj-sub', taxes:'tt-proj-taxes', list:'tt-proj-list' };
     const dates = getRangeDates();
     const ref = (granularity==='custom' && dates[0]) ? dates[0] : anchorDate;
-    const y = ref.getFullYear(), m = ref.getMonth();
-    const monthDates = [];
-    for(let d=1, n=new Date(y, m+1, 0).getDate(); d<=n; d++) monthDates.push(new Date(y, m, d));
-    const monthLabel = `${monthNames[m]} ${y}`;
-    $('tt-proj-title').textContent = `${monthLabel} · projected`;
+    const proj = computeMonthProjection({ entries, active, presets, taxTemplates }, secondsForDate, ref);
+    $('tt-proj-title').textContent = `${proj.monthLabel} · projected`;
 
-    const now = new Date();
-    const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const elapsed = monthDates.filter(d=> d <= todayMid);
-    const worked = elapsed.filter(d=> secondsForDate(d) > 0).length;
-    const todayLogged = secondsForDate(todayMid) > 0;
-    let remaining = 0;
-    monthDates.forEach(d=>{
-      const wd = d.getDay();
-      if(wd===0 || wd===6) return;
-      if(d > todayMid || (d.getTime()===todayMid.getTime() && !todayLogged)) remaining++;
-    });
-
-    const earn = computeMonthlyEarnings(elapsed);
     const empty = (msg)=>{
       $(ids.total).textContent = '—';
       $(ids.totalLabel).textContent = '';
@@ -2466,16 +2665,15 @@
       $(ids.taxes).hidden = true; $(ids.taxes).innerHTML = '';
       $(ids.list).innerHTML = '';
     };
-    if(worked === 0) return empty(`No hours logged in ${monthLabel} yet — nothing to project from`);
-    if(Object.keys(earn.netByCurrency).length === 0) return empty('Set an hourly rate on a project to see a projection');
+    if(proj.worked === 0) return empty(`No hours logged in ${proj.monthLabel} yet — nothing to project from`);
+    if(!proj.projected) return empty('Set an hourly rate on a project to see a projection');
 
-    const f = (worked + remaining) / worked;
-    renderEarningsView(scaleEarnings(earn, f), ids, { labelSuffix:' · projected', subPrefix:'Projected: ', approx:true });
-    const soFar = earn.convertedTotal;
+    renderEarningsView(proj.projected, ids, { labelSuffix:' · projected', subPrefix:'Projected: ', approx:true });
+    const soFar = proj.earn.convertedTotal;
     $('tt-proj-basis').textContent =
-      `So far ${soFar.toFixed(2)} ${displayCurrency} (${earningsMode}) over ${worked} worked day${worked===1?'':'s'}`
-      + ` · avg ${(soFar/worked).toFixed(2)} per worked day`
-      + ` · ${remaining===0 ? 'no working days left' : `${remaining} working day${remaining===1?'':'s'} left, same average`}`;
+      `So far ${soFar.toFixed(2)} ${displayCurrency} (${earningsMode}) over ${proj.worked} worked day${proj.worked===1?'':'s'}`
+      + ` · avg ${(soFar/proj.worked).toFixed(2)} per worked day`
+      + ` · ${proj.remaining===0 ? 'no working days left' : `${proj.remaining} working day${proj.remaining===1?'':'s'} left, same average`}`;
   }
 
   function renderEarningsPanel(){
@@ -2484,8 +2682,8 @@
     const earn = computeMonthlyEarnings();
     renderAveragePanels(earn);
     // the Net/Gross toggle and currency picker exist on both money panels and share one setting
-    ['tt-earnings-currency','tt-proj-currency'].forEach(id=>{ const el=$(id); if(el) el.value = displayCurrency; });
-    ['tt-earnings-mode','tt-proj-mode'].forEach(id=>{ if($(id)) setActiveTab(id, earningsMode); });
+    ['tt-earnings-currency','tt-proj-currency','tt-co-currency'].forEach(id=>{ const el=$(id); if(el) el.value = displayCurrency; });
+    ['tt-earnings-mode','tt-proj-mode','tt-co-mode'].forEach(id=>{ if($(id)) setActiveTab(id, earningsMode); });
 
     $('tt-earnings-title').textContent = `${getRangeLabel()} · estimated`;
     renderEarningsView(earn, { total:'tt-earnings-total', totalLabel:'tt-earnings-total-label', sub:'tt-earnings-sub', taxes:'tt-earnings-taxes', list:'tt-earnings-list' });
@@ -2496,6 +2694,7 @@
       displayCurrency = e.target.value;
       localStorage.setItem('tt-display-currency', displayCurrency);
       renderEarningsPanel();
+      renderCompanyIfOpen();
     });
   });
   ['tt-earnings-mode','tt-proj-mode'].forEach(id=>{
@@ -2505,6 +2704,7 @@
       earningsMode = btn.dataset.val;
       localStorage.setItem('tt-earnings-mode', earningsMode);
       renderEarningsPanel();
+      renderCompanyIfOpen();
     });
   });
 
@@ -2523,7 +2723,9 @@
     'manage-users': 'Manage data',
     'manage-entries': 'Manage data',
     'export-users': 'Export data',
-    'export-entries': 'Export data'
+    'export-entries': 'Export data',
+    companies: 'Companies',
+    company: 'Company'
   };
 
   function adminExportLabel(){
@@ -2555,6 +2757,9 @@
     adminEntries = [];
     adminAllEntriesCache = null;
     adminDirectoryCache = null;
+    adminCompaniesCache = null;
+    adminMemberFinance = {};
+    adminSelectedCompanyId = null;
     showAdminScreen('root');
     $('tt-admin-page').hidden = false;
   }
@@ -2567,6 +2772,8 @@
     });
     $('tt-admin-page-title').textContent = ADMIN_SCREEN_TITLES[name] || 'Admin';
     $('tt-admin-page-back').hidden = (name==='root');
+    // the company dashboard has banners and member cards, so it gets more room on a wide screen
+    document.querySelector('.tt-admin-page-inner').classList.toggle('tt-admin-wide', name==='company');
   }
 
   // Fetches every entry across every user ONCE per admin session. Ownership is
@@ -2867,10 +3074,7 @@
         if(newStopDT <= startDT){ errEl.textContent = 'End time must be after the start time.'; return; }
         const newDurationSec = Math.round((newStopDT - startDT)/1000);
         try{
-          const updated = {
-            date: entry.date, startISO: entry.startISO, stopISO: newStopDT.toISOString(),
-            durationSec: newDurationSec, note: newNote || '', uid: entry.uid
-          };
+          const updated = editedEntryFields(entry, newStopDT.toISOString(), newDurationSec, newNote);
           await setDoc(entry.ref, updated);
           Object.assign(entry, updated);
           adminEditingRefId = null;
@@ -3127,9 +3331,9 @@
       return (a.startISO||'').localeCompare(b.startISO||'');
     });
     return filtered.map(e=>{
-      const s = new Date(e.startISO), st = new Date(e.stopISO);
-      const row = [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
+      const row = [e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
       if(hasOwners) row.push(e.ownerName || '');
+      row.push(e.tz || ''); // timezone last, so existing columns keep their positions
       return row;
     });
   }
@@ -3371,11 +3575,19 @@
     }
   }
 
+  // What an admin end-time edit writes back. setDoc replaces the whole document, so
+  // every field to keep has to be listed here — including the entry's timezone.
+  function editedEntryFields(entry, stopISO, durationSec, note){
+    const updated = { date: entry.date, startISO: entry.startISO, stopISO, durationSec, note: note || '', uid: entry.uid };
+    if(entry.tz) updated.tz = entry.tz;
+    return updated;
+  }
+
   function adminDoExportXlsx(entriesArr, dates, label){
     const wb = XLSX.utils.book_new();
     const hasOwners = entriesArr.some(e=>e.ownerName);
     const headers = adminExportType==='detailed'
-      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'])
+      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User','Timezone'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'])
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(entriesArr,d), 0);
@@ -3386,7 +3598,7 @@
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = adminExportType==='detailed'
-      ? (hasOwners ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}] : [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}])
+      ? (hasOwners ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20},{wch:20}] : [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}])
       : [{wch:14},{wch:10},{wch:12}];
     XLSX.utils.book_append_sheet(wb, ws, 'Entries');
     XLSX.writeFile(wb, `Double_T_admin_${adminExportSafeName()}_${adminExportPeriod}.xlsx`);
@@ -3395,7 +3607,7 @@
   function adminDoExportCsv(entriesArr, dates, label){
     const hasOwners = entriesArr.some(e=>e.ownerName);
     const headers = adminExportType==='detailed'
-      ? (hasOwners ? ['date','start','stop','duration_h','duration_hms','notes','user'] : ['date','start','stop','duration_h','duration_hms','notes'])
+      ? (hasOwners ? ['date','start','stop','duration_h','duration_hms','notes','user','timezone'] : ['date','start','stop','duration_h','duration_hms','notes','timezone'])
       : (adminExportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const csvLines = [headers.join(',')];
@@ -3507,13 +3719,13 @@
     }
 
     const headers = adminExportType==='detailed'
-      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes'])
+      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User','Timezone'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'])
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const columnStyles = adminExportType==='detailed'
       ? (hasOwners
-          ? { 0:{cellWidth:21}, 1:{cellWidth:14}, 2:{cellWidth:14}, 3:{cellWidth:22}, 4:{cellWidth:29}, 5:{cellWidth:'auto'}, 6:{cellWidth:44, fontStyle:'bold'} }
-          : { 0:{cellWidth:22}, 1:{cellWidth:18}, 2:{cellWidth:18}, 3:{cellWidth:24}, 4:{cellWidth:30}, 5:{cellWidth:'auto'} })
+          ? { 0:{cellWidth:20}, 1:{cellWidth:13}, 2:{cellWidth:13}, 3:{cellWidth:20}, 4:{cellWidth:25}, 5:{cellWidth:'auto'}, 6:{cellWidth:36, fontStyle:'bold'}, 7:{cellWidth:31} }
+          : { 0:{cellWidth:22}, 1:{cellWidth:16}, 2:{cellWidth:16}, 3:{cellWidth:23}, 4:{cellWidth:29}, 5:{cellWidth:'auto'}, 6:{cellWidth:33} })
       : {};
     pdfDoc.autoTable({
       head: [headers], body: rows, startY: contentStartY,
@@ -3533,17 +3745,563 @@
     else adminDoExportPdf(adminEntries, dates, label);
   });
 
+  // ==================== Companies (admin only) ====================
+  // A company is a named group of users:  companies/{id} = { name, memberUids[], createdAt }
+  // Only the admin reads or writes these. A user belongs to at most one company, so
+  // their hours and income are never counted twice. The company dashboard works out
+  // each member's income from that member's own entries and hourly rates (the same
+  // calculation as the personal Estimated panel), then adds them up.
+  let adminCompaniesCache = null;      // [{ id, name, memberUids, createdAt }]
+  let adminSelectedCompanyId = null;
+  let adminMemberFinance = {};         // uid -> { ok, presets, taxTemplates, error }
+  let coTab = 'dashboard';             // 'dashboard' | 'members'
+  let coPeriod = 'month';              // 'day' | 'week' | 'month' | 'custom'
+  let coAnchor = new Date();
+  let coCustomFrom = null, coCustomTo = null;
+
+  // What Firestore needs to allow. Shown in the app when a read is refused.
+  const COMPANY_RULES_SNIPPET =
+`match /companies/{companyId} {
+  allow read, write: if isAdmin();
+}
+match /users/{userId}/meta/{docId} {
+  allow read: if isAdmin();
+}`;
+
+  function normalizeCompany(id, data){
+    return {
+      id,
+      name: String((data && data.name) || 'Untitled company'),
+      memberUids: Array.isArray(data && data.memberUids) ? data.memberUids.filter(u=>typeof u==='string') : [],
+      createdAt: (data && data.createdAt) || null
+    };
+  }
+  function sortCompanies(){ adminCompaniesCache.sort((a,b)=>a.name.localeCompare(b.name)); }
+
+  async function ensureCompaniesLoaded(force){
+    if(adminCompaniesCache && !force) return adminCompaniesCache;
+    const snap = await getDocs(collection(db, 'companies'));
+    adminCompaniesCache = snap.docs.map(d=>normalizeCompany(d.id, d.data()));
+    sortCompanies();
+    return adminCompaniesCache;
+  }
+  function getCompany(id){ return (adminCompaniesCache||[]).find(c=>c.id===id) || null; }
+  function companyOfUser(uid){ return (adminCompaniesCache||[]).find(c=>c.memberUids.includes(uid)) || null; }
+  async function persistCompany(c){
+    await setDoc(doc(db, 'companies', c.id), { name:c.name, memberUids:c.memberUids, createdAt:c.createdAt });
+  }
+  function userLabel(uid){
+    const u = (adminDirectoryCache||{})[uid];
+    return (u && (u.displayName || u.email)) || 'Unknown user';
+  }
+
+  function rulesHelpHtml(){
+    return `<div class="tt-co-rules">
+      <div class="tt-menu-label">Firestore rules needed</div>
+      <div class="tt-menu-desc" style="margin-bottom:0;">In the Firebase console go to Firestore → Rules, add these inside <code>match /databases/{database}/documents</code>, then Publish:</div>
+      <pre>${escapeHtml(COMPANY_RULES_SNIPPET)}</pre>
+    </div>`;
+  }
+  function isPermissionError(err){
+    return !!err && (err.code==='permission-denied' || /permission/i.test(err.message||''));
+  }
+  function companiesErrorHtml(err){
+    const code = err && err.code ? err.code : 'unknown';
+    return `<div class="tt-co-notice">Could not load companies (${escapeHtml(code)}): ${escapeHtml((err && err.message) || 'Unknown error')}${isPermissionError(err) ? rulesHelpHtml() : ''}</div>`;
+  }
+
+  // ---- Companies list ----
+  async function renderCompaniesScreen(){
+    const el = $('tt-co-list');
+    el.innerHTML = '<div class="tt-preset-empty">Loading companies…</div>';
+    $('tt-co-create-msg').textContent = '';
+    try{
+      const [list] = await Promise.all([ensureCompaniesLoaded(), ensureDirectoryLoaded()]);
+      $('tt-co-new-name').placeholder = list.length ? 'Company name' : 'e.g. ETHO Creative Studio';
+      if(!list.length){
+        el.innerHTML = '<div class="tt-preset-empty">No companies yet — create the first one below.</div>';
+        return;
+      }
+      el.innerHTML = list.map(c=>{
+        const names = c.memberUids.map(userLabel).join(', ') || 'No members yet';
+        return `<button type="button" class="tt-admin-bigcard" data-cid="${escapeHtml(c.id)}">
+          <div class="tt-admin-bigcard-title">${escapeHtml(c.name)} <span class="tt-menu-chevron">&#8250;</span></div>
+          <div class="tt-admin-bigcard-desc">${c.memberUids.length} member${c.memberUids.length===1?'':'s'} · ${escapeHtml(names)}</div>
+        </button>`;
+      }).join('');
+    }catch(err){
+      console.error('Could not load companies', err);
+      el.innerHTML = companiesErrorHtml(err);
+    }
+  }
+  $('tt-co-list').addEventListener('click', (e)=>{
+    const card = e.target.closest('[data-cid]');
+    if(card) go({ view:'admin', screen:'company', cid:card.getAttribute('data-cid') });
+  });
+
+  async function createCompanyFromForm(){
+    const input = $('tt-co-new-name'), msg = $('tt-co-create-msg');
+    const name = input.value.trim();
+    msg.className = 'tt-menu-msg';
+    const fail = (t)=>{ msg.textContent = t; msg.classList.add('error'); };
+    if(!name) return fail('Give the company a name.');
+    try{
+      const list = await ensureCompaniesLoaded();
+      if(list.some(c=>c.name.toLowerCase()===name.toLowerCase())) return fail('A company with that name already exists.');
+      const createdAt = new Date().toISOString();
+      const ref = await addDoc(collection(db, 'companies'), { name, memberUids:[], createdAt });
+      list.push({ id:ref.id, name, memberUids:[], createdAt });
+      sortCompanies();
+      input.value = '';
+      coTab = 'members'; // straight to adding people
+      go({ view:'admin', screen:'company', cid:ref.id });
+    }catch(err){
+      console.error('Could not create company', err);
+      fail(`Could not create the company (${(err && err.code) || 'error'}).`);
+      if(isPermissionError(err)) $('tt-co-list').innerHTML = companiesErrorHtml(err);
+    }
+  }
+  $('tt-co-create-btn').addEventListener('click', createCompanyFromForm);
+  $('tt-co-new-name').addEventListener('keydown', (e)=>{ if(e.key==='Enter') createCompanyFromForm(); });
+
+  // ---- Members' rates (needed to turn hours into income) ----
+  async function ensureMemberFinance(uids){
+    const need = uids.filter(u=>!adminMemberFinance[u] || !adminMemberFinance[u].ok);
+    await Promise.all(need.map(async uid=>{
+      try{
+        const [p, t] = await Promise.all([ getDoc(presetsDoc(uid)), getDoc(taxTemplatesDoc(uid)) ]);
+        adminMemberFinance[uid] = {
+          ok: true,
+          presets: (p.exists() && Array.isArray(p.data().list)) ? p.data().list : [],
+          taxTemplates: (t.exists() && Array.isArray(t.data().list)) ? t.data().list : []
+        };
+      }catch(err){
+        adminMemberFinance[uid] = { ok:false, presets:[], taxTemplates:[], error: (err && (err.code || err.message)) || 'error' };
+      }
+    }));
+  }
+
+  // ---- One company ----
+  async function openCompanyScreen(cid){
+    adminSelectedCompanyId = cid;
+    showAdminScreen('company');
+    setActiveTab('tt-co-tabs', coTab);
+    applyCompanyTab();
+    $('tt-co-notice').innerHTML = '';
+    $('tt-co-banners').innerHTML = '';
+    $('tt-co-cards').innerHTML = '<div class="tt-preset-empty">Loading company…</div>';
+    try{
+      await Promise.all([ensureCompaniesLoaded(), ensureDirectoryLoaded(), ensureAllEntriesLoaded()]);
+      if(adminSelectedCompanyId !== cid) return; // navigated away while loading
+      const company = getCompany(cid);
+      if(!company){ go({ view:'admin', screen:'companies' }, { replace:true }); return; }
+      $('tt-admin-page-title').textContent = company.name;
+      await ensureMemberFinance(company.memberUids);
+      if(adminSelectedCompanyId !== cid) return;
+      renderCompanyScreen();
+    }catch(err){
+      console.error('Could not open company', err);
+      $('tt-co-cards').innerHTML = '';
+      $('tt-co-notice').innerHTML = companiesErrorHtml(err);
+    }
+  }
+
+  function applyCompanyTab(){
+    $('tt-co-dashboard').hidden = coTab !== 'dashboard';
+    $('tt-co-members').hidden = coTab !== 'members';
+  }
+  function renderCompanyScreen(){
+    renderCompanyDashboard();
+    renderCompanyMembers();
+    applyCompanyTab();
+  }
+  // refreshes the dashboard if it's on screen (money settings or FX rates changed)
+  function renderCompanyIfOpen(){
+    const page = $('tt-admin-page'), screen = $('tt-admin-page-company');
+    if(!page || !screen || page.hidden || screen.hidden) return; // checked first: also runs during start-up
+    if(getCompany(adminSelectedCompanyId)) renderCompanyDashboard();
+  }
+
+  $('tt-co-tabs').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(!btn) return;
+    coTab = btn.dataset.val;
+    setActiveTab('tt-co-tabs', coTab);
+    applyCompanyTab();
+  });
+
+  // ---- Period (same options as the main dashboard) ----
+  function coGetDates(){
+    const a = coAnchor;
+    if(coPeriod==='day') return [new Date(a.getFullYear(), a.getMonth(), a.getDate())];
+    if(coPeriod==='week'){
+      const start = new Date(a.getFullYear(), a.getMonth(), a.getDate() - mondayIndex(a));
+      return Array.from({ length:7 }, (_,i)=> new Date(start.getFullYear(), start.getMonth(), start.getDate()+i));
+    }
+    if(coPeriod==='custom'){
+      const from = coCustomFrom || new Date();
+      const to = coCustomTo || from;
+      const [lo, hi] = from <= to ? [from, to] : [to, from];
+      const out = [];
+      const cur = new Date(lo.getFullYear(), lo.getMonth(), lo.getDate());
+      const last = new Date(hi.getFullYear(), hi.getMonth(), hi.getDate());
+      while(cur <= last){ out.push(new Date(cur)); cur.setDate(cur.getDate()+1); }
+      return out;
+    }
+    const y = a.getFullYear(), m = a.getMonth();
+    return Array.from({ length:new Date(y, m+1, 0).getDate() }, (_,i)=> new Date(y, m, i+1));
+  }
+  function coLabel(dates){
+    if(coPeriod==='day') return dates[0].toLocaleDateString(undefined,{ weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    if(coPeriod==='month') return `${monthNames[coAnchor.getMonth()]} ${coAnchor.getFullYear()}`;
+    if(!dates.length) return 'Pick a date range';
+    const s = dates[0], e = dates[dates.length-1];
+    if(dates.length===1) return s.toLocaleDateString(undefined,{ month:'short', day:'numeric', year:'numeric' });
+    const sameYear = s.getFullYear()===e.getFullYear();
+    const sFmt = s.toLocaleDateString(undefined, sameYear ? { month:'short', day:'numeric' } : { month:'short', day:'numeric', year:'numeric' });
+    const eFmt = e.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+    return `${sFmt} – ${eFmt}`;
+  }
+  function coShift(delta){
+    const a = coAnchor;
+    if(coPeriod==='day') coAnchor = new Date(a.getFullYear(), a.getMonth(), a.getDate()+delta);
+    else if(coPeriod==='week') coAnchor = new Date(a.getFullYear(), a.getMonth(), a.getDate()+delta*7);
+    else if(coPeriod==='month') coAnchor = shiftMonthClamped(a, delta);
+    renderCompanyDashboard();
+  }
+  $('tt-co-prev').addEventListener('click', ()=> coShift(-1));
+  $('tt-co-next').addEventListener('click', ()=> coShift(1));
+  $('tt-co-period').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(!btn) return;
+    coPeriod = btn.dataset.val;
+    setActiveTab('tt-co-period', coPeriod);
+    if(coPeriod==='custom' && (!coCustomFrom || !coCustomTo)){
+      coCustomTo = new Date();
+      coCustomFrom = new Date();
+      coCustomFrom.setDate(coCustomFrom.getDate()-6);
+      $('tt-co-custom-from').value = dateKey(coCustomFrom);
+      $('tt-co-custom-to').value = dateKey(coCustomTo);
+    }
+    renderCompanyDashboard();
+  });
+  [['tt-co-custom-from','from'], ['tt-co-custom-to','to']].forEach(([id, which])=>{
+    $(id).addEventListener('change', ()=>{
+      const val = $(id).value;
+      if(!val) return;
+      const [y,m,d] = val.split('-').map(Number);
+      if(which==='from') coCustomFrom = new Date(y, m-1, d); else coCustomTo = new Date(y, m-1, d);
+      renderCompanyDashboard();
+    });
+  });
+
+  // ---- The numbers ----
+  // Per member: hours / worked days / income for the chosen period, plus that
+  // member's own month-end projection. Company totals are the sums.
+  function coComputeStats(company){
+    const dates = coGetDates();
+    const ref = (coPeriod==='custom' && dates[0]) ? dates[0] : coAnchor;
+    const dir = adminDirectoryCache || {};
+    const members = company.memberUids.map(uid=>{
+      const user = dir[uid] || { uid, email:'', displayName:'' };
+      const all = getEntriesForUid(uid);
+      const fin = adminMemberFinance[uid] || { ok:false, presets:[], taxTemplates:[], error:'not loaded' };
+      const src = { entries:all, active:null, presets:fin.presets, taxTemplates:fin.taxTemplates };
+      const secByDate = {};
+      all.forEach(e=>{ secByDate[e.date] = (secByDate[e.date]||0) + (e.durationSec||0); });
+      let seconds = 0, workedDays = 0;
+      dates.forEach(d=>{
+        const sec = secByDate[dateKey(d)] || 0;
+        seconds += sec;
+        if(sec > 0) workedDays++;
+      });
+      const earn = computeEarningsFor(src, dates);
+      const proj = computeMonthProjection(src, d=> secByDate[dateKey(d)] || 0, ref);
+      return { uid, user, fin, seconds, workedDays, earn, proj, hasRates: Object.keys(earn.netByCurrency).length > 0 };
+    });
+    const sum = (f)=> members.reduce((t,m)=> t + f(m), 0);
+    const excluded = Array.from(new Set(members.flatMap(m=>[...m.earn.excluded, ...m.proj.earn.excluded])));
+    return {
+      dates, ref, members, excluded,
+      monthLabel: `${monthNames[ref.getMonth()]} ${ref.getFullYear()}`,
+      totals: {
+        seconds: sum(m=>m.seconds),
+        active: members.filter(m=>m.seconds>0).length,
+        gross: sum(m=>m.earn.grossConvertedTotal||0),
+        net: sum(m=>m.earn.netConvertedTotal||0),
+        projGross: sum(m=>m.proj.projected ? m.proj.projected.grossConvertedTotal : 0),
+        projNet: sum(m=>m.proj.projected ? m.proj.projected.netConvertedTotal : 0),
+        soFarGross: sum(m=>m.proj.earn.grossConvertedTotal||0),
+        soFarNet: sum(m=>m.proj.earn.netConvertedTotal||0)
+      }
+    };
+  }
+
+  function coMoney(n){ return `${n.toFixed(2)} ${displayCurrency}`; }
+  const coPick = (gross, net)=> earningsMode==='gross' ? gross : net;
+
+  function renderCompanyDashboard(){
+    const company = getCompany(adminSelectedCompanyId);
+    if(!company) return;
+    const stats = coComputeStats(company);
+    const { totals, members } = stats;
+    $('tt-co-rangelabel').textContent = coLabel(stats.dates);
+    $('tt-co-nav').hidden = coPeriod==='custom';
+    $('tt-co-custom').hidden = coPeriod!=='custom';
+
+    // members whose rates couldn't be read: say so, with a way to retry
+    const unreadable = members.filter(m=>!m.fin.ok);
+    const noticeEl = $('tt-co-notice');
+    if(unreadable.length){
+      const denied = unreadable.some(m=>/permission/i.test(m.fin.error||''));
+      noticeEl.innerHTML = `<div class="tt-co-notice">Can't read hourly rates for ${escapeHtml(unreadable.map(m=>m.user.displayName||m.user.email||'a member').join(', '))} (${escapeHtml(unreadable[0].fin.error)}). Their hours are counted, but their income can't be.${denied ? rulesHelpHtml() : ''}<div><button type="button" class="tt-btn" id="tt-co-retry">Retry</button></div></div>`;
+    } else {
+      noticeEl.innerHTML = '';
+    }
+
+    if(!members.length){
+      $('tt-co-banners').innerHTML = '';
+      $('tt-co-cards').innerHTML = `<div class="tt-preset-empty">No members yet. <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-co-goto-members" style="margin-left:6px;">Add members</button></div>`;
+      return;
+    }
+
+    const modeWord = earningsMode;
+    const avgSec = totals.active ? Math.round(totals.seconds / totals.active) : 0;
+    const perActive = totals.active ? coPick(totals.gross, totals.net) / totals.active : 0;
+    const excludedNote = stats.excluded.length ? ` · ${stats.excluded.join(', ')} not converted (rate unavailable)` : '';
+    const banner = ({ label, value, sub, cls, flag })=>`
+      <div class="tt-co-banner ${cls||''}">
+        ${flag ? `<div class="tt-proj-flag" title="Not real earnings. Each member's own average per worked day, carried to the end of the month."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Projection · not real earnings</div>` : ''}
+        <div class="tt-co-banner-label">${escapeHtml(label)}</div>
+        <div class="tt-co-banner-val">${escapeHtml(value)}</div>
+        <div class="tt-co-banner-sub">${escapeHtml(sub)}</div>
+      </div>`;
+    const anyIncome = members.some(m=>m.hasRates);
+    $('tt-co-banners').innerHTML = [
+      banner({
+        label:'Total hours', value:`${fmtHM(totals.seconds)} h`,
+        sub:`${totals.active} of ${members.length} member${members.length===1?'':'s'} logged time`
+      }),
+      banner({
+        label:`Income · ${modeWord}`, value: anyIncome ? coMoney(coPick(totals.gross, totals.net)) : '—',
+        sub: anyIncome ? `Gross ${coMoney(totals.gross)} → Net ${coMoney(totals.net)}${excludedNote}` : 'No hourly rates set yet'
+      }),
+      banner({
+        label:`Expected ${stats.monthLabel} · ${modeWord}`, cls:'tt-co-proj', flag:true,
+        value: anyIncome ? `≈ ${coMoney(coPick(totals.projGross, totals.projNet))}` : '—',
+        sub: anyIncome
+          ? `So far ${coMoney(coPick(totals.soFarGross, totals.soFarNet))} · each member's own average × working days left`
+          : 'Needs logged hours and an hourly rate'
+      }),
+      banner({
+        label:'Average per active member', value: totals.active ? `${fmtHM(avgSec)} h` : '—',
+        sub: totals.active && anyIncome ? `${coMoney(perActive)} ${modeWord} each` : 'in the selected period'
+      })
+    ].join('');
+
+    const sorted = members.slice().sort((a,b)=> b.seconds - a.seconds);
+    $('tt-co-cards').innerHTML = sorted.map(m=>{
+      const name = m.user.displayName || m.user.email || 'Unknown user';
+      const pct = totals.seconds ? (m.seconds / totals.seconds) * 100 : 0;
+      const avg = m.workedDays ? Math.round(m.seconds / m.workedDays) : 0;
+      let chip = '';
+      if(!m.fin.ok) chip = `<span class="tt-co-chip tt-co-chip-bad" title="${escapeHtml(m.fin.error||'')}">Rates unreadable</span>`;
+      else if(m.seconds>0 && !m.hasRates) chip = '<span class="tt-co-chip" title="No hourly rate on the projects they log">No rate set</span>';
+      const income = m.hasRates ? coMoney(coPick(m.earn.grossConvertedTotal||0, m.earn.netConvertedTotal||0)) : '—';
+      const projected = m.proj.projected ? `≈ ${coMoney(coPick(m.proj.projected.grossConvertedTotal, m.proj.projected.netConvertedTotal))}` : '—';
+      const stat = (label, val, cls)=>`<div><div class="tt-co-stat-label">${escapeHtml(label)}</div><div class="tt-co-stat-val ${cls||''}">${escapeHtml(val)}</div></div>`;
+      return `<div class="tt-co-card">
+        <div class="tt-co-card-top">
+          <div><div class="tt-co-card-name">${escapeHtml(name)}</div><div class="tt-co-card-email">${escapeHtml(m.user.email||'')}</div></div>
+          ${chip}
+        </div>
+        <div class="tt-co-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
+        <div class="tt-co-bar-note">${pct.toFixed(0)}% of the company's hours</div>
+        <div class="tt-co-stats">
+          ${stat('Hours', `${fmtHM(m.seconds)} h`)}
+          ${stat('Worked days', String(m.workedDays))}
+          ${stat('Avg / worked day', m.workedDays ? `${fmtHM(avg)} h` : '—')}
+          ${stat(`Income · ${modeWord}`, income)}
+          ${stat(`Month-end · ${modeWord}`, projected, 'tt-co-approx')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Delegated clicks for the buttons that dashboard rendering creates
+  $('tt-admin-page-company').addEventListener('click', async (e)=>{
+    if(e.target.closest('#tt-co-goto-members')){
+      coTab = 'members'; setActiveTab('tt-co-tabs','members'); applyCompanyTab();
+    }
+    if(e.target.closest('#tt-co-retry')){
+      const company = getCompany(adminSelectedCompanyId);
+      if(!company) return;
+      await ensureMemberFinance(company.memberUids);
+      renderCompanyScreen();
+    }
+  });
+
+  // ---- Members tab ----
+  function renderCompanyMembers(){
+    const company = getCompany(adminSelectedCompanyId);
+    if(!company) return;
+    const dir = adminDirectoryCache || {};
+    $('tt-co-members-msg').textContent = '';
+    $('tt-co-rename-input').value = company.name;
+
+    $('tt-co-member-list').innerHTML = company.memberUids.length
+      ? company.memberUids.map(uid=>{
+          const u = dir[uid] || {};
+          const count = getEntriesForUid(uid).length;
+          return `<div class="tt-co-member-row">
+            <div><div class="tt-admin-user-name">${escapeHtml(userLabel(uid))}</div>
+            <div class="tt-admin-user-email">${escapeHtml(u.email||'')} · ${count} entr${count===1?'y':'ies'}</div></div>
+            <button type="button" class="tt-btn danger" data-remove="${escapeHtml(uid)}">Remove</button>
+          </div>`;
+        }).join('')
+      : '<div class="tt-preset-empty">No members yet — add someone above.</div>';
+
+    const users = Object.values(dir).sort((a,b)=> (a.displayName||a.email||'').localeCompare(b.displayName||b.email||''));
+    const options = users.filter(u=>!company.memberUids.includes(u.uid)).map(u=>{
+      const other = companyOfUser(u.uid);
+      return `<option value="${escapeHtml(u.uid)}" ${other?'disabled':''}>${escapeHtml(u.displayName||u.email||'Unnamed user')}${u.displayName&&u.email?` · ${escapeHtml(u.email)}`:''}${other?` — in ${escapeHtml(other.name)}`:''}</option>`;
+    });
+    const available = users.filter(u=>!company.memberUids.includes(u.uid) && !companyOfUser(u.uid)).length;
+    $('tt-co-add-select').innerHTML = available
+      ? `<option value="">Choose a person…</option>${options.join('')}`
+      : '<option value="">Everyone is already in a company</option>';
+    $('tt-co-add-btn').disabled = !available;
+  }
+
+  $('tt-co-add-btn').addEventListener('click', async ()=>{
+    const uid = $('tt-co-add-select').value;
+    const company = getCompany(adminSelectedCompanyId);
+    const msg = $('tt-co-members-msg');
+    msg.className = 'tt-menu-msg';
+    if(!uid || !company || companyOfUser(uid)) return;
+    company.memberUids = [...company.memberUids, uid];
+    try{
+      await persistCompany(company);
+    }catch(err){
+      company.memberUids = company.memberUids.filter(x=>x!==uid);
+      console.error('Could not add member', err);
+      msg.textContent = `Could not add them (${(err && err.code) || 'error'}).`; msg.classList.add('error');
+      return;
+    }
+    await ensureMemberFinance([uid]);
+    renderCompanyScreen();
+  });
+
+  $('tt-co-member-list').addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-remove]');
+    const company = getCompany(adminSelectedCompanyId);
+    if(!btn || !company) return;
+    const uid = btn.getAttribute('data-remove');
+    openConfirmModal({
+      title: 'Remove from company?',
+      desc: `${userLabel(uid)} will no longer be counted in ${company.name}. Their account, entries and rates are not touched.`,
+      confirmLabel: 'Remove',
+      onConfirm: async ()=>{
+        const before = company.memberUids;
+        company.memberUids = before.filter(x=>x!==uid);
+        try{ await persistCompany(company); }
+        catch(err){
+          company.memberUids = before;
+          console.error('Could not remove member', err);
+          $('tt-co-members-msg').textContent = `Could not remove them (${(err && err.code) || 'error'}).`;
+          $('tt-co-members-msg').className = 'tt-menu-msg error';
+          return;
+        }
+        renderCompanyScreen();
+      }
+    });
+  });
+
+  $('tt-co-rename-btn').addEventListener('click', async ()=>{
+    const company = getCompany(adminSelectedCompanyId);
+    const msg = $('tt-co-members-msg');
+    msg.className = 'tt-menu-msg';
+    const name = $('tt-co-rename-input').value.trim();
+    if(!company) return;
+    if(!name){ msg.textContent = 'The name can\'t be empty.'; msg.classList.add('error'); return; }
+    if((adminCompaniesCache||[]).some(c=>c.id!==company.id && c.name.toLowerCase()===name.toLowerCase())){
+      msg.textContent = 'Another company already has that name.'; msg.classList.add('error'); return;
+    }
+    const before = company.name;
+    company.name = name;
+    try{ await persistCompany(company); }
+    catch(err){
+      company.name = before;
+      console.error('Could not rename company', err);
+      msg.textContent = `Could not rename it (${(err && err.code) || 'error'}).`; msg.classList.add('error');
+      return;
+    }
+    sortCompanies();
+    $('tt-admin-page-title').textContent = name;
+    msg.textContent = 'Saved.'; msg.classList.add('success');
+  });
+
+  $('tt-co-delete-btn').addEventListener('click', ()=>{
+    const company = getCompany(adminSelectedCompanyId);
+    if(!company) return;
+    openConfirmModal({
+      title: 'Delete this company?',
+      desc: `${company.name} will be removed. ${company.memberUids.length ? `${company.memberUids.length} member${company.memberUids.length===1?'':'s'} will simply no longer be grouped. ` : ''}Nobody's account or entries are deleted.`,
+      confirmLabel: 'Delete company',
+      onConfirm: async ()=>{
+        try{ await deleteDoc(doc(db, 'companies', company.id)); }
+        catch(err){
+          console.error('Could not delete company', err);
+          $('tt-co-members-msg').textContent = `Could not delete it (${(err && err.code) || 'error'}).`;
+          $('tt-co-members-msg').className = 'tt-menu-msg error';
+          return;
+        }
+        adminCompaniesCache = (adminCompaniesCache||[]).filter(c=>c.id!==company.id);
+        go({ view:'admin', screen:'companies' });
+      }
+    });
+  });
+
+  // Money settings are shared with the personal dashboard: change them here and
+  // the Estimated, Projected and Average panels follow, and the other way round.
+  $('tt-co-mode').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(!btn) return;
+    earningsMode = btn.dataset.val;
+    localStorage.setItem('tt-earnings-mode', earningsMode);
+    renderEarningsPanel();
+    renderCompanyIfOpen();
+  });
+  $('tt-co-currency').addEventListener('change', (e)=>{
+    displayCurrency = e.target.value;
+    localStorage.setItem('tt-display-currency', displayCurrency);
+    renderEarningsPanel();
+    renderCompanyIfOpen();
+  });
+
+  // The account menu's "Company" row: straight to the company if there's only one
+  $('tt-company-navrow').addEventListener('click', async ()=>{
+    coTab = 'dashboard';
+    try{
+      const list = await ensureCompaniesLoaded();
+      if(list.length===1) return go({ view:'admin', screen:'company', cid:list[0].id });
+    }catch(err){ /* the companies screen shows the error and what to fix */ }
+    go({ view:'admin', screen:'companies' });
+  });
+
   // ---- Root navigation ----
   document.querySelectorAll('.tt-admin-bigcard').forEach(card=>{
     card.addEventListener('click', ()=>{
       const mode = card.getAttribute('data-adminscreen');
-      go({ view:'admin', screen: mode==='manage' ? 'manage-users' : 'export-users' });
+      if(!mode) return; // cards created later (the company list) have their own handler
+      go({ view:'admin', screen: mode==='manage' ? 'manage-users' : mode==='companies' ? 'companies' : 'export-users' });
     });
   });
 
   $('tt-admin-page-back').addEventListener('click', ()=>{
     if(adminScreen==='manage-entries') go({ view:'admin', screen:'manage-users' });
     else if(adminScreen==='export-entries') go({ view:'admin', screen:'export-users' });
+    else if(adminScreen==='company') go({ view:'admin', screen:'companies' });
     else go({ view:'admin', screen:'root' });
   });
   $('tt-admin-page-titlebar').addEventListener('click', ()=>{
@@ -3565,6 +4323,7 @@
   //   /admin                    admin landing
   //   /admin/manage[/<uid>]     browse, then drill into one user's entries
   //   /admin/export[/<uid>]     same, for the export/analytics side
+  //   /admin/companies[/<id>]   the company list, then one company
 
   // Where the app is mounted: '' when served from a domain root (the
   // doublet.etho.ro deploy), auto-detected when it sits in a subdirectory.
@@ -3576,7 +4335,8 @@
   const MENU_SCREENS = ['root','user','projects','exports','data'];
   const ADMIN_SCREEN_SEGMENT = {
     'manage-users':'manage', 'manage-entries':'manage',
-    'export-users':'export', 'export-entries':'export'
+    'export-users':'export', 'export-entries':'export',
+    companies:'companies', company:'companies'
   };
   const ROUTE_TITLES = {
     login:'Sign in · Double T',
@@ -3607,6 +4367,11 @@
     }
     if(seg[0]==='admin'){
       if(seg.length===1) return { view:'admin', screen:'root' };
+      if(seg[1]==='companies'){
+        if(seg.length===2) return { view:'admin', screen:'companies' };
+        if(seg.length===3) return { view:'admin', screen:'company', cid:seg[2] };
+        return null;
+      }
       if(seg[1]==='manage' || seg[1]==='export'){
         if(seg.length===2) return { view:'admin', screen:`${seg[1]}-users` };
         if(seg.length===3) return { view:'admin', screen:`${seg[1]}-entries`, uid:seg[2] };
@@ -3626,6 +4391,9 @@
     if(route.view==='admin'){
       const segment = ADMIN_SCREEN_SEGMENT[route.screen];
       if(!segment) return `${ROUTE_BASE}/admin`;
+      if(segment==='companies'){
+        return route.cid ? `${ROUTE_BASE}/admin/companies/${encodeURIComponent(route.cid)}` : `${ROUTE_BASE}/admin/companies`;
+      }
       const tail = route.uid ? `/${encodeURIComponent(route.uid)}` : '';
       return `${ROUTE_BASE}/admin/${segment}${tail}`;
     }
@@ -3647,6 +4415,7 @@
     if(route.view==='admin'){
       if(!isAdmin) return { view:'dashboard' };
       // an entries screen without a uid is just the list it drills down from
+      if(route.screen==='company' && !route.cid) return { view:'admin', screen:'companies' };
       if(/-entries$/.test(route.screen) && !route.uid){
         return { view:'admin', screen: route.screen.replace('-entries','-users') };
       }
@@ -3657,7 +4426,8 @@
   function sameRoute(a, b){
     return !!a && !!b && a.view===b.view
       && (a.screen||null)===(b.screen||null)
-      && (a.uid||null)===(b.uid||null);
+      && (a.uid||null)===(b.uid||null)
+      && (a.cid||null)===(b.cid||null);
   }
 
   // The single entry point for navigation. Pass a route object or a path.
@@ -3719,7 +4489,15 @@
     const userMatches = !route.uid || (modeForMatch==='manage'
       ? (adminSelectedUser && adminSelectedUser.uid===route.uid)
       : (adminSelectedExportUsers.length===1 && adminSelectedExportUsers[0].uid===route.uid));
-    if(adminScreen===screen && userMatches) return;
+    const cidMatches = !route.cid || adminSelectedCompanyId===route.cid;
+    if(adminScreen===screen && userMatches && cidMatches) return;
+
+    if(screen==='companies' || screen==='company'){
+      adminMode = 'companies';
+      if(screen==='companies'){ adminSelectedCompanyId = null; showAdminScreen('companies'); renderCompaniesScreen(); }
+      else openCompanyScreen(route.cid);
+      return;
+    }
 
     if(screen==='root'){
       adminMode = null;
@@ -3924,6 +4702,7 @@
       currentUid = null;
       isAdmin = false;
       $('tt-admin-navrow').hidden = true;
+      $('tt-company-navrow').hidden = true;
       detachListeners();
     }
 
@@ -4373,26 +5152,43 @@
       const start = new Date(active.startISO);
       const stop = new Date();
       const durationSec = Math.max(0, Math.round((stop-start)/1000));
-      try{
+      // the timezone it was started in; a timer begun before this existed falls back to this browser's
+      const tz = active.tz || browserTimeZone();
+      const commit = async (withTz)=>{
         const batch = writeBatch(db);
         const newEntryRef = doc(entriesCol(currentUid));
-        batch.set(newEntryRef, {
+        const entry = {
           uid: currentUid,
           date: dateKey(start),
           startISO: active.startISO,
           stopISO: stop.toISOString(),
           durationSec,
           note: active.note || ''
-        });
+        };
+        if(withTz && tz) entry.tz = tz;
+        batch.set(newEntryRef, entry);
         batch.delete(activeDoc(currentUid));
         await batch.commit();
+      };
+      try{
+        try{ await commit(true); }
+        catch(err){
+          // If the Firestore rules don't allow the new field, still save the time.
+          if(err && err.code==='permission-denied' && tz){ await commit(false); } else throw err;
+        }
       }catch(err){ console.error('Could not stop timer', err); }
     } else {
+      const begin = async (withTz)=>{
+        const data = { startISO: new Date().toISOString(), note: $('tt-note').value.trim() };
+        const tz = browserTimeZone();
+        if(withTz && tz) data.tz = tz;
+        await setDoc(activeDoc(currentUid), data);
+      };
       try{
-        await setDoc(activeDoc(currentUid), {
-          startISO: new Date().toISOString(),
-          note: $('tt-note').value.trim()
-        });
+        try{ await begin(true); }
+        catch(err){
+          if(err && err.code==='permission-denied'){ await begin(false); } else throw err;
+        }
       }catch(err){ console.error('Could not start timer', err); }
     }
   }
@@ -4445,8 +5241,7 @@
       .filter(e=>keys.has(e.date))
       .sort((a,b)=>a.startISO.localeCompare(b.startISO))
       .map(e=>{
-        const s = new Date(e.startISO), st = new Date(e.stopISO);
-        return [e.date, s.toTimeString().slice(0,5), st.toTimeString().slice(0,5), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec), e.note||''];
+        return [e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec), e.note||'', e.tz||''];
       });
   }
 
@@ -4505,7 +5300,7 @@
   function doExportXlsx(dates, label){
     const wb = XLSX.utils.book_new();
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone']
       : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
@@ -4521,7 +5316,7 @@
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = exportType==='detailed'
-      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30}]
+      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}]
       : [{wch:14},{wch:10},{wch:10}];
     ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:headers.length-1} }];
 
@@ -4544,7 +5339,7 @@
 
   function doExportCsv(dates, label){
     const headers = exportType==='detailed'
-      ? ['date','start','stop','duration_h','duration_hms','notes']
+      ? ['date','start','stop','duration_h','duration_hms','notes','timezone']
       : (exportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const csvLines = [headers.join(',')];
@@ -4698,7 +5493,7 @@
     }
 
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes']
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone']
       : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
 
@@ -5295,14 +6090,17 @@
 
           const durationSec = Math.round((stopDT-startDT)/1000);
           try{
-            await addDoc(entriesCol(currentUid), {
+            const importedEntry = {
               uid: currentUid,
               date: `${d.y}-${pad(d.mo)}-${pad(d.d)}`,
               startISO: startDT.toISOString(),
               stopISO: stopDT.toISOString(),
               durationSec,
               note: notes
-            });
+            };
+            const importTz = browserTimeZone(); // the file's times were read in this browser's timezone
+            if(importTz) importedEntry.tz = importTz;
+            await addDoc(entriesCol(currentUid), importedEntry);
             imported++;
           }catch(err){
             errors.push(`Row ${rowNum}: could not save (${err.message||'unknown error'})`);
