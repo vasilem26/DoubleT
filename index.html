@@ -309,12 +309,12 @@
   }
   /* The month-end projection is a guess, not money earned: dashed outline + a
      warning pill keep it from being mistaken for the Estimated / Avg panels. */
-  #tt-proj{border:1.5px dashed var(--amber-dim);}
+  #tt-proj{border:2px dashed rgba(232,163,61,.7);}
   .tt-proj-flag{
     display:inline-flex; align-items:center; gap:6px; margin-bottom:12px; cursor:help;
     background:rgba(232,163,61,.12); border:1px solid var(--amber-dim); color:var(--amber);
-    border-radius:999px; padding:4px 11px 4px 9px;
-    font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    border-radius:999px; padding:5px 12px 5px 10px;
+    font-family:'Space Mono',monospace; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
   }
   .tt-proj-flag svg{flex-shrink:0;}
   .tt-earnings-head{display:flex; justify-content:space-between; align-items:center; gap:10px;}
@@ -1289,7 +1289,7 @@
       <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-earnings" id="tt-proj">
       <div class="tt-proj-flag" title="Not real earnings. A projection that assumes you keep your current average per worked day until the end of the month.">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
         Projection · not real earnings
       </div>
       <div class="tt-earnings-head">
@@ -1417,7 +1417,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.066</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.068</div>
   </div>
 </div>
 
@@ -3254,15 +3254,57 @@
     pdfDoc.setTextColor(232,163,61); pdfDoc.setFontSize(15); pdfDoc.text('Double T', 14, 15);
     pdfDoc.setTextColor(255,255,255); pdfDoc.setFontSize(10); pdfDoc.text('Admin Export', pageWidth-14, 15, { align:'right' });
 
-    const infoY1 = 33, infoY2 = 40;
-    const cols = [14, 14+(pageWidth-28)/3, 14+2*(pageWidth-28)/3];
-    const infoItems = [['USER', adminExportLabel()], ['PERIOD', label], ['TOTAL', fmtHM(totalSec)+'h']];
-    infoItems.forEach(([lbl,val], i)=>{
-      pdfDoc.setFontSize(8); pdfDoc.setTextColor(150); pdfDoc.text(lbl, cols[i], infoY1);
-      pdfDoc.setFontSize(12); pdfDoc.setTextColor(30); pdfDoc.text(String(val), cols[i], infoY2);
+    // ---- Info strip ----
+    // Users get their own column, one per line and numbered when there is more
+    // than one, so long names can never run into the period/total next to them
+    // (a long name wraps inside its column instead). PERIOD and TOTAL sit in the
+    // right-hand column, top-aligned with the first name; the table starts below
+    // whichever side is taller, so any number of users still lines up.
+    const LINE_H = 5.4;
+    // same alphabetical order the table groups people in, so "1." here is the first block below
+    const userNames = adminSelectedExportUsers.map(u=>u.displayName||u.email||'user').sort((a,b)=>a.localeCompare(b));
+    const numbered = userNames.length > 1;
+    const leftX = 14, leftW = 100;
+    const rightX = 124, rightW = pageWidth - 14 - rightX;
+
+    let yLeft = 33;
+    pdfDoc.setFontSize(8); pdfDoc.setTextColor(150);
+    pdfDoc.text(numbered ? 'USERS' : 'USER', leftX, yLeft);
+    yLeft += 7;
+    pdfDoc.setFontSize(11); pdfDoc.setTextColor(30);
+    userNames.forEach((name, i)=>{
+      const prefix = numbered ? `${i+1}. ` : '';
+      const indent = prefix ? pdfDoc.getTextWidth(prefix) : 0;
+      pdfDoc.splitTextToSize(name, leftW - indent).forEach((line, li)=>{
+        pdfDoc.text(li===0 ? prefix + line : line, li===0 ? leftX : leftX + indent, yLeft);
+        yLeft += LINE_H;
+      });
     });
-    pdfDoc.setDrawColor(230); pdfDoc.line(14, infoY2+4, pageWidth-14, infoY2+4);
-    const contentStartY = infoY2 + 12;
+    const leftBottom = yLeft - LINE_H; // baseline of the last name line
+
+    const totalStr = fmtHM(totalSec) + 'h';
+    pdfDoc.setFontSize(11);
+    const periodLines = pdfDoc.splitTextToSize(String(label), rightW);
+    const totalX = rightX + pdfDoc.getTextWidth(periodLines[0]) + 10;
+    const sideBySide = periodLines.length===1 && (totalX + pdfDoc.getTextWidth(totalStr) <= pageWidth - 14);
+    pdfDoc.setFontSize(8); pdfDoc.setTextColor(150);
+    pdfDoc.text('PERIOD', rightX, 33);
+    let rightBottom = 40;
+    pdfDoc.setFontSize(11); pdfDoc.setTextColor(30);
+    periodLines.forEach((line, li)=>{ pdfDoc.text(line, rightX, 40 + li*LINE_H); });
+    rightBottom = 40 + (periodLines.length-1)*LINE_H;
+    if(sideBySide){
+      pdfDoc.setFontSize(8); pdfDoc.setTextColor(150); pdfDoc.text('TOTAL', totalX, 33);
+      pdfDoc.setFontSize(11); pdfDoc.setTextColor(30); pdfDoc.text(totalStr, totalX, 40);
+    } else {
+      const totalLabelY = rightBottom + 9;
+      pdfDoc.setFontSize(8); pdfDoc.setTextColor(150); pdfDoc.text('TOTAL', rightX, totalLabelY);
+      pdfDoc.setFontSize(11); pdfDoc.setTextColor(30); pdfDoc.text(totalStr, rightX, totalLabelY + 7);
+      rightBottom = totalLabelY + 7;
+    }
+    const infoBottom = Math.max(leftBottom, rightBottom) + 4;
+    pdfDoc.setDrawColor(230); pdfDoc.line(14, infoBottom, pageWidth-14, infoBottom);
+    const contentStartY = infoBottom + 8;
 
     function addFooter(){
       const pageCount = pdfDoc.internal.getNumberOfPages();
@@ -3303,8 +3345,8 @@
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const columnStyles = adminExportType==='detailed'
       ? (hasOwners
-          ? { 0:{cellWidth:20}, 1:{cellWidth:15}, 2:{cellWidth:15}, 3:{cellWidth:16}, 4:{cellWidth:20}, 5:{cellWidth:'auto'}, 6:{cellWidth:34, fontStyle:'bold'} }
-          : { 0:{cellWidth:22}, 1:{cellWidth:18}, 2:{cellWidth:18}, 3:{cellWidth:20}, 4:{cellWidth:24}, 5:{cellWidth:'auto'} })
+          ? { 0:{cellWidth:21}, 1:{cellWidth:14}, 2:{cellWidth:14}, 3:{cellWidth:22}, 4:{cellWidth:29}, 5:{cellWidth:'auto'}, 6:{cellWidth:44, fontStyle:'bold'} }
+          : { 0:{cellWidth:22}, 1:{cellWidth:18}, 2:{cellWidth:18}, 3:{cellWidth:24}, 4:{cellWidth:30}, 5:{cellWidth:'auto'} })
       : {};
     pdfDoc.autoTable({
       head: [headers], body: rows, startY: contentStartY,
