@@ -489,6 +489,82 @@
   .tt-admin-analytics-title{margin:4px 0 10px;}
   .tt-admin-export-nav[hidden]{display:none;}
 
+  /* ---- Background ----
+     #tt-bg sits behind everything (z-index:-1). While a background is on, the page
+     colours go transparent so it shows through the gaps between panels. */
+  .tt-bg{position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;}
+  html.tt-bg-on body, html.tt-bg-on .tt-root{background:transparent;}
+  .tt-bg-layer{position:absolute; inset:0; opacity:0; transition:opacity .8s ease;}
+  .tt-bg-layer.tt-bg-in{opacity:1;}
+  .tt-bg-layer canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  .tt-bg-photo{background-size:cover; background-position:center; background-repeat:no-repeat;}
+  .tt-bg-photo::after{content:''; position:absolute; inset:0; background:var(--ink); opacity:var(--bg-dim,.4);}
+  /* fixed looks (dark / light) */
+  .tt-bg-fx-midnight{background:radial-gradient(120% 90% at 50% 0%, #2a3f58 0%, #172230 52%, #0f1722 100%);}
+  .tt-bg-fx-amber{background:
+    radial-gradient(70% 55% at 85% -8%, rgba(232,163,61,.26), transparent 62%),
+    radial-gradient(60% 50% at 0% 105%, rgba(232,163,61,.12), transparent 62%),
+    linear-gradient(180deg, #1a2531, #141c26);}
+  .tt-bg-fx-grid{background:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px) 0 0/44px 44px,
+    radial-gradient(120% 100% at 50% 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,.35) 100%),
+    #182330;}
+  html[data-theme="light"] .tt-bg-fx-midnight{background:radial-gradient(120% 90% at 50% 0%, #fbf8f1 0%, #f1ecdf 55%, #e6dfcc 100%);}
+  html[data-theme="light"] .tt-bg-fx-amber{background:
+    radial-gradient(70% 55% at 85% -8%, rgba(185,116,31,.22), transparent 62%),
+    radial-gradient(60% 50% at 0% 105%, rgba(185,116,31,.10), transparent 62%),
+    linear-gradient(180deg, #f7f2e8, #efe8d8);}
+  html[data-theme="light"] .tt-bg-fx-grid{background:
+    linear-gradient(rgba(60,52,38,.06) 1px, transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg, rgba(60,52,38,.06) 1px, transparent 1px) 0 0/44px 44px,
+    radial-gradient(120% 100% at 50% 0%, rgba(0,0,0,0) 45%, rgba(60,52,38,.10) 100%),
+    #f3efe6;}
+
+  /* the Customize-mode picker */
+  .tt-bg-wrap{position:relative; flex-shrink:0;}
+  .tt-bg-wrap[hidden]{display:none;}
+  .tt-bg-pop{
+    position:absolute; top:calc(100% + 8px); right:0; z-index:400; width:372px; max-width:calc(100vw - 24px);
+    padding:14px 14px 12px; border-radius:16px; border:1px solid var(--line);
+    background:var(--panel); background:color-mix(in srgb, var(--panel) 90%, transparent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 18px 48px rgba(var(--shadow-rgb),.45);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  }
+  .tt-bg-pop[hidden]{display:none;}
+  .tt-bg-group-label{font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim); margin:12px 2px 8px;}
+  .tt-bg-group-label:first-child{margin-top:0;}
+  .tt-bg-group-label span{text-transform:none; letter-spacing:0; opacity:.7; margin-left:6px; font-family:'Work Sans',sans-serif;}
+  .tt-bg-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  .tt-bg-grid-one{grid-template-columns:repeat(4,1fr);}
+  .tt-bg-tile{
+    position:relative; display:flex; flex-direction:column; gap:5px; padding:0; background:none; border:none;
+    cursor:pointer; color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:10.5px; text-align:center;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1), color .15s ease;
+  }
+  .tt-bg-thumb{
+    display:block; height:46px; border-radius:10px; border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.1); background-size:cover; background-position:center;
+    transition:border-color .15s ease, box-shadow .2s ease;
+  }
+  .tt-bg-tile:hover{color:var(--paper); transform:translateY(-1px);}
+  .tt-bg-tile:hover .tt-bg-thumb{border-color:var(--amber-dim);}
+  .tt-bg-tile.active{color:var(--amber); font-weight:600;}
+  .tt-bg-tile.active .tt-bg-thumb{border-color:var(--amber); box-shadow:0 0 0 2px var(--amber-soft), 0 0 0 1px var(--amber);}
+  .tt-bg-tile:focus-visible .tt-bg-thumb{box-shadow:0 0 0 2px var(--amber);}
+  .tt-bg-motion{position:absolute; top:5px; right:5px; font-size:7px; line-height:1; color:#fff; background:rgba(0,0,0,.45); border-radius:999px; padding:3px 4px 3px 5px;}
+  .tt-bg-plus{display:grid; place-items:center; color:var(--paper-dim); font-size:20px; font-weight:300;}
+  .tt-bg-custom{display:flex; align-items:center; gap:12px;}
+  .tt-bg-custom .tt-bg-grid{width:calc(25% - 6px); flex-shrink:0;}
+  .tt-bg-custom-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .tt-bg-small{padding:7px 14px; font-size:11.5px;}
+  .tt-bg-dim{display:flex; align-items:center; gap:10px; margin-top:12px; font-size:11.5px; color:var(--paper-dim);}
+  .tt-bg-dim[hidden]{display:none;}
+  .tt-bg-dim input[type=range]{flex:1; accent-color:var(--amber);}
+  .tt-bg-dim span{min-width:34px; text-align:right; font-family:'Space Mono',monospace;}
+  .tt-bg-status{min-height:16px; margin-top:10px; font-size:11px; color:var(--paper-dim);}
+  .tt-bg-status.error{color:var(--err-text);}
+
   /* ---- Companies ---- */
   .tt-admin-page-inner.tt-admin-wide{max-width:1040px;}
   .tt-co-list{display:flex; flex-direction:column; gap:10px; margin-bottom:22px;}
@@ -1003,6 +1079,8 @@
   <div class="tt-auth-brand">Double T</div>
 </div>
 
+<div class="tt-bg" id="tt-bg" aria-hidden="true"></div>
+
 <div class="tt-root" id="tt-app-root" style="display:none;">
   <div class="tt-wrap">
     <div class="tt-header">
@@ -1024,6 +1102,30 @@
             <svg id="tt-theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
           </span>
         </button>
+        <div class="tt-bg-wrap" id="tt-bg-wrap" hidden>
+          <button id="tt-bg-btn" class="tt-customize-btn" type="button" aria-haspopup="dialog" aria-expanded="false">Background</button>
+          <div class="tt-bg-pop" id="tt-bg-pop" role="dialog" aria-label="Background" hidden>
+            <div class="tt-bg-group-label">Fixed</div>
+            <div class="tt-bg-grid" id="tt-bg-fixed"></div>
+            <div class="tt-bg-group-label">Dynamic <span>slow, subtle motion</span></div>
+            <div class="tt-bg-grid" id="tt-bg-dynamic"></div>
+            <div class="tt-bg-group-label">Your image</div>
+            <div class="tt-bg-custom">
+              <div class="tt-bg-grid tt-bg-grid-one" id="tt-bg-custom-tile"></div>
+              <div class="tt-bg-custom-actions">
+                <button type="button" class="tt-btn tt-bg-small" id="tt-bg-upload">Upload image…</button>
+                <button type="button" class="tt-btn danger tt-bg-small" id="tt-bg-remove" hidden>Remove</button>
+              </div>
+              <input type="file" id="tt-bg-file" accept="image/*" hidden />
+            </div>
+            <div class="tt-bg-dim" id="tt-bg-dim-row" hidden>
+              <label for="tt-bg-dim">Dim image</label>
+              <input type="range" id="tt-bg-dim" min="0" max="80" step="1" value="40" />
+              <span id="tt-bg-dim-val">40%</span>
+            </div>
+            <div class="tt-bg-status" id="tt-bg-status" aria-live="polite"></div>
+          </div>
+        </div>
         <div class="tt-restore-wrap" id="tt-restore-wrap" hidden>
           <button id="tt-restore-panels-btn" class="tt-customize-btn" type="button">+ Panels</button>
           <div class="tt-restore-menu" id="tt-restore-menu" hidden></div>
@@ -1680,7 +1782,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.074</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.076</div>
   </div>
 </div>
 
@@ -4067,7 +4169,6 @@ match /users/{userId}/meta/{docId} {
 
     const modeWord = earningsMode;
     const avgSec = totals.active ? Math.round(totals.seconds / totals.active) : 0;
-    const perActive = totals.active ? coPick(totals.gross, totals.net) / totals.active : 0;
     const excludedNote = stats.excluded.length ? ` · ${stats.excluded.join(', ')} not converted (rate unavailable)` : '';
     const banner = ({ label, value, sub, cls, flag })=>`
       <div class="tt-co-banner ${cls||''}">
@@ -4079,8 +4180,8 @@ match /users/{userId}/meta/{docId} {
     const anyIncome = members.some(m=>m.hasRates);
     $('tt-co-banners').innerHTML = [
       banner({
-        label:'Total hours', value:`${fmtHM(totals.seconds)} h`,
-        sub:`${totals.active} of ${members.length} member${members.length===1?'':'s'} logged time`
+        label:`Total (${members.length} agent${members.length===1?'':'s'})`, value:`${fmtHM(totals.seconds)} h`,
+        sub:`${totals.active} of ${members.length} logged time${totals.active ? ` · avg ${fmtHM(avgSec)} h each` : ''}`
       }),
       banner({
         label:`Income · ${modeWord}`, value: anyIncome ? coMoney(coPick(totals.gross, totals.net)) : '—',
@@ -4092,10 +4193,6 @@ match /users/{userId}/meta/{docId} {
         sub: anyIncome
           ? `So far ${coMoney(coPick(totals.soFarGross, totals.soFarNet))} · each member's own average × working days left`
           : 'Needs logged hours and an hourly rate'
-      }),
-      banner({
-        label:'Average per active member', value: totals.active ? `${fmtHM(avgSec)} h` : '—',
-        sub: totals.active && anyIncome ? `${coMoney(perActive)} ${modeWord} each` : 'in the selected period'
       })
     ].join('');
 
@@ -4691,6 +4788,452 @@ match /users/{userId}/meta/{docId} {
     host.addEventListener('focusout', (e)=>{ if(!host.contains(e.relatedTarget)) fade(); });
   })();
 
+  // ---------------- Background ----------------
+  // An optional backdrop behind the whole dashboard, chosen from Customize →
+  // Background: fixed looks, slow dynamic ones, or the person's own image.
+  // Everything is low-contrast on purpose — panels have solid fills, so the
+  // background only shows in the gaps and never competes with the numbers.
+  //
+  //   pref = { kind:'none'|'fixed'|'dynamic'|'custom', id, dim (0–80, image only), stamp }
+  //
+  // The choice syncs through users/{uid}/meta/appearance. A custom image is shrunk
+  // in the browser, kept on this device, and also in users/{uid}/meta/background so
+  // other devices get it; if that write is refused it simply stays on this device.
+  const BG_FIXED = [
+    { id:'none',     label:'Default',    preview:'var(--ink)' },
+    { id:'midnight', label:'Midnight',   preview:'radial-gradient(120% 90% at 50% 0%, #2a3f58, #172230 55%, #0f1722)' },
+    { id:'amber',    label:'Amber glow', preview:'radial-gradient(70% 70% at 85% 0%, rgba(232,163,61,.6), transparent 60%), radial-gradient(60% 60% at 0% 100%, rgba(232,163,61,.28), transparent 60%), #17212c' },
+    { id:'grid',     label:'Grid',       preview:'linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px) 0 0/9px 9px, linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px) 0 0/9px 9px, #182330' }
+  ];
+  const BG_DYNAMIC = [
+    { id:'aurora',        label:'Aurora',        preview:'radial-gradient(50% 60% at 25% 35%, rgba(232,163,61,.6), transparent 70%), radial-gradient(55% 60% at 75% 62%, rgba(60,170,180,.55), transparent 70%), radial-gradient(40% 50% at 55% 12%, rgba(100,120,220,.5), transparent 70%), #16202b' },
+    { id:'constellation', label:'Constellation', preview:'radial-gradient(circle at 20% 32%, #cfd8e3 1.3px, transparent 2.2px), radial-gradient(circle at 72% 22%, #E8A33D 1.3px, transparent 2.2px), radial-gradient(circle at 52% 66%, #cfd8e3 1.3px, transparent 2.2px), radial-gradient(circle at 86% 74%, #cfd8e3 1px, transparent 2px), radial-gradient(circle at 30% 82%, #cfd8e3 1px, transparent 2px), radial-gradient(circle at 60% 36%, #cfd8e3 1px, transparent 2px), #16202b' },
+    { id:'waves',         label:'Waves',         preview:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 46' preserveAspectRatio='none'%3E%3Cpath d='M0 30 Q 20 20 40 30 T 80 28 V46 H0Z' fill='%233cbac4' fill-opacity='.45'/%3E%3Cpath d='M0 36 Q 20 28 40 36 T 80 34 V46 H0Z' fill='%23e8a33d' fill-opacity='.45'/%3E%3C/svg%3E\") center/100% 100% no-repeat, #16202b" },
+    { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
+  ];
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'' };
+  const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let bgPref = { ...BG_DEFAULT };
+  let bgImage = '';          // data URL of the custom image (this user's)
+  let bgUid = null;
+  let bgLayers = [];         // [{ el, stop }] — the visible layer plus any one still fading out
+  let bgAppliedKey = '';
+  let bgSaveTimer = null;
+  let unsubAppearance = null;
+
+  function normalizeBgPref(raw){
+    const p = { ...BG_DEFAULT };
+    if(!raw || typeof raw !== 'object') return p;
+    if(raw.kind==='fixed' && BG_FIXED.some(x=>x.id===raw.id && x.id!=='none')){ p.kind='fixed'; p.id=raw.id; }
+    else if(raw.kind==='dynamic' && BG_DYNAMIC.some(x=>x.id===raw.id)){ p.kind='dynamic'; p.id=raw.id; }
+    else if(raw.kind==='custom'){ p.kind='custom'; p.id='image'; }
+    const dim = Number(raw.dim);
+    if(Number.isFinite(dim)) p.dim = Math.min(80, Math.max(0, Math.round(dim)));
+    p.stamp = typeof raw.stamp === 'string' ? raw.stamp.slice(0, 40) : '';
+    return p;
+  }
+
+  // per-user local copies, so one person's choice never leaks to another on a shared device
+  const bgLocalKey = (uid, what)=> `tt-bg-${what}:${uid}`;
+  function readLocalBg(uid){ try{ return normalizeBgPref(JSON.parse(localStorage.getItem(bgLocalKey(uid,'pref')) || 'null')); }catch(e){ return { ...BG_DEFAULT }; } }
+  function writeLocalBg(uid, p){ try{ localStorage.setItem(bgLocalKey(uid,'pref'), JSON.stringify(p)); }catch(e){} }
+  function readLocalBgImage(uid){ try{ return { url: localStorage.getItem(bgLocalKey(uid,'img')) || '', stamp: localStorage.getItem(bgLocalKey(uid,'stamp')) || '' }; }catch(e){ return { url:'', stamp:'' }; } }
+  function writeLocalBgImage(uid, url, stamp){
+    try{
+      if(url){ localStorage.setItem(bgLocalKey(uid,'img'), url); localStorage.setItem(bgLocalKey(uid,'stamp'), stamp || ''); }
+      else { localStorage.removeItem(bgLocalKey(uid,'img')); localStorage.removeItem(bgLocalKey(uid,'stamp')); }
+      return true;
+    }catch(e){ return false; } // quota full / storage blocked
+  }
+  function appearanceDoc(uid){ return doc(db, 'users', uid, 'meta', 'appearance'); }
+  function bgImageDoc(uid){ return doc(db, 'users', uid, 'meta', 'background'); }
+
+  // ---- the moving ones: light canvas drawings, throttled, paused when hidden ----
+  function bgPalette(){
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    // `fill` colours are for the big soft areas (aurora, waves): paler on the light theme so
+    // they glow instead of turning grey; the strokes and dots use the stronger base colours.
+    return light
+      ? { light:true,  amber:[185,116,31], teal:[24,128,140], indigo:[70,90,170],  ink:[36,28,16],
+          fill:{ amber:[238,172,84], teal:[120,200,200], indigo:[165,172,232] } }
+      : { light:false, amber:[232,163,61], teal:[60,170,180], indigo:[100,120,220], ink:[237,231,221],
+          fill:{ amber:[232,163,61], teal:[60,170,180], indigo:[100,120,220] } };
+  }
+  const bgRgba = (c, a)=> `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+  // Runs draw(ctx, w, h, seconds, dt) at `fps`; returns a stop() that removes everything it set up.
+  // Reduced-motion users get one still frame and no loop.
+  function bgLoop(canvas, { scale, fps }, draw){
+    const ctx = canvas.getContext('2d');
+    let raf = 0, last = 0, alive = true, w = 2, h = 2, resizeTimer = 0;
+    const size = ()=>{
+      const area = Math.max(1, innerWidth * innerHeight);
+      const k = Math.min(scale, Math.sqrt(2.1e6 / area)); // keep big screens cheap
+      w = Math.max(2, Math.ceil(innerWidth * k)); h = Math.max(2, Math.ceil(innerHeight * k));
+      canvas.width = w; canvas.height = h;
+    };
+    const frame = (ts)=>{
+      if(!alive) return;
+      raf = requestAnimationFrame(frame);
+      if(ts - last < 1000/fps - 2) return;
+      const dt = last ? Math.min(.1, (ts - last)/1000) : 0;
+      last = ts;
+      draw(ctx, w, h, ts/1000, dt);
+    };
+    const resume = ()=>{ if(alive && !raf && !document.hidden && !bgReducedMotion.matches){ last = 0; raf = requestAnimationFrame(frame); } };
+    const onVis = ()=>{ if(document.hidden){ cancelAnimationFrame(raf); raf = 0; } else resume(); };
+    const onResize = ()=>{ clearTimeout(resizeTimer); resizeTimer = setTimeout(()=>{ size(); if(bgReducedMotion.matches) draw(ctx, w, h, 4, 0); }, 150); };
+    size();
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('resize', onResize);
+    if(bgReducedMotion.matches) draw(ctx, w, h, 4, 0); else resume();
+    return ()=>{
+      alive = false; cancelAnimationFrame(raf); clearTimeout(resizeTimer);
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('resize', onResize);
+    };
+  }
+
+  // soft colour clouds drifting on slow orbits
+  function startAurora(canvas){
+    const blobs = [
+      { c:'amber',  fx:.050, fy:.037, px:0.0, py:1.3, r:.55, a:.17 },
+      { c:'teal',   fx:.043, fy:.058, px:2.1, py:0.4, r:.60, a:.15 },
+      { c:'indigo', fx:.036, fy:.047, px:4.0, py:2.6, r:.58, a:.16 },
+      { c:'amber',  fx:.062, fy:.041, px:1.2, py:4.1, r:.36, a:.10 }
+    ];
+    return bgLoop(canvas, { scale:.4, fps:24 }, (ctx, w, h, t)=>{
+      const pal = bgPalette();
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = pal.light ? 'source-over' : 'lighter';
+      const k = pal.light ? 1.25 : 1;
+      for(const b of blobs){
+        const x = w * (.5 + .40*Math.sin(t*b.fx*6.283 + b.px));
+        const y = h * (.5 + .36*Math.cos(t*b.fy*6.283 + b.py));
+        const r = Math.max(w, h) * b.r;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, bgRgba(pal.fill[b.c], b.a * k));
+        g.addColorStop(1, bgRgba(pal.fill[b.c], 0));
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    });
+  }
+
+  // a sparse field of dots with faint links between near neighbours
+  function startConstellation(canvas){
+    let pts = [], lw = 0, lh = 0;
+    const seed = (w, h)=>{
+      const n = Math.round(Math.min(70, Math.max(22, (w*h) / 24000)));
+      pts = Array.from({ length:n }, ()=>({ x:Math.random()*w, y:Math.random()*h, vx:(Math.random()-.5)*16, vy:(Math.random()-.5)*16, r:.8+Math.random()*1.3, hot:Math.random() < .16 }));
+      lw = w; lh = h;
+    };
+    return bgLoop(canvas, { scale:1, fps:30 }, (ctx, w, h, t, dt)=>{
+      if(!pts.length) seed(w, h);
+      else if(w !== lw || h !== lh){ pts.forEach(p=>{ p.x *= w/lw; p.y *= h/lh; }); lw = w; lh = h; }
+      const pal = bgPalette();
+      ctx.clearRect(0, 0, w, h);
+      for(const p of pts){
+        p.x += p.vx*dt; p.y += p.vy*dt;
+        if(p.x < -10) p.x = w+10; else if(p.x > w+10) p.x = -10;
+        if(p.y < -10) p.y = h+10; else if(p.y > h+10) p.y = -10;
+      }
+      const link = Math.min(170, Math.max(110, w/9));
+      ctx.lineWidth = 1;
+      for(let i=0; i<pts.length; i++){
+        for(let j=i+1; j<pts.length; j++){
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d2 = dx*dx + dy*dy;
+          if(d2 < link*link){
+            ctx.strokeStyle = bgRgba(pal.ink, (1 - Math.sqrt(d2)/link) * (pal.light ? .20 : .14));
+            ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+          }
+        }
+      }
+      for(const p of pts){
+        ctx.fillStyle = p.hot ? bgRgba(pal.amber, pal.light ? .55 : .5) : bgRgba(pal.ink, pal.light ? .38 : .30);
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+      }
+    });
+  }
+
+  // calm layered swells along the bottom of the screen
+  function startWaves(canvas){
+    const layers = [
+      { y:.80, amp:.030, len:1.00, speed: .045, c:'amber',  a:.11 },
+      { y:.86, amp:.036, len:1.45, speed:-.032, c:'teal',   a:.11 },
+      { y:.92, amp:.026, len: .75, speed: .058, c:'indigo', a:.12 }
+    ];
+    return bgLoop(canvas, { scale:.6, fps:24 }, (ctx, w, h, t)=>{
+      const pal = bgPalette();
+      ctx.clearRect(0, 0, w, h);
+      const k = pal.light ? 1.2 : 1;
+      for(const L of layers){
+        const base = h * L.y, amp = h * L.amp;
+        ctx.beginPath(); ctx.moveTo(0, h);
+        for(let x=0; x<=w; x+=8){
+          const u = x / (w * L.len) * 6.283, ph = t * L.speed * 6.283;
+          ctx.lineTo(x, base + amp*(Math.sin(u + ph) + .5*Math.sin(u*2.1 - ph*1.4)));
+        }
+        ctx.lineTo(w, h); ctx.closePath();
+        const g = ctx.createLinearGradient(0, base - amp*1.5, 0, h);
+        g.addColorStop(0, bgRgba(pal.fill[L.c], L.a * k)); g.addColorStop(1, bgRgba(pal.fill[L.c], 0));
+        ctx.fillStyle = g; ctx.fill();
+      }
+    });
+  }
+
+  // a watch dial, half off-screen, whose sweep hand follows the real seconds
+  function startChronograph(canvas){
+    return bgLoop(canvas, { scale:1, fps:30 }, (ctx, w, h)=>{
+      const pal = bgPalette();
+      ctx.clearRect(0, 0, w, h);
+      const cx = w * .84, cy = h * .46, R = Math.min(w, h) * .64;
+      const line = bgRgba(pal.ink, pal.light ? .10 : .075);
+      ctx.lineWidth = 1; ctx.strokeStyle = line;
+      [1, .87, .60, .34].forEach(f=>{ ctx.beginPath(); ctx.arc(cx, cy, R*f, 0, 6.283); ctx.stroke(); });
+      for(let i=0; i<120; i++){
+        const a = i/120 * 6.283, major = i % 10 === 0, mid = i % 2 === 0;
+        const r1 = R*.97, r0 = r1 - R*(major ? .075 : mid ? .035 : .018);
+        ctx.strokeStyle = bgRgba(pal.ink, (major ? .16 : .08) * (pal.light ? 1.2 : 1));
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(a)*r0, cy + Math.sin(a)*r0); ctx.lineTo(cx + Math.cos(a)*r1, cy + Math.sin(a)*r1); ctx.stroke();
+      }
+      const now = new Date();
+      const sec = now.getSeconds() + now.getMilliseconds()/1000;
+      const ang = sec/60 * 6.283 - 1.5708;
+      const slice = 6.283/150;
+      for(let k=0; k<46; k++){          // the fading wake behind the hand
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R*.97, ang - (k+1)*slice, ang - k*slice);
+        ctx.closePath();
+        ctx.fillStyle = bgRgba(pal.amber, .075 * Math.pow(1 - k/46, 2) * (pal.light ? 1.1 : 1));
+        ctx.fill();
+      }
+      ctx.strokeStyle = bgRgba(pal.amber, pal.light ? .45 : .38); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx - Math.cos(ang)*R*.06, cy - Math.sin(ang)*R*.06); ctx.lineTo(cx + Math.cos(ang)*R*.97, cy + Math.sin(ang)*R*.97); ctx.stroke();
+      ctx.fillStyle = bgRgba(pal.amber, .55); ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, 6.283); ctx.fill();
+    });
+  }
+  const BG_EFFECTS = { aurora:startAurora, constellation:startConstellation, waves:startWaves, chronograph:startChronograph };
+
+  // ---- applying a preference ----
+  function buildBgLayer(p){
+    const el = document.createElement('div');
+    el.className = 'tt-bg-layer';
+    let stop = ()=>{};
+    if(p.kind === 'fixed'){ el.classList.add('tt-bg-fx', 'tt-bg-fx-' + p.id); }
+    else if(p.kind === 'dynamic'){ const canvas = document.createElement('canvas'); el.appendChild(canvas); stop = BG_EFFECTS[p.id](canvas); }
+    else if(p.kind === 'custom'){ el.classList.add('tt-bg-photo'); el.style.backgroundImage = `url("${bgImage}")`; }
+    return { el, stop };
+  }
+
+  function applyBackground(){
+    document.documentElement.style.setProperty('--bg-dim', (bgPref.dim/100).toFixed(2)); // live while the slider moves
+    const shown = bgPref.kind==='fixed' || bgPref.kind==='dynamic' || (bgPref.kind==='custom' && !!bgImage);
+    const key = shown ? `${bgPref.kind}:${bgPref.id}:${bgPref.kind==='custom' ? bgPref.stamp : ''}` : 'none';
+    if(key === bgAppliedKey) return;
+    bgAppliedKey = key;
+    // the outgoing layer stops drawing straight away and just fades out as a still frame,
+    // so a crossfade never runs two animations at once
+    const old = bgLayers; bgLayers = [];
+    old.forEach(l=>{ l.stop(); l.el.classList.remove('tt-bg-in'); setTimeout(()=>l.el.remove(), 900); });
+    if(!shown){
+      // let the old layer fade before the page's own colour comes back
+      setTimeout(()=>{ if(bgAppliedKey === key) document.documentElement.classList.remove('tt-bg-on'); }, 900);
+      return;
+    }
+    document.documentElement.classList.add('tt-bg-on');
+    const layer = buildBgLayer(bgPref);
+    $('tt-bg').appendChild(layer.el);
+    bgLayers.push(layer);
+    requestAnimationFrame(()=> requestAnimationFrame(()=> layer.el.classList.add('tt-bg-in')));
+  }
+
+  function clearBackground(){
+    if(unsubAppearance){ unsubAppearance(); unsubAppearance = null; }
+    clearTimeout(bgSaveTimer);
+    bgLayers.forEach(l=>{ l.stop(); l.el.remove(); });
+    bgLayers = []; bgAppliedKey = ''; bgUid = null; bgImage = ''; bgPref = { ...BG_DEFAULT };
+    document.documentElement.classList.remove('tt-bg-on');
+    closeBgPicker();
+  }
+
+  // Fetch the custom image if this device doesn't already hold this version of it.
+  async function ensureBgImage(uid, stamp){
+    const local = readLocalBgImage(uid);
+    if(local.url && local.stamp === stamp){ bgImage = local.url; return true; }
+    try{
+      const snap = await getDoc(bgImageDoc(uid));
+      if(snap.exists() && snap.data().dataUrl){
+        bgImage = snap.data().dataUrl;
+        writeLocalBgImage(uid, bgImage, stamp);
+        return true;
+      }
+    }catch(err){ console.error('Could not load the background image', err); }
+    bgImage = local.url || '';
+    return !!bgImage;
+  }
+
+  function initBackground(uid){
+    clearBackground();
+    bgUid = uid;
+    bgPref = readLocalBg(uid);
+    if(bgPref.kind === 'custom') bgImage = readLocalBgImage(uid).url;
+    applyBackground();
+    renderBgPicker();
+    unsubAppearance = onSnapshot(appearanceDoc(uid), async (snap)=>{
+      if(uid !== bgUid || !snap.exists()) return;       // nothing saved yet: keep what's local
+      const remote = normalizeBgPref(snap.data());
+      if(remote.kind === 'custom') await ensureBgImage(uid, remote.stamp);
+      if(uid !== bgUid) return;
+      bgPref = remote;
+      writeLocalBg(uid, remote);
+      applyBackground();
+      renderBgPicker();
+    }, (err)=> console.error('appearance listener error', err));
+  }
+
+  function setBgStatus(text, isError){
+    const el = $('tt-bg-status');
+    el.textContent = text || '';
+    el.classList.toggle('error', !!isError);
+  }
+
+  function saveBgPref(){
+    if(!bgUid) return;
+    const uid = bgUid, snapshot = { ...bgPref };
+    writeLocalBg(uid, snapshot);
+    clearTimeout(bgSaveTimer);
+    bgSaveTimer = setTimeout(async ()=>{
+      try{ await setDoc(appearanceDoc(uid), snapshot); setBgStatus('Saved'); }
+      catch(err){ console.error('Could not save background', err); setBgStatus('Saved on this device only'); }
+    }, 350);
+  }
+
+  function setBgPref(next){
+    bgPref = normalizeBgPref({ ...bgPref, ...next });
+    applyBackground();
+    renderBgPicker();
+    saveBgPref();
+  }
+
+  // ---- the picker ----
+  function bgTile(kind, item, active, onPick){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tt-bg-tile' + (active ? ' active' : '');
+    b.setAttribute('aria-pressed', active ? 'true' : 'false');
+    b.title = item.label;
+    const thumb = document.createElement('span');
+    thumb.className = 'tt-bg-thumb';
+    if(item.preview) thumb.style.background = item.preview;
+    b.appendChild(thumb);
+    const label = document.createElement('span');
+    label.textContent = item.label;
+    b.appendChild(label);
+    if(kind === 'dynamic'){ const m = document.createElement('span'); m.className = 'tt-bg-motion'; m.setAttribute('aria-hidden','true'); m.textContent = '▶'; b.appendChild(m); }
+    b.addEventListener('click', onPick);
+    return b;
+  }
+  function renderBgPicker(){
+    const fixedEl = $('tt-bg-fixed'), dynEl = $('tt-bg-dynamic'), customEl = $('tt-bg-custom-tile');
+    if(!fixedEl) return;
+    fixedEl.replaceChildren(...BG_FIXED.map(item=>{
+      const active = item.id==='none' ? bgPref.kind==='none' : (bgPref.kind==='fixed' && bgPref.id===item.id);
+      return bgTile('fixed', item, active, ()=> setBgPref(item.id==='none' ? { kind:'none' } : { kind:'fixed', id:item.id }));
+    }));
+    dynEl.replaceChildren(...BG_DYNAMIC.map(item=>
+      bgTile('dynamic', item, bgPref.kind==='dynamic' && bgPref.id===item.id, ()=> setBgPref({ kind:'dynamic', id:item.id }))
+    ));
+    const custom = bgTile('custom', { label: bgImage ? 'Your image' : 'Upload', preview: bgImage ? `url("${bgImage}") center/cover` : '' }, bgPref.kind==='custom' && !!bgImage, ()=>{
+      if(bgImage) setBgPref({ kind:'custom' }); else $('tt-bg-file').click();
+    });
+    if(!bgImage){ const plus = custom.querySelector('.tt-bg-thumb'); plus.classList.add('tt-bg-plus'); plus.textContent = '+'; }
+    customEl.replaceChildren(custom);
+    $('tt-bg-remove').hidden = !bgImage;
+    $('tt-bg-dim-row').hidden = !(bgPref.kind==='custom' && bgImage);
+    $('tt-bg-dim').value = String(bgPref.dim);
+    $('tt-bg-dim-val').textContent = `${bgPref.dim}%`;
+  }
+
+  function openBgPicker(){ $('tt-bg-pop').hidden = false; $('tt-bg-btn').setAttribute('aria-expanded', 'true'); renderBgPicker(); }
+  function closeBgPicker(){ const pop = $('tt-bg-pop'); if(pop) pop.hidden = true; const btn = $('tt-bg-btn'); if(btn) btn.setAttribute('aria-expanded', 'false'); }
+  $('tt-bg-btn').addEventListener('click', (e)=>{ e.stopPropagation(); if($('tt-bg-pop').hidden) openBgPicker(); else closeBgPicker(); });
+  document.addEventListener('click', (e)=>{ if(!e.target.closest('#tt-bg-wrap')) closeBgPicker(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !$('tt-bg-pop').hidden){ closeBgPicker(); $('tt-bg-btn').focus(); } });
+
+  // ---- a custom image: shrink it here so it's light to store and quick to load ----
+  async function processBgImage(file){
+    if(!file || !/^image\//.test(file.type)) throw new Error('Please choose an image file.');
+    if(file.size > 25 * 1024 * 1024) throw new Error('That image is too large (25 MB max).');
+    const url = URL.createObjectURL(file);
+    let img;
+    try{
+      img = await new Promise((resolve, reject)=>{
+        const i = new Image();
+        i.onload = ()=> resolve(i);
+        i.onerror = ()=> reject(new Error('That file could not be read as an image.'));
+        i.src = url;
+      });
+    } finally { URL.revokeObjectURL(url); }
+    const MAX_CHARS = 700000; // a Firestore document holds 1 MiB; stay well inside it
+    const render = (maxSide)=>{
+      const k = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * k));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * k));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#1B2733';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);   // JPEG has no transparency
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      let q = .85, out = canvas.toDataURL('image/jpeg', q);
+      while(out.length > MAX_CHARS && q > .4){ q -= .1; out = canvas.toDataURL('image/jpeg', q); }
+      return out;
+    };
+    let out = render(1920);
+    if(out.length > MAX_CHARS) out = render(1280);
+    if(out.length > MAX_CHARS) out = render(900);
+    if(out.length > MAX_CHARS) throw new Error('That image is too detailed to store. Try a simpler one.');
+    return out;
+  }
+
+  $('tt-bg-upload').addEventListener('click', ()=> $('tt-bg-file').click());
+  $('tt-bg-file').addEventListener('change', async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if(!file || !bgUid) return;
+    const uid = bgUid;
+    setBgStatus('Preparing image…');
+    try{
+      const dataUrl = await processBgImage(file);
+      if(uid !== bgUid) return;
+      const stamp = String(Date.now());
+      const kept = writeLocalBgImage(uid, dataUrl, stamp);
+      let synced = true;
+      try{ await setDoc(bgImageDoc(uid), { dataUrl, stamp }); }
+      catch(err){ synced = false; console.error('Could not sync the background image', err); }
+      bgImage = dataUrl;
+      setBgPref({ kind:'custom', stamp });
+      setBgStatus(synced ? 'Image saved' : kept ? 'Image saved on this device only' : 'Image applied for this session only', !synced && !kept);
+    }catch(err){
+      setBgStatus(err.message || 'Could not use that image.', true);
+    }
+  });
+  $('tt-bg-remove').addEventListener('click', async ()=>{
+    if(!bgUid) return;
+    const uid = bgUid;
+    bgImage = '';
+    writeLocalBgImage(uid, '', '');
+    try{ await deleteDoc(bgImageDoc(uid)); }catch(err){ console.error('Could not delete the background image', err); }
+    setBgPref({ kind:'none', stamp:'' });
+    setBgStatus('Image removed');
+  });
+  $('tt-bg-dim').addEventListener('input', (e)=>{
+    bgPref.dim = Number(e.target.value);
+    $('tt-bg-dim-val').textContent = `${bgPref.dim}%`;
+    applyBackground();
+  });
+  $('tt-bg-dim').addEventListener('change', ()=> saveBgPref());
+
   onAuthStateChanged(auth, (user)=>{
     const uid = user ? user.uid : null;
     const identityChanged = uid !== lastAuthUid;
@@ -4737,6 +5280,7 @@ match /users/{userId}/meta/{docId} {
   function attachListeners(uid){
     detachListeners();
     initMonthView();
+    initBackground(uid);
 
     const q = query(entriesCol(uid), orderBy('startISO'));
     unsubEntries = onSnapshot(q, (snap)=>{
@@ -4834,6 +5378,7 @@ match /users/{userId}/meta/{docId} {
     if(unsubPrefs){ unsubPrefs(); unsubPrefs = null; }
     if(unsubTaxTemplates){ unsubTaxTemplates(); unsubTaxTemplates = null; }
     if(unsubLayout){ unsubLayout(); unsubLayout = null; }
+    clearBackground();
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
@@ -5795,6 +6340,7 @@ match /users/{userId}/meta/{docId} {
     $('tt-customize-btn').textContent = 'Done';
     $('tt-customize-btn').classList.add('active');
     $('tt-reset-layout-btn').hidden = false;
+    $('tt-bg-wrap').hidden = false;
     updateRestoreButton();
   }
 
@@ -5863,6 +6409,8 @@ match /users/{userId}/meta/{docId} {
     $('tt-customize-btn').classList.remove('active');
     $('tt-reset-layout-btn').hidden = true;
     $('tt-restore-wrap').hidden = true;
+    $('tt-bg-wrap').hidden = true;
+    closeBgPicker();
     clearAlignGuides();
     panelLayout = readCurrentLayout();
     updateContainerHeight();
