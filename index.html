@@ -225,11 +225,13 @@
     transition:background .28s ease, backdrop-filter .28s ease, -webkit-backdrop-filter .28s ease;
   }
   .tt-menu-overlay[hidden]{display:none;}
-  .tt-menu-overlay.tt-open{background:rgba(var(--backdrop-rgb),.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);}
+  .tt-menu-overlay.tt-open{background:rgba(var(--backdrop-rgb),.5); backdrop-filter:blur(7px) saturate(1.15); -webkit-backdrop-filter:blur(7px) saturate(1.15);}
   .tt-menu-panel{
     width:100%; max-width:340px; height:100%; background:var(--panel);
+    /* frosted glass: a soft sheen on top of a see-through panel colour */
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), color-mix(in srgb, var(--panel) 84%, transparent);
     border-left:1px solid var(--line); padding:20px; overflow-y:auto;
-    box-shadow:-12px 0 32px rgba(var(--shadow-rgb),.35);
+    box-shadow:inset 1px 0 0 rgba(255,255,255,.09), -12px 0 40px rgba(var(--shadow-rgb),.4);
     transform:translateX(24px); opacity:0;
     transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .24s ease;
   }
@@ -250,28 +252,81 @@
   .tt-menu-header span{text-align:left; transition:color .15s ease;}
   .tt-menu-titlebar:hover .tt-menu-back,
   .tt-menu-titlebar:hover span{color:var(--amber);}
-  .tt-menu-close{background:none; border:none; color:var(--paper-dim); font-size:20px; cursor:pointer; line-height:1; padding:0; flex-shrink:0;}
-  .tt-menu-close:hover{color:var(--paper);}
+  .tt-menu-close{
+    width:30px; height:30px; border-radius:50%; flex-shrink:0; padding:0; cursor:pointer;
+    display:grid; place-items:center; font-size:19px; line-height:1; color:var(--paper-dim);
+    background:var(--panel-2); border:1px solid var(--line);
+    background-image:radial-gradient(130% 90% at 50% -20%, rgba(255,255,255,.2), rgba(255,255,255,0) 62%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.12), 0 2px 6px rgba(var(--shadow-rgb),.25);
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1), color .15s ease, border-color .15s ease, box-shadow .2s ease;
+  }
+  .tt-menu-close:hover{color:var(--amber); border-color:var(--amber-dim); transform:rotate(90deg) scale(1.08); box-shadow:inset 0 1px 1px rgba(255,255,255,.18), 0 4px 14px rgba(0,0,0,.3);}
+  .tt-menu-close:active{transform:rotate(90deg) scale(.92);}
+  .tt-menu-close:focus-visible{outline:none; box-shadow:0 0 0 2px var(--amber);}
   .tt-menu-section{margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line);}
   .tt-menu-section:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
   .tt-menu-screen[hidden]{display:none;}
+  .tt-menu-screen{position:relative;}
   .tt-menu-navrow{
+    position:relative; z-index:1;
     width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
-    background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:14px;
+    background:color-mix(in srgb, var(--panel-2) 42%, transparent);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 2px 8px rgba(var(--shadow-rgb),.18);
     color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; font-weight:600;
     padding:13px 14px; margin-bottom:10px; cursor:pointer;
-    transition:background .15s ease, border-color .15s ease, transform .1s ease, box-shadow .15s ease;
+    transition:background .15s ease, border-color .2s ease, transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease;
   }
   .tt-menu-navrow[hidden]{display:none;}
-  .tt-menu-navrow:hover{background:var(--panel); border-color:var(--amber-dim); box-shadow:0 4px 10px rgba(var(--shadow-rgb),.25);}
-  .tt-menu-navrow:active{transform:scale(.98);}
+  .tt-menu-navrow:hover{border-color:var(--amber-dim); box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 6px 16px rgba(var(--shadow-rgb),.3);}
+  .tt-menu-navrow:active{transform:scale(.975);}
+  /* the hovered/focused row lets the gliding amber glass show through at full strength */
+  .tt-glide-host .tt-menu-navrow:hover,
+  .tt-glide-host .tt-menu-navrow:focus-visible{background:transparent;}
+  .tt-menu-navrow:focus-visible{outline:none; box-shadow:0 0 0 2px var(--amber);}
+  .tt-menu-navrow .tt-menu-chevron{transition:transform .3s cubic-bezier(.34,1.56,.64,1), color .15s ease;}
+  .tt-menu-navrow:hover .tt-menu-chevron{transform:translateX(3px); color:var(--amber);}
+
+  /* the liquid highlight: one amber glass blob that glides (and stretches) from row to row */
+  .tt-menu-glide{
+    position:absolute; z-index:0; left:0; top:0; width:0; height:0; opacity:0;
+    pointer-events:none; border-radius:14px; transform-origin:center;
+    background-color:rgba(232,163,61,.26);
+    background-color:color-mix(in srgb, var(--amber) 32%, transparent);
+    background-image:
+      radial-gradient(130% 120% at 50% -25%, rgba(255,255,255,.3), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0) 55%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.35), inset 0 0 0 1px rgba(232,163,61,.5), 0 6px 20px rgba(232,163,61,.22);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.35), inset 0 0 0 1px color-mix(in srgb, var(--amber) 55%, transparent), 0 6px 20px color-mix(in srgb, var(--amber) 28%, transparent);
+    transition:opacity .22s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .tt-glide-host:active .tt-menu-glide{transform:scale(1.025,1.14);}
   .tt-menu-navrow-label{display:flex; align-items:center; gap:10px; flex:1;}
   .tt-menu-navrow-icon{flex-shrink:0; opacity:.75; display:flex;}
   .tt-menu-navrow:hover .tt-menu-navrow-icon{opacity:1; color:var(--amber);}
   .tt-menu-chevron{color:var(--paper-dim); font-size:16px;}
   .tt-menu-root-signout{margin-top:20px; padding-top:20px; border-top:1px solid var(--line);}
+
+  /* buttons and fields inside the menu: same glass language */
+  .tt-menu-panel .tt-btn{
+    border-radius:999px; background-image:radial-gradient(130% 90% at 50% -25%, rgba(255,255,255,.14), rgba(255,255,255,0) 62%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.1);
+    transition:background-color .2s ease, border-color .2s ease, transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease;
+  }
+  .tt-menu-panel .tt-btn:active{transform:scale(.97,.94);}
+  .tt-menu-panel .tt-btn.danger{background-color:rgba(214,69,65,.1); background-color:color-mix(in srgb, var(--stop) 12%, transparent);}
+  .tt-menu-panel .tt-btn.danger:hover{background-color:rgba(214,69,65,.2); background-color:color-mix(in srgb, var(--stop) 22%, transparent); box-shadow:inset 0 1px 1px rgba(255,255,255,.14), 0 6px 18px rgba(214,69,65,.25);}
+  .tt-menu-panel .tt-btn.primary{
+    background-color:var(--amber); border-color:transparent;
+    background-image:
+      radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.5), rgba(255,255,255,0) 62%),
+      linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 48%, rgba(0,0,0,.12) 100%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.65), inset 0 -2px 5px rgba(0,0,0,.16), 0 4px 14px rgba(232,163,61,.3);
+  }
+  .tt-menu-panel .tt-btn.primary:hover{background-color:#f0b258; box-shadow:inset 0 1px 1px rgba(255,255,255,.7), inset 0 -2px 5px rgba(0,0,0,.14), 0 6px 20px rgba(232,163,61,.42);}
+  html[data-theme="light"] .tt-menu-panel .tt-btn.primary{background-image:radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.45), rgba(255,255,255,0) 62%), linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 50%, rgba(0,0,0,.05) 100%);}
   .tt-menu-static-value{
-    background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:12px; box-shadow:inset 0 1px 3px rgba(0,0,0,.2);
     color:var(--paper-dim); font-size:13px; padding:9px 11px;
   }
   .tt-menu-label{font-size:11px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
@@ -279,10 +334,12 @@
   .tt-menu-bigbtn{width:100%; font-size:14px; padding:14px 16px;}
   .tt-menu-row{display:flex; gap:8px;}
   .tt-menu-input{
-    flex:1; width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:4px;
-    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; padding:9px 11px;
+    flex:1; width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:12px;
+    color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; padding:10px 13px;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.25);
+    transition:border-color .2s ease, box-shadow .25s ease;
   }
-  .tt-menu-input:focus-visible{outline:2px solid var(--amber);}
+  .tt-menu-input:focus-visible{outline:none; border-color:var(--amber); box-shadow:inset 0 1px 3px rgba(0,0,0,.25), 0 0 0 3px rgba(232,163,61,.25);}
   .tt-menu-btn-inline{flex-shrink:0; min-width:0; width:auto; padding:9px 14px;}
   .tt-menu-msg{font-size:11px; margin-top:6px; min-height:14px; color:var(--paper-dim);}
   .tt-menu-msg.error{color:var(--err-text);}
@@ -429,6 +486,8 @@
   }
   .tt-admin-bigcard-desc{font-size:13px; color:var(--paper-dim); line-height:1.5;}
   .tt-admin-analytics{display:flex; flex-direction:column; gap:10px;}
+  .tt-admin-analytics-title{margin:4px 0 10px;}
+  .tt-admin-export-nav[hidden]{display:none;}
 
   .tt-admin-filterbar{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
@@ -1217,6 +1276,11 @@
             <div class="tt-segment tt-export-segment" id="tt-admin-export-period">
               <button data-val="day">Day</button><button data-val="week">Week</button><button data-val="month" class="active">Month</button><button data-val="year">Year</button><button data-val="custom">Custom</button>
             </div>
+            <div class="tt-monthbar tt-admin-export-nav" id="tt-admin-export-nav">
+              <button class="tt-navbtn" id="tt-admin-export-prev" type="button" aria-label="Previous">&#8249;</button>
+              <div class="tt-monthlabel" id="tt-admin-export-rangelabel" style="text-align:center;">—</div>
+              <button class="tt-navbtn" id="tt-admin-export-next" type="button" aria-label="Next">&#8250;</button>
+            </div>
             <div class="tt-custom-range-bar" id="tt-custom-export-range-bar" hidden style="margin-top:10px;">
               <div class="tt-custom-range-fields">
                 <div class="tt-custom-range-field">
@@ -1232,6 +1296,7 @@
             <div class="tt-menu-desc" id="tt-admin-export-preview" style="margin-top:8px; margin-bottom:0;"></div>
           </div>
 
+          <div class="tt-menu-label tt-admin-analytics-title" id="tt-admin-analytics-title"></div>
           <div id="tt-admin-analytics" class="tt-admin-analytics"></div>
           <button class="tt-btn primary tt-menu-bigbtn" id="tt-admin-export-btn" style="margin-top:16px;">&#8595; Export</button>
         </div>
@@ -1463,7 +1528,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.070</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.072</div>
   </div>
 </div>
 
@@ -1628,12 +1693,21 @@
     return `${monthNames[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
   }
 
+  // Moves a date by whole months, clamping the day to what the target month has,
+  // so Oct 31 + 1 month is Nov 30 (not "Nov 31" = Dec 1, which skips November).
+  function shiftMonthClamped(date, delta){
+    const d = new Date(date.getFullYear(), date.getMonth()+delta, 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    d.setDate(Math.min(date.getDate(), lastDay));
+    return d;
+  }
+
   function navShift(delta){
     if(granularity==='custom') return; // custom ranges are set via the date inputs, not prev/next
     const d = new Date(anchorDate);
     if(granularity==='day') d.setDate(d.getDate()+delta);
     else if(granularity==='week') d.setDate(d.getDate()+delta*7);
-    else d.setMonth(d.getMonth()+delta);
+    else { anchorDate = shiftMonthClamped(anchorDate, delta); renderCurrentView(); return; }
     anchorDate = d;
     renderCurrentView();
   }
@@ -3136,7 +3210,29 @@
     $('tt-admin-export-type-section').hidden = !showType;
   }
 
+  // ‹ › under the Period switch: step the browsed day / week / month / year
+  function adminShiftExportAnchor(delta){
+    const a = adminExportAnchorDate;
+    if(adminExportPeriod==='day') adminExportAnchorDate = new Date(a.getFullYear(), a.getMonth(), a.getDate()+delta);
+    else if(adminExportPeriod==='week') adminExportAnchorDate = new Date(a.getFullYear(), a.getMonth(), a.getDate()+delta*7);
+    else if(adminExportPeriod==='year') adminExportAnchorDate = shiftMonthClamped(a, delta*12);
+    else adminExportAnchorDate = shiftMonthClamped(a, delta);
+    adminUpdateExportPreview();
+  }
+  $('tt-admin-export-prev').addEventListener('click', ()=> adminShiftExportAnchor(-1));
+  $('tt-admin-export-next').addEventListener('click', ()=> adminShiftExportAnchor(1));
+
+  function adminUpdateExportNav(){
+    const isCustom = adminExportPeriod==='custom';
+    $('tt-admin-export-nav').hidden = isCustom; // custom uses the From/To fields instead
+    $('tt-admin-export-rangelabel').textContent = adminGetExportLabel(adminExportPeriod, adminExportAnchorDate);
+  }
+
+  // Runs on every filter change (period, stepping, custom dates, format...), so the
+  // stats below always describe exactly what is selected.
   function adminUpdateExportPreview(){
+    adminUpdateExportNav();
+    renderAdminAnalytics();
     const dates = adminGetExportDates(adminExportPeriod, adminExportAnchorDate);
     const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(adminEntries,d), 0);
     if(adminExportFormat==='pdf' && adminExportView==='chart'){
@@ -3187,24 +3283,29 @@
     adminUpdateExportPreview();
   });
 
+  // Stats for the selected users within the selected period only.
   function renderAdminAnalytics(){
     const el = $('tt-admin-analytics');
-    if(adminEntries.length===0){
-      el.innerHTML = '<div class="tt-preset-empty">No entries for these users.</div>';
+    const periodLabel = adminGetExportLabel(adminExportPeriod, adminExportAnchorDate);
+    $('tt-admin-analytics-title').textContent = `Stats · ${periodLabel}`;
+    const keys = new Set(adminGetExportDates(adminExportPeriod, adminExportAnchorDate).map(dateKey));
+    const list = adminEntries.filter(e=>keys.has(e.date));
+    if(list.length===0){
+      el.innerHTML = `<div class="tt-preset-empty">No entries in ${escapeHtml(periodLabel)}.</div>`;
       return;
     }
-    const totalSec = adminEntries.reduce((s,e)=>s+(e.durationSec||0), 0);
-    const uniqueDays = new Set(adminEntries.map(e=>e.date)).size;
-    const dates = adminEntries.map(e=>e.date).filter(Boolean).sort();
+    const totalSec = list.reduce((s,e)=>s+(e.durationSec||0), 0);
+    const uniqueDays = new Set(list.map(e=>e.date)).size;
+    const dates = list.map(e=>e.date).filter(Boolean).sort();
     const firstDate = dates[0];
     const lastDate = dates[dates.length-1];
     const avgSec = uniqueDays>0 ? Math.round(totalSec/uniqueDays) : 0;
     const noteCounts = {};
-    adminEntries.forEach(e=>{ const k = e.note||'(no note)'; noteCounts[k] = (noteCounts[k]||0) + (e.durationSec||0); });
+    list.forEach(e=>{ const k = e.note||'(no note)'; noteCounts[k] = (noteCounts[k]||0) + (e.durationSec||0); });
     const topProject = Object.entries(noteCounts).sort((a,b)=>b[1]-a[1])[0];
 
     const stats = [
-      ['Total entries', String(adminEntries.length)],
+      ['Total entries', String(list.length)],
       ['Total hours', fmtHM(totalSec)+'h'],
       ['Days with time logged', String(uniqueDays)],
       ['Average per active day', fmtHM(avgSec)+'h'],
@@ -3213,10 +3314,14 @@
       ['Top project/note', topProject ? `${topProject[0]} (${fmtHM(topProject[1])}h)` : '—']
     ];
     if(adminSelectedExportUsers.length>1){
-      adminSelectedExportUsers.forEach(u=>{
-        const sec = adminEntries.filter(e=>e.ownerName===(u.displayName||u.email)).reduce((s,e)=>s+(e.durationSec||0),0);
-        stats.push([`Hours · ${u.displayName||u.email}`, fmtHM(sec)+'h']);
-      });
+      // everyone selected gets a row, even with 0h in this period
+      adminSelectedExportUsers
+        .map(u=>u.displayName||u.email)
+        .sort((a,b)=>a.localeCompare(b))
+        .forEach(name=>{
+          const sec = list.filter(e=>e.ownerName===name).reduce((s,e)=>s+(e.durationSec||0),0);
+          stats.push([`Hours · ${name}`, fmtHM(sec)+'h']);
+        });
     }
     el.innerHTML = stats.map(([label,val])=>`
       <div class="tt-today">
@@ -3247,6 +3352,7 @@
     $('tt-custom-export-range-bar').hidden = true;
     const el = $('tt-admin-analytics');
     el.innerHTML = '<div class="tt-preset-empty">Loading analytics…</div>';
+    $('tt-admin-analytics-title').textContent = '';
     try{
       await ensureAllEntriesLoaded();
       if(users.length>1){
@@ -3752,6 +3858,60 @@
   document.querySelector('#tt-theme-toggle .tt-theme-switch-knob').addEventListener('animationend', (e)=>{
     e.currentTarget.classList.remove('tt-knob-stretch');
   });
+
+  // ---------------- Account menu: gliding highlight ----------------
+  // One amber glass blob sits behind the menu rows. Hover or focus a row and it
+  // glides there, stretching across the gap on the way (same motion as the
+  // switches). Rows and labels are untouched, so the text is always readable.
+  (function initMenuGlide(){
+    const host = $('tt-menu-screen-root');
+    if(!host) return;
+    host.classList.add('tt-glide-host');
+    const glide = document.createElement('span');
+    glide.className = 'tt-menu-glide';
+    glide.setAttribute('aria-hidden', 'true');
+    host.insertBefore(glide, host.firstChild);
+    let placed = false;
+
+    function moveTo(row){
+      if(!row || !row.offsetHeight) return; // hidden row (e.g. Admin for non-admins)
+      const to = { top:row.offsetTop, left:row.offsetLeft, width:row.offsetWidth, height:row.offsetHeight };
+      const cs = getComputedStyle(glide);
+      const from = { top:parseFloat(cs.top)||0, height:parseFloat(cs.height)||0 };
+      const moved = Math.abs(from.top - to.top) > .5 || Math.abs(from.height - to.height) > .5;
+
+      glide.getAnimations().forEach(a=>a.cancel());
+      glide.style.left = to.left + 'px';
+      glide.style.width = to.width + 'px';
+      glide.style.top = to.top + 'px';
+      glide.style.height = to.height + 'px';
+      glide.style.opacity = '1';
+
+      if(placed && moved && !liquidReducedMotion.matches && glide.animate){
+        const minT = Math.min(from.top, to.top);
+        const maxB = Math.max(from.top + from.height, to.top + to.height);
+        glide.animate([
+          { top:from.top+'px', height:from.height+'px', transform:'scale(1,1)', easing:'cubic-bezier(.4,0,.2,1)' },
+          { top:minT+'px', height:(maxB-minT)+'px', transform:'scale(1.025,1)', offset:.4, easing:'cubic-bezier(.34,1.56,.64,1)' },
+          { top:to.top+'px', height:to.height+'px', transform:'scale(1,1)' }
+        ], { duration:520 });
+      }
+      placed = true;
+    }
+    function fade(){ glide.style.opacity = '0'; }
+
+    host.addEventListener('mouseover', (e)=>{
+      if(e.target.closest('.tt-menu-root-signout')) return fade();
+      const row = e.target.closest('.tt-menu-navrow');
+      if(row) moveTo(row);
+    });
+    host.addEventListener('focusin', (e)=>{
+      const row = e.target.closest('.tt-menu-navrow');
+      if(row) moveTo(row); else fade();
+    });
+    host.addEventListener('mouseleave', fade);
+    host.addEventListener('focusout', (e)=>{ if(!host.contains(e.relatedTarget)) fade(); });
+  })();
 
   onAuthStateChanged(auth, (user)=>{
     const uid = user ? user.uid : null;
