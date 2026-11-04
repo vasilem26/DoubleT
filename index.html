@@ -494,6 +494,20 @@
      colours go transparent so it shows through the gaps between panels. */
   .tt-bg{position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;}
   html.tt-bg-on body, html.tt-bg-on .tt-root{background:transparent;}
+  /* The admin pages are a full-screen layer on top of the dashboard. While one is open the
+     same background layer is lifted to just beneath it (with a solid base, so the dashboard
+     below can't show through the see-through parts of an animation), and the page's own
+     fill goes transparent. The content column gets a soft tinted sheet so text stays
+     readable over any background. The hamburger menu is deliberately left alone. */
+  html.tt-bg-on.tt-admin-open #tt-bg{z-index:2999; background:var(--ink);}
+  html.tt-bg-on .tt-admin-page{background:transparent;}
+  html.tt-bg-on .tt-admin-page-inner{
+    background:color-mix(in srgb, var(--ink) 80%, transparent);
+    border:1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    border-radius:20px; padding:20px 22px 28px;
+    box-shadow:0 10px 40px rgba(var(--shadow-rgb),.25);
+  }
+  @media (max-width:560px){ html.tt-bg-on .tt-admin-page-inner{padding:14px 14px 22px; border-radius:16px;} }
   .tt-bg-layer{position:absolute; inset:0; opacity:0; transition:opacity .8s ease;}
   .tt-bg-layer.tt-bg-in{opacity:1;}
   .tt-bg-layer canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
@@ -564,6 +578,136 @@
   .tt-bg-dim span{min-width:34px; text-align:right; font-family:'Space Mono',monospace;}
   .tt-bg-status{min-height:16px; margin-top:10px; font-size:11px; color:var(--paper-dim);}
   .tt-bg-status.error{color:var(--err-text);}
+
+  /* ---- Glass panels ----
+     html.tt-glass (default; switch back in Customize → Appearance → Classic) restyles the dashboard
+     cards to match the switches, menu and backgrounds: frosted fill, a soft sheen, a bright
+     hairline edge, rounder corners. Geometry is untouched, so saved layouts don't shift.
+     Static backgrounds get a real backdrop blur; moving ones don't (re-blurring a canvas every
+     frame is heavy), so there the fill is a bit more opaque instead. Wrapped in @supports so a
+     browser without color-mix() just keeps the Classic look. */
+  .tt-ring{display:none;}
+  .tt-spark{display:none;}
+  @property --p{ syntax:'<number>'; inherits:false; initial-value:0; }
+  @keyframes tt-rise{ from{opacity:0; transform:translateY(16px) scale(.985);} to{opacity:1; transform:none;} }
+  @keyframes tt-breathe{ 0%,100%{opacity:.45;} 50%{opacity:1;} }
+  @keyframes tt-ripple{ 0%{transform:scale(.97); opacity:.55;} 100%{transform:scale(1.4); opacity:0;} }
+  @supports (background: color-mix(in srgb, red 50%, transparent)){
+    html.tt-glass{
+      --glass-fill:color-mix(in srgb, var(--panel) 76%, transparent);
+      --glass-edge:color-mix(in srgb, #fff 11%, var(--line));
+      --glass-sheen:radial-gradient(130% 75% at 50% -18%, rgba(255,255,255,.11), rgba(255,255,255,0) 58%);
+    }
+    html[data-theme="light"].tt-glass{
+      --glass-fill:color-mix(in srgb, #fff 72%, transparent);
+      --glass-edge:color-mix(in srgb, #fff 70%, var(--line));
+      --glass-sheen:radial-gradient(130% 75% at 50% -18%, rgba(255,255,255,.65), rgba(255,255,255,0) 58%);
+    }
+    html.tt-glass.tt-bg-anim{ --glass-fill:color-mix(in srgb, var(--panel) 85%, transparent); }
+    html[data-theme="light"].tt-glass.tt-bg-anim{ --glass-fill:color-mix(in srgb, #fff 84%, transparent); }
+
+    html.tt-glass :is(.tt-clock,.tt-today,.tt-stat-card,.tt-earnings,.tt-ledger,.tt-calendar,.tt-chart){
+      background:var(--glass-sheen), var(--glass-fill);
+      border:1px solid var(--glass-edge);
+      border-radius:22px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 1px 2px rgba(var(--shadow-rgb),.16), 0 16px 36px rgba(var(--shadow-rgb),.24);
+    }
+    html.tt-glass.tt-bg-static :is(.tt-clock,.tt-today,.tt-stat-card,.tt-earnings,.tt-ledger,.tt-calendar,.tt-chart){
+      -webkit-backdrop-filter:blur(14px) saturate(1.25); backdrop-filter:blur(14px) saturate(1.25);
+    }
+    html.tt-glass :is(.tt-stat-card,.tt-today){ transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, border-color .25s ease; }
+    html.tt-glass :is(.tt-stat-card,.tt-today):hover{
+      transform:translateY(-2px);
+      border-color:color-mix(in srgb, var(--amber) 38%, var(--glass-edge));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.13), 0 22px 44px rgba(var(--shadow-rgb),.32), 0 0 0 1px color-mix(in srgb, var(--amber) 14%, transparent);
+    }
+    /* icons become glossy discs; the Today one carries a progress ring */
+    html.tt-glass .tt-stat-icon{
+      position:relative; width:38px; height:38px; border-radius:50%;
+      background:radial-gradient(120% 90% at 50% -20%, rgba(255,255,255,.42), rgba(255,255,255,0) 60%), color-mix(in srgb, var(--amber) 30%, transparent);
+      box-shadow:inset 0 1px 1px rgba(255,255,255,.32), 0 4px 14px color-mix(in srgb, var(--amber) 26%, transparent);
+    }
+    html.tt-glass .tt-ring{
+      display:block; position:absolute; inset:-5px; border-radius:50%; pointer-events:none;
+      background:conic-gradient(var(--amber) calc(var(--p) * 1%), color-mix(in srgb, var(--amber) 16%, transparent) 0);
+      -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
+      mask:radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
+      transition:--p .9s cubic-bezier(.2,.8,.2,1);
+    }
+    /* the sparkline floats at the right of the card and takes no space, so it can never change a
+       card's size (and saved layouts); on cards too narrow to spare the room it simply hides */
+    html.tt-glass .tt-stat-card{position:relative; container-type:inline-size;}
+    html.tt-glass .tt-spark{display:block; position:absolute; right:18px; top:50%; width:96px; height:30px; margin-top:-15px; overflow:visible; pointer-events:none;}
+    @container (max-width:359px){ html.tt-glass .tt-spark{display:none;} }
+    .tt-spark rect{fill:var(--amber); opacity:.5;}
+    .tt-spark rect.today{opacity:1; filter:drop-shadow(0 0 4px color-mix(in srgb, var(--amber) 70%, transparent));}
+    .tt-spark rect.empty{fill:var(--paper-dim); opacity:.25;}
+
+    /* the timer card: a glowing line on top, a living glow while it runs */
+    html.tt-glass .tt-clock::before{height:2px; background:linear-gradient(90deg, transparent, var(--amber), transparent); opacity:.7;}
+    html.tt-glass .tt-digits{transition:text-shadow .6s ease;}
+    html.tt-glass .tt-clock.tt-live .tt-digits{text-shadow:0 0 28px color-mix(in srgb, var(--amber) 38%, transparent);}
+    html.tt-glass .tt-clock.tt-live::after{
+      content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+      box-shadow:inset 0 0 70px color-mix(in srgb, var(--amber) 14%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--amber) 30%, transparent);
+      animation:tt-breathe 3.4s ease-in-out infinite;
+    }
+    html.tt-glass .tt-punch{
+      background-color:var(--amber);
+      background-image:radial-gradient(120% 90% at 50% -12%, rgba(255,255,255,.55), rgba(255,255,255,0) 58%), linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 45%, rgba(0,0,0,.16));
+      box-shadow:inset 0 2px 2px rgba(255,255,255,.55), inset 0 -8px 14px rgba(0,0,0,.18), 0 12px 28px color-mix(in srgb, var(--amber) 38%, transparent), 0 3px 8px rgba(var(--shadow-rgb),.35);
+      transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, filter .2s ease;
+    }
+    html.tt-glass .tt-punch:hover:not(:disabled){transform:translateY(-3px) scale(1.04); filter:none; box-shadow:inset 0 2px 2px rgba(255,255,255,.6), inset 0 -8px 14px rgba(0,0,0,.18), 0 18px 36px color-mix(in srgb, var(--amber) 48%, transparent), 0 3px 8px rgba(var(--shadow-rgb),.35);}
+    html.tt-glass .tt-punch:active{transform:scale(.94); box-shadow:inset 0 3px 6px rgba(0,0,0,.25), 0 6px 14px color-mix(in srgb, var(--amber) 30%, transparent);}
+    html.tt-glass .tt-punch.stop{
+      background-color:var(--stop);
+      box-shadow:inset 0 2px 2px rgba(255,255,255,.4), inset 0 -8px 14px rgba(0,0,0,.22), 0 12px 28px color-mix(in srgb, var(--stop) 40%, transparent), 0 3px 8px rgba(var(--shadow-rgb),.35);
+    }
+    html.tt-glass .tt-punch.stop:hover:not(:disabled){box-shadow:inset 0 2px 2px rgba(255,255,255,.45), inset 0 -8px 14px rgba(0,0,0,.22), 0 18px 36px color-mix(in srgb, var(--stop) 50%, transparent), 0 3px 8px rgba(var(--shadow-rgb),.35);}
+    html.tt-glass .tt-clock.tt-live .tt-punch{position:relative;}
+    html.tt-glass .tt-clock.tt-live .tt-punch::after{
+      content:''; position:absolute; inset:-5px; border-radius:50%; border:2px solid var(--stop);
+      opacity:0; pointer-events:none; animation:tt-ripple 2.4s ease-out infinite;
+    }
+
+    /* calendar, list, chart */
+    html.tt-glass .tt-cal-cell{border-radius:12px; background:color-mix(in srgb, var(--panel-2) 62%, transparent); border-color:color-mix(in srgb, var(--line) 55%, transparent);}
+    html.tt-glass .tt-cal-cell.outside{opacity:.22;}
+    html.tt-glass .tt-cal-cell:hover{border-color:var(--amber-dim); transform:translateY(-3px) scale(1.04); box-shadow:0 12px 24px rgba(var(--shadow-rgb),.32);}
+    html.tt-glass .tt-cal-cell.outside:hover{transform:none; border-color:transparent; box-shadow:none;}
+    html.tt-glass .tt-cal-cell.has-time{background:color-mix(in srgb, var(--amber) 13%, transparent); border-color:color-mix(in srgb, var(--amber) 30%, transparent);}
+    html.tt-glass .tt-cal-cell.has-time::after{background:linear-gradient(180deg, color-mix(in srgb, var(--amber) 55%, transparent), color-mix(in srgb, var(--amber) 88%, transparent)); box-shadow:inset 0 1px 0 rgba(255,255,255,.3);}
+    html.tt-glass .tt-cal-cell.today{
+      background-color:var(--amber); border-color:var(--amber);
+      background-image:radial-gradient(120% 80% at 50% -20%, rgba(255,255,255,.5), rgba(255,255,255,0) 60%);
+      box-shadow:inset 0 1px 1px rgba(255,255,255,.5), 0 0 0 3px color-mix(in srgb, var(--amber) 28%, transparent), 0 8px 22px color-mix(in srgb, var(--amber) 32%, transparent);
+    }
+    html.tt-glass .tt-chart-bar{
+      border-radius:7px 7px 3px 3px;
+      background:linear-gradient(180deg, color-mix(in srgb, var(--amber) 68%, #fff), var(--amber));
+      box-shadow:0 0 14px color-mix(in srgb, var(--amber) 26%, transparent), inset 0 1px 0 rgba(255,255,255,.4);
+    }
+    html.tt-glass .tt-chart-bar.today{background:linear-gradient(180deg,#fff,#ffe7bf);}
+    html.tt-glass .tt-chart-bar.empty{background:var(--line); box-shadow:none;}
+    html.tt-glass .tt-row.head{background:color-mix(in srgb, var(--panel-2) 55%, transparent);}
+    html.tt-glass .tt-navbtn{border-radius:50%; background:var(--glass-fill); border-color:var(--glass-edge); box-shadow:inset 0 1px 0 rgba(255,255,255,.1);}
+    html.tt-glass .tt-navbtn:hover{border-color:var(--amber-dim); transform:scale(1.08);}
+    html.tt-glass .tt-note{border-radius:14px; background:var(--glass-fill); border-color:var(--glass-edge);}
+    html.tt-glass .tt-earnings-currency-select{border-radius:999px; background:var(--glass-fill); border-color:var(--glass-edge);}
+
+    /* the cards rise in, one after another, when the dashboard opens (and when a hidden panel is restored) */
+    html.tt-glass #tt-panels-container.tt-panels-ready .tt-panel > :not(.tt-panel-handle):not(.tt-panel-resize-handle){
+      animation:tt-rise .65s cubic-bezier(.2,.8,.2,1) both; animation-delay:calc(var(--i, 0) * 70ms);
+    }
+    html.tt-glass .tt-panel:nth-child(2){--i:1;} html.tt-glass .tt-panel:nth-child(3){--i:2;} html.tt-glass .tt-panel:nth-child(4){--i:3;}
+    html.tt-glass .tt-panel:nth-child(5){--i:4;} html.tt-glass .tt-panel:nth-child(6){--i:5;} html.tt-glass .tt-panel:nth-child(7){--i:6;}
+    html.tt-glass .tt-panel:nth-child(8){--i:7;} html.tt-glass .tt-panel:nth-child(9){--i:8;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    html.tt-glass .tt-panel > *, html.tt-glass .tt-clock.tt-live::after, html.tt-glass .tt-punch::after{animation:none !important;}
+    html.tt-glass .tt-ring{transition:none;}
+  }
 
   /* ---- Companies ---- */
   .tt-admin-page-inner.tt-admin-wide{max-width:1040px;}
@@ -1103,13 +1247,17 @@
           </span>
         </button>
         <div class="tt-bg-wrap" id="tt-bg-wrap" hidden>
-          <button id="tt-bg-btn" class="tt-customize-btn" type="button" aria-haspopup="dialog" aria-expanded="false">Background</button>
-          <div class="tt-bg-pop" id="tt-bg-pop" role="dialog" aria-label="Background" hidden>
-            <div class="tt-bg-group-label">Fixed</div>
+          <button id="tt-bg-btn" class="tt-customize-btn" type="button" aria-haspopup="dialog" aria-expanded="false">Appearance</button>
+          <div class="tt-bg-pop" id="tt-bg-pop" role="dialog" aria-label="Appearance" hidden>
+            <div class="tt-bg-group-label">Panel style</div>
+            <div class="tt-segment tt-export-segment" id="tt-bg-style">
+              <button type="button" data-val="glass" class="active">Glass</button><button type="button" data-val="classic">Classic</button>
+            </div>
+            <div class="tt-bg-group-label">Background · Fixed</div>
             <div class="tt-bg-grid" id="tt-bg-fixed"></div>
-            <div class="tt-bg-group-label">Dynamic <span>slow, subtle motion</span></div>
+            <div class="tt-bg-group-label">Background · Dynamic <span>slow, subtle motion</span></div>
             <div class="tt-bg-grid" id="tt-bg-dynamic"></div>
-            <div class="tt-bg-group-label">Your image</div>
+            <div class="tt-bg-group-label">Background · Your image</div>
             <div class="tt-bg-custom">
               <div class="tt-bg-grid tt-bg-grid-one" id="tt-bg-custom-tile"></div>
               <div class="tt-bg-custom-actions">
@@ -1585,7 +1733,8 @@
       <div class="tt-panel-resize-handle" title="Drag to resize"></div>
     <div class="tt-stat-grid tt-stat-grid-single">
       <div class="tt-stat-card tt-stat-card-accent">
-        <div class="tt-stat-icon">
+        <div class="tt-stat-icon" title="">
+          <span class="tt-ring" id="tt-today-ring" aria-hidden="true"></span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         </div>
         <div class="tt-stat-body">
@@ -1611,6 +1760,7 @@
           <div class="tt-today-label" id="tt-month-strip-label">This month's total</div>
           <div class="tt-today-val" id="tt-month-strip-total">0:00</div>
         </div>
+        <svg class="tt-spark" id="tt-month-spark" viewBox="0 0 104 34" preserveAspectRatio="none" aria-hidden="true"></svg>
       </div>
     </div>
     </div>
@@ -1782,7 +1932,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.076</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.078</div>
   </div>
 </div>
 
@@ -2864,8 +3014,12 @@
     adminSelectedCompanyId = null;
     showAdminScreen('root');
     $('tt-admin-page').hidden = false;
+    document.documentElement.classList.add('tt-admin-open');
   }
-  function closeAdminPage(){ $('tt-admin-page').hidden = true; }
+  function closeAdminPage(){
+    $('tt-admin-page').hidden = true;
+    document.documentElement.classList.remove('tt-admin-open');
+  }
 
   function showAdminScreen(name){
     adminScreen = name;
@@ -4811,7 +4965,7 @@ match /users/{userId}/meta/{docId} {
     { id:'waves',         label:'Waves',         preview:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 46' preserveAspectRatio='none'%3E%3Cpath d='M0 30 Q 20 20 40 30 T 80 28 V46 H0Z' fill='%233cbac4' fill-opacity='.45'/%3E%3Cpath d='M0 36 Q 20 28 40 36 T 80 34 V46 H0Z' fill='%23e8a33d' fill-opacity='.45'/%3E%3C/svg%3E\") center/100% 100% no-repeat, #16202b" },
     { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
   ];
-  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'' };
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass' };
   const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let bgPref = { ...BG_DEFAULT };
   let bgImage = '';          // data URL of the custom image (this user's)
@@ -4830,6 +4984,7 @@ match /users/{userId}/meta/{docId} {
     const dim = Number(raw.dim);
     if(Number.isFinite(dim)) p.dim = Math.min(80, Math.max(0, Math.round(dim)));
     p.stamp = typeof raw.stamp === 'string' ? raw.stamp.slice(0, 40) : '';
+    p.style = raw.style === 'classic' ? 'classic' : 'glass';
     return p;
   }
 
@@ -5027,7 +5182,13 @@ match /users/{userId}/meta/{docId} {
   }
 
   function applyBackground(){
-    document.documentElement.style.setProperty('--bg-dim', (bgPref.dim/100).toFixed(2)); // live while the slider moves
+    const root = document.documentElement;
+    root.style.setProperty('--bg-dim', (bgPref.dim/100).toFixed(2)); // live while the slider moves
+    // panel style + what kind of backdrop is behind (static ones get a real blur, moving ones don't)
+    root.classList.toggle('tt-glass', bgPref.style !== 'classic');
+    root.classList.toggle('tt-bg-anim', bgPref.kind === 'dynamic');
+    root.classList.toggle('tt-bg-static', bgPref.kind === 'fixed' || (bgPref.kind === 'custom' && !!bgImage));
+    renderLiveVisuals();
     const shown = bgPref.kind==='fixed' || bgPref.kind==='dynamic' || (bgPref.kind==='custom' && !!bgImage);
     const key = shown ? `${bgPref.kind}:${bgPref.id}:${bgPref.kind==='custom' ? bgPref.stamp : ''}` : 'none';
     if(key === bgAppliedKey) return;
@@ -5053,7 +5214,7 @@ match /users/{userId}/meta/{docId} {
     clearTimeout(bgSaveTimer);
     bgLayers.forEach(l=>{ l.stop(); l.el.remove(); });
     bgLayers = []; bgAppliedKey = ''; bgUid = null; bgImage = ''; bgPref = { ...BG_DEFAULT };
-    document.documentElement.classList.remove('tt-bg-on');
+    document.documentElement.classList.remove('tt-bg-on', 'tt-glass', 'tt-bg-anim', 'tt-bg-static');
     closeBgPicker();
   }
 
@@ -5151,6 +5312,7 @@ match /users/{userId}/meta/{docId} {
     customEl.replaceChildren(custom);
     $('tt-bg-remove').hidden = !bgImage;
     $('tt-bg-dim-row').hidden = !(bgPref.kind==='custom' && bgImage);
+    setActiveTab('tt-bg-style', bgPref.style);
     $('tt-bg-dim').value = String(bgPref.dim);
     $('tt-bg-dim-val').textContent = `${bgPref.dim}%`;
   }
@@ -5233,6 +5395,89 @@ match /users/{userId}/meta/{docId} {
     applyBackground();
   });
   $('tt-bg-dim').addEventListener('change', ()=> saveBgPref());
+  $('tt-bg-style').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(btn) setBgPref({ style: btn.dataset.val });
+  });
+
+  // ---------------- Dashboard polish (Glass style) ----------------
+  // Two small live visuals, drawn only while the Glass style is on:
+  //  • a sparkline of this month's daily hours on the "This month" card (today's bar glows), and
+  //  • a ring around the "Today" icon: today so far against your usual worked day this month
+  //    (your average over the other days you logged time; 8 h until there's any history).
+  function renderLiveVisuals(){
+    if(!document.documentElement.classList.contains('tt-glass')) return;
+    const now = new Date();
+    const n = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const daily = Array.from({ length:n }, (_,i)=> secondsForDate(new Date(now.getFullYear(), now.getMonth(), i+1)));
+    const today = now.getDate();
+
+    const spark = $('tt-month-spark');
+    if(spark){
+      const W = 104, H = 34, bw = W / n, max = Math.max(3600, ...daily);
+      spark.innerHTML = daily.map((sec, i)=>{
+        const h = sec > 0 ? Math.max(3, sec / max * H) : 1.5;
+        return `<rect x="${(i*bw + bw*.14).toFixed(2)}" y="${(H-h).toFixed(2)}" width="${(bw*.72).toFixed(2)}" height="${h.toFixed(2)}" rx="1"${i+1===today ? ' class="today"' : sec>0 ? '' : ' class="empty"'}/>`;
+      }).join('');
+    }
+    const ring = $('tt-today-ring');
+    if(ring){
+      const past = daily.filter((sec, i)=> i+1 !== today && sec > 0);
+      const usual = past.length ? past.reduce((a,b)=>a+b, 0) / past.length : 8*3600;
+      const frac = daily[today-1] / usual;
+      ring.style.setProperty('--p', Math.min(100, frac*100).toFixed(1));
+      if(ring.parentElement) ring.parentElement.title = `${Math.round(frac*100)}% of your usual day (${fmtHM(Math.round(usual))} h)`;
+    }
+  }
+
+  // Count-up: when one of the big numbers changes, it rolls from the old value to the new one
+  // instead of jumping. Only the figure moves — the unit/currency text around it is kept — and
+  // it's skipped for reduced motion, the Classic style, and anything that isn't a plain number.
+  (function initCountUp(){
+    if(!window.MutationObserver) return;
+    const parse = (txt)=>{
+      let m = txt.match(/(\d+):(\d{2})/);
+      if(m) return { kind:'hm', tpl:txt.replace(m[0], '\u0001'), value:(+m[1])*60 + (+m[2]), decimals:0 };
+      m = txt.match(/-?\d+(?:\.(\d+))?/);
+      if(m) return { kind:'dec', tpl:txt.replace(m[0], '\u0001'), value:parseFloat(m[0]), decimals:m[1] ? m[1].length : 0 };
+      return null;
+    };
+    const fmt = (p, v)=>{
+      const body = p.kind==='hm' ? `${Math.floor(Math.round(v)/60)}:${String(Math.round(v) % 60).padStart(2,'0')}` : v.toFixed(p.decimals);
+      return p.tpl.replace('\u0001', body);
+    };
+    ['tt-earnings-total','tt-proj-total','tt-avg-pay','tt-avg-hours','tt-today-total','tt-month-strip-total'].forEach(id=>{
+      const el = $(id);
+      if(!el) return;
+      let shown = parse(el.textContent), target = null, raf = 0;
+      const obs = new MutationObserver(()=>{
+        const text = el.textContent, to = parse(text);
+        // the app re-wrote the value we're already rolling towards (it re-renders every second): keep rolling
+        if(raf && target && to && to.tpl===target.tpl && to.value===target.value){
+          el.textContent = fmt(shown, shown.value); obs.takeRecords(); return;
+        }
+        if(!to || !shown || !document.documentElement.classList.contains('tt-glass') || bgReducedMotion.matches
+           || to.kind!==shown.kind || to.tpl!==shown.tpl || to.value===shown.value){
+          cancelAnimationFrame(raf); raf = 0; target = null; shown = to; return;
+        }
+        cancelAnimationFrame(raf);
+        target = to;
+        const from = shown.value, dur = 600;
+        let start = null; // taken from the first animation frame itself: a frame's timestamp can precede performance.now(), which would make progress negative
+        el.textContent = fmt(shown, from); obs.takeRecords(); // the app already wrote the final text; show where we are instead
+        const step = (now)=>{
+          if(start === null) start = now;
+          const t = Math.max(0, Math.min(1, (now - start) / dur));
+          if(t >= 1){ el.textContent = text; shown = to; target = null; raf = 0; obs.takeRecords(); return; }
+          const v = from + (to.value - from) * (1 - Math.pow(1 - t, 3));
+          el.textContent = fmt(to, v); shown = { ...to, value:v }; obs.takeRecords();
+          raf = requestAnimationFrame(step);
+        };
+        raf = requestAnimationFrame(step);
+      });
+      obs.observe(el, { childList:true, characterData:true, subtree:true });
+    });
+  })();
 
   onAuthStateChanged(auth, (user)=>{
     const uid = user ? user.uid : null;
@@ -5418,6 +5663,8 @@ match /users/{userId}/meta/{docId} {
     $('tt-status-text').textContent = running ? 'Running' : 'Idle';
     $('tt-punch').textContent = running ? 'Stop' : 'Start';
     $('tt-punch').classList.toggle('stop', running);
+    const clockCard = $('tt-status').closest('.tt-clock');
+    if(clockCard) clockCard.classList.toggle('tt-live', running);
 
     renderProjectSelect();
     $('tt-note').disabled = running;
@@ -5427,6 +5674,7 @@ match /users/{userId}/meta/{docId} {
     $('tt-digits').textContent = fmtHMS(liveSec);
     $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
     $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
+    renderLiveVisuals();
     renderEarningsPanel();
 
     renderCurrentView();
@@ -5685,6 +5933,7 @@ match /users/{userId}/meta/{docId} {
         $('tt-digits').textContent = fmtHMS(liveSec);
         $('tt-today-total').textContent = fmtHM(todaysSeconds()) + ' h';
         $('tt-month-strip-total').textContent = fmtHM(thisMonthSeconds()) + ' h';
+        renderLiveVisuals();
         $('tt-rangetotal').textContent = `${fmtHM(getRangeDates().reduce((s,d)=>s+secondsForDate(d),0))} h logged`;
         renderEarningsPanel();
       }
