@@ -869,6 +869,8 @@
   @keyframes tt-uni-beat{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
   .tt-uni-top{align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
   .tt-uni-spacer{flex:1;}
+  .tt-uni-cosel{min-height:40px; max-width:240px; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13px; font-weight:600; padding:0 14px;}
+  .tt-uni-cosel[hidden]{display:none;}
   .tt-uni-iconbtn{width:44px; height:44px; padding:0; border-radius:50%; border:1px solid var(--line); background:var(--panel); color:var(--paper); display:grid; place-items:center; cursor:pointer; position:relative; font-size:22px; line-height:1; transition:border-color .2s, transform .2s;}
   .tt-uni-iconbtn:hover{border-color:var(--amber-dim);}
   .tt-uni-iconbtn:active{transform:scale(.92);}
@@ -950,7 +952,16 @@
     html.tt-uni #tt-app-root{padding-top:74px;}
     html.tt-uni #tt-uni-top{position:fixed; top:0; left:96px; right:0; z-index:3050; margin:0; min-height:74px; box-sizing:border-box; padding:15px 32px;
       background:var(--ink); background:color-mix(in srgb, var(--ink) 90%, transparent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--line);}
-    html.tt-uni.tt-uni-pg #tt-panels-container, html.tt-uni.tt-uni-pg #tt-uni-controls, html.tt-uni.tt-uni-pg .tt-foot{display:none !important;}
+    html.tt-uni.tt-uni-pg #tt-panels-container, html.tt-uni.tt-uni-pg .tt-foot{display:none !important;}
+    html.tt-uni.tt-uni-pg:not(.tt-uni-codash) #tt-uni-controls{display:none !important;}
+    /* the company dashboard: same shell as the personal one, so its own header, toggle and period toolbar step away */
+    html.tt-uni.tt-uni-co .tt-admin-page-header, html.tt-uni.tt-uni-co #tt-co-viewtoggle, html.tt-uni.tt-uni-co .tt-co-toolbar,
+    html.tt-uni.tt-uni-co .tt-co-nav, html.tt-uni.tt-uni-co #tt-co-custom{display:none !important;}
+    html.tt-uni.tt-uni-co .tt-co-head{justify-content:flex-start;}
+    /* the shared bar sits above the company page and the page starts below it, so every button on it is reachable */
+    html.tt-uni.tt-uni-codash #tt-uni-controls{position:relative; z-index:3040; width:min(1180px, calc(100% - 64px)); margin-left:auto; margin-right:auto;}
+    html.tt-uni.tt-uni-codash .tt-admin-page{top:calc(74px + var(--uni-ctl-h, 0px));}
+    html.tt-uni .tt-admin-page-inner{background:none !important; border:0 !important; box-shadow:none !important; padding:0 !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important;}
     html.tt-uni .tt-menu-overlay{inset:74px 0 0 96px; z-index:2900; justify-content:center; overflow-y:auto; background:transparent !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; transition:none;}
     html.tt-uni .tt-menu-panel{max-width:1180px; width:100%; height:auto; min-height:100%; background:transparent; border:0; box-shadow:none; transform:none !important; opacity:1 !important; transition:none; padding:12px 32px 48px; overflow:visible;}
     html.tt-uni .tt-menu-header{font-size:15px;}
@@ -1515,6 +1526,7 @@
       <div class="tt-segment" id="tt-uni-view" role="group" aria-label="View" hidden>
         <button type="button" data-val="personal" class="active">Personal</button><button type="button" data-val="company">Company</button>
       </div>
+      <select id="tt-uni-cosel" class="tt-uni-cosel" aria-label="Company" hidden></select>
       <span class="tt-uni-spacer"></span>
       <span id="tt-uni-bgslot"></span>
       <button type="button" class="tt-uni-iconbtn" id="tt-uni-theme" aria-label="Toggle theme"><svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
@@ -2330,7 +2342,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.081</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.082</div>
   </div>
 </div>
 
@@ -6403,9 +6415,11 @@ match /users/{userId}/meta/{docId} {
   }
 
   // which rail item matches what is on screen: the admin pages, one of the account pages, or the dashboard / calendar
+  // the company DASHBOARD is a view of the dashboard (top toggle), not part of the Admin area
+  const uniIsCo = ()=> document.documentElement.classList.contains('tt-admin-open') && adminScreen === 'company';
   function uniActiveKey(){
     const root = document.documentElement;
-    if(root.classList.contains('tt-admin-open')) return 'admin';
+    if(root.classList.contains('tt-admin-open')) return uniIsCo() ? 'home' : 'admin';
     if(!$('tt-menu-overlay').hidden){
       const sc = currentRoute && currentRoute.screen;
       return sc === 'projects' ? 'projects' : sc === 'exports' ? 'reports' : 'settings';
@@ -6421,13 +6435,23 @@ match /users/{userId}/meta/{docId} {
   }
   // Account and admin screens are PAGES in Unified: the dashboard grid and period bar step aside, the rail and top bar stay
   function uniSyncPage(){
-    const root = document.documentElement;
+    const root = document.documentElement, co = uniIsCo();
     root.classList.toggle('tt-uni-pg', !$('tt-menu-overlay').hidden || root.classList.contains('tt-admin-open'));
+    root.classList.toggle('tt-uni-co', co);
+    root.classList.toggle('tt-uni-codash', co && coTab === 'dashboard');
+    if(uniOn()){
+      setActiveTab('tt-uni-view', co ? 'company' : 'personal');          // locked on Company while you are in it
+      if(co && adminSelectedCompanyId){ try{ localStorage.setItem('tt-last-company', adminSelectedCompanyId); }catch(e){} }
+      renderUniBar();
+    }
     uniGlide();
   }
   new MutationObserver(uniSyncPage).observe(document.documentElement, { attributes:true, attributeFilter:['class', 'data-uni-page'] });
   new MutationObserver(uniSyncPage).observe($('tt-menu-overlay'), { attributes:true, attributeFilter:['hidden', 'class'] });
   new MutationObserver(uniSyncPage).observe($('tt-menu-title'), { childList:true, characterData:true, subtree:true });
+  new MutationObserver(uniSyncPage).observe($('tt-admin-page-title'), { childList:true, characterData:true, subtree:true });
+  new MutationObserver(uniSyncPage).observe($('tt-co-tabs'), { attributes:true, subtree:true, attributeFilter:['class'] });
+  new MutationObserver(()=>{ if(uniOn()) renderUniBar(); }).observe($('tt-co-rangelabel'), { childList:true, characterData:true, subtree:true });
 
   function uniGo(item){
     const root = document.documentElement;
@@ -6449,30 +6473,45 @@ match /users/{userId}/meta/{docId} {
   ['mouseleave', 'focusout'].forEach(ev=> $('tt-uni-rail').addEventListener(ev, ()=>{ uniHover = null; uniGlide(); }));
 
   // top bar: each button presses the control that already exists
-  $('tt-uni-view').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(b && b.dataset.val === 'company') $('tt-company-navrow').click(); });   // the COMPANY DASHBOARD
+  async function uniOpenCompany(){
+    try{
+      const list = await ensureCompaniesLoaded();
+      if(!list.length) return go({ view:'admin', screen:'companies' });     // none yet: that is where one gets created
+      let last = null; try{ last = localStorage.getItem('tt-last-company'); }catch(e){}
+      coTab = 'dashboard';
+      go({ view:'admin', screen:'company', cid: (list.find(c=> c.id === last) || list[0]).id });
+    }catch(err){ go({ view:'admin', screen:'companies' }); }               // that screen shows the error and what to fix
+  }
+  $('tt-uni-view').addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-val]'); if(!b) return;
+    if(b.dataset.val === 'company'){ if(!uniIsCo()) uniOpenCompany(); }
+    else if(uniIsCo() || document.documentElement.classList.contains('tt-admin-open')) go({ view:'dashboard' });
+  });
+  $('tt-uni-cosel').addEventListener('change', (e)=>{ coTab = 'dashboard'; go({ view:'admin', screen:'company', cid:e.target.value }); });
   $('tt-uni-theme').addEventListener('click', ()=> $('tt-theme-toggle').click());
   $('tt-uni-account').addEventListener('click', ()=> $('tt-menu-btn').click());
 
-  // period bar
-  $('tt-uni-prev').addEventListener('click', ()=>{ $('tt-prev').click(); renderUnified(); });
-  $('tt-uni-next').addEventListener('click', ()=>{ $('tt-next').click(); renderUnified(); });
+  // the period bar drives the personal dashboard, or the company dashboard while you are in it
+  $('tt-uni-prev').addEventListener('click', ()=>{ $(uniIsCo() ? 'tt-co-prev' : 'tt-prev').click(); renderUnified(); });
+  $('tt-uni-next').addEventListener('click', ()=>{ $(uniIsCo() ? 'tt-co-next' : 'tt-next').click(); renderUnified(); });
   $('tt-uni-gran').addEventListener('click', (e)=>{
     const b = e.target.closest('button[data-g]'); if(!b) return;
-    uniPress(b.dataset.g);
+    if(uniIsCo()){ const o = document.querySelector(`#tt-co-period button[data-val="${b.dataset.g}"]`); if(o) o.click(); }
+    else uniPress(b.dataset.g);
     renderUnified();
   });
   $('tt-uni-mode').addEventListener('click', (e)=>{
     const b = e.target.closest('button[data-val]'); if(!b) return;
-    const orig = document.querySelector(`#tt-earnings-mode button[data-val="${b.dataset.val}"]`); if(orig) orig.click();
+    const o = document.querySelector(`#${uniIsCo() ? 'tt-co-mode' : 'tt-earnings-mode'} button[data-val="${b.dataset.val}"]`); if(o) o.click();
     renderUnified();
   });
   $('tt-uni-currency').addEventListener('change', (e)=>{
-    const sel = $('tt-earnings-currency'); sel.value = e.target.value;
+    const sel = $(uniIsCo() ? 'tt-co-currency' : 'tt-earnings-currency'); sel.value = e.target.value;
     sel.dispatchEvent(new Event('change', { bubbles:true }));
     renderUnified();
   });
   ['from', 'to'].forEach(k=> $('tt-uni-' + k).addEventListener('change', (e)=>{
-    const orig = $('tt-custom-' + k); orig.value = e.target.value;
+    const orig = $(uniIsCo() ? 'tt-co-custom-' + k : 'tt-custom-' + k); orig.value = e.target.value;
     orig.dispatchEvent(new Event('input', { bubbles:true })); orig.dispatchEvent(new Event('change', { bubbles:true }));
     renderUnified();
   }));
@@ -6552,18 +6591,36 @@ match /users/{userId}/meta/{docId} {
     uniSet('tt-uni-entries', `<div class="tt-uni-hd"><span class="tt-enh-disc">${ENH_ICON.attention.replace(/<path[^>]*>/, '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</span><span class="tt-enh-title">Recent entries</span></div><div>${body || '<div class="tt-enh-empty">No entries yet. Press Start to log your first one.</div>'}</div><button type="button" class="tt-enh-link" data-uni-cal="1" style="margin-top:auto;align-self:flex-start;min-height:44px">Open the calendar</button>`);
   }
 
+  function renderUniBar(){
+    const co = uniIsCo(), gran = co ? coPeriod : granularity, custom = gran === 'custom';
+    $('tt-uni-title').textContent = co ? ($('tt-co-rangelabel').textContent || '—') : getRangeLabel();
+    setActiveTab('tt-uni-gran', gran);
+    setActiveTab('tt-uni-mode', earningsMode);
+    $('tt-uni-currency').value = displayCurrency;
+    $('tt-uni-custom').hidden = !custom;
+    $('tt-uni-prev').disabled = $('tt-uni-next').disabled = custom;
+    if(custom){
+      const f = co ? coCustomFrom : customFromDate, t = co ? coCustomTo : customToDate;
+      $('tt-uni-from').value = f ? dateKey(f) : ''; $('tt-uni-to').value = t ? dateKey(t) : '';
+    }
+    document.documentElement.style.setProperty('--uni-ctl-h', (co && coTab === 'dashboard' ? $('tt-uni-controls').offsetHeight + 18 : 0) + 'px');
+    // a switcher only when there is a choice, so you never have to go through Admin → Companies
+    const sel = $('tt-uni-cosel'), list = co && adminCompaniesCache ? adminCompaniesCache : [];
+    sel.hidden = list.length < 2;
+    if(!sel.hidden){
+      const sig = list.map(c=> c.id + ':' + c.name).join('|');
+      if(sel.dataset.sig !== sig){ sel.innerHTML = list.map(c=> `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join(''); sel.dataset.sig = sig; }
+      sel.value = adminSelectedCompanyId || list[0].id;
+    }
+  }
+
+  window.addEventListener('resize', ()=>{ if(uniOn()) renderUniBar(); });
+
   function renderUnified(){
     if(!uniOn()) return;
     const user = auth.currentUser, name = user ? (user.displayName || user.email || '') : '';
     $('tt-uni-logo').classList.toggle('live', !!active);
-    $('tt-uni-title').textContent = getRangeLabel();
-    setActiveTab('tt-uni-gran', granularity);
-    setActiveTab('tt-uni-mode', earningsMode);
-    $('tt-uni-currency').value = displayCurrency;
-    const custom = granularity === 'custom';
-    $('tt-uni-custom').hidden = !custom;
-    $('tt-uni-prev').disabled = $('tt-uni-next').disabled = custom;
-    if(custom){ $('tt-uni-from').value = customFromDate ? dateKey(customFromDate) : ''; $('tt-uni-to').value = customToDate ? dateKey(customToDate) : ''; }
+    renderUniBar();
     $('tt-uni-name').textContent = name;
     $('tt-uni-role').textContent = isAdmin ? 'Admin' : '';
     $('tt-uni-av').textContent = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
