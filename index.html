@@ -879,7 +879,7 @@
   .tt-uni-badge[hidden]{display:none;}
   .tt-uni-bellwrap{position:relative;}
   .tt-uni-pop{position:absolute; right:0; top:54px; z-index:600; width:390px; max-width:calc(100vw - 32px); padding:18px 20px; border-radius:20px; border:1px solid var(--line);
-    background:var(--panel); background:color-mix(in srgb, var(--panel) 96%, transparent); box-shadow:0 28px 60px rgba(var(--shadow-rgb),.5); animation:tt-uni-popin .28s cubic-bezier(.2,.9,.3,1.2) both; transform-origin:top right;}
+    background:var(--panel); box-shadow:0 0 0 1px var(--line), 0 28px 60px rgba(var(--shadow-rgb),.55); isolation:isolate; animation:tt-uni-popin .28s cubic-bezier(.2,.9,.3,1.2) both; transform-origin:top right;}
   .tt-uni-pop[hidden]{display:none;}
   @keyframes tt-uni-popin{from{opacity:0; transform:scale(.92) translateY(-6px);}to{opacity:1; transform:none;}}
   .tt-uni-account{display:flex; align-items:center; gap:10px; background:transparent; border:0; color:var(--paper); min-height:44px; padding:0 4px; cursor:pointer; font-family:'Work Sans',sans-serif;}
@@ -922,7 +922,7 @@
 
   /* the grid: the same panels, arranged on twelve columns */
   @media (min-width:901px){
-    html.tt-uni #tt-panels-container{position:static; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:20px; align-items:stretch; height:auto !important; max-width:1500px;}
+    html.tt-uni #tt-panels-container{position:static; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:24px; align-items:stretch; height:auto !important; max-width:1500px;}
     html.tt-uni #tt-panels-container .tt-panel{position:static !important; width:auto !important; height:auto !important; left:auto !important; top:auto !important; display:flex; flex-direction:column; min-width:0;}
     html.tt-uni #tt-panels-container .tt-panel > .tt-earnings, html.tt-uni #tt-panels-container .tt-panel > .tt-clock{flex:1 1 auto; margin-top:0;}
     html.tt-uni .tt-panel.tt-panel-hidden{display:none !important;}
@@ -954,6 +954,7 @@
       background:var(--ink); background:color-mix(in srgb, var(--ink) 90%, transparent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--line);}
     html.tt-uni.tt-uni-pg #tt-panels-container, html.tt-uni.tt-uni-pg .tt-foot{display:none !important;}
     html.tt-uni.tt-uni-pg:not(.tt-uni-codash) #tt-uni-controls{display:none !important;}
+    html.tt-uni #tt-uni-controls{padding-top:22px;}
     /* the company dashboard: same shell as the personal one, so its own header, toggle and period toolbar step away */
     html.tt-uni.tt-uni-co .tt-admin-page-header, html.tt-uni.tt-uni-co #tt-co-viewtoggle, html.tt-uni.tt-uni-co .tt-co-toolbar,
     html.tt-uni.tt-uni-co .tt-co-nav, html.tt-uni.tt-uni-co #tt-co-custom{display:none !important;}
@@ -975,6 +976,49 @@
     html.tt-uni #tt-admin-page-root:not([hidden]){display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
     html.tt-uni #tt-admin-page-root .tt-admin-bigcard{margin:0; height:100%;}
     html.tt-uni .tt-admin-exit-btn{width:auto; min-width:96px; padding:0 22px;}
+  }
+
+  /* ---- motion (Unified). All of it is off for people who asked their system for reduced motion ---- */
+  @keyframes tt-uni-in-down{from{opacity:0; transform:translateY(18px);}to{opacity:1; transform:none;}}
+  @keyframes tt-uni-in-up{from{opacity:0; transform:translateY(-18px);}to{opacity:1; transform:none;}}
+  @keyframes tt-uni-in-fwd{from{opacity:0; transform:translateX(24px);}to{opacity:1; transform:none;}}
+  @keyframes tt-uni-in-back{from{opacity:0; transform:translateX(-24px);}to{opacity:1; transform:none;}}
+  @keyframes tt-uni-tick{0%{transform:scale(1); color:inherit; text-shadow:none;}30%{transform:scale(1.08); color:var(--amber); text-shadow:0 0 14px rgba(232,163,61,.55);}100%{transform:scale(1); text-shadow:none;}}
+  @keyframes tt-uni-newrow{from{opacity:0; transform:translateX(-18px); background:var(--amber-soft);}60%{background:var(--amber-soft);}to{opacity:1; transform:none; background:transparent;}}
+  @keyframes tt-uni-titlein{from{opacity:0; transform:translateY(8px);}to{opacity:1; transform:none;}}
+  @keyframes tt-uni-bump{0%{transform:scale(.8);}55%{transform:scale(1.22);}100%{transform:scale(1);}}
+  @keyframes tt-uni-ring{0%,100%{transform:rotate(0);}15%{transform:rotate(16deg);}30%{transform:rotate(-14deg);}45%{transform:rotate(10deg);}60%{transform:rotate(-8deg);}75%{transform:rotate(4deg);}}
+  @keyframes tt-uni-badgepop{0%{transform:scale(.4);}60%{transform:scale(1.35);}100%{transform:scale(1);}}
+  html.tt-uni[data-uni-dir="down"]{--uni-in:tt-uni-in-down;}
+  html.tt-uni[data-uni-dir="up"]{--uni-in:tt-uni-in-up;}
+  html.tt-uni[data-uni-dir="fwd"]{--uni-in:tt-uni-in-fwd;}
+  html.tt-uni[data-uni-dir="back"]{--uni-in:tt-uni-in-back;}
+  /* switching pages: the cards that were not already animating slide in, in the direction you moved on the rail */
+  html.tt-uni.tt-uni-swap :is(#tt-uni-controls, .tt-uni-card, .tt-menu-header, .tt-menu-screen:not([hidden]) > *, .tt-admin-page-header, .tt-admin-page-screen:not([hidden]) > *, #tt-co-banners > *, #tt-co-cards > *){
+    animation:var(--uni-in, tt-uni-in-down) .42s cubic-bezier(.2,.8,.2,1) both;
+  }
+  html.tt-uni.tt-uni-swap :is(.tt-menu-screen:not([hidden]), .tt-admin-page-screen:not([hidden]), #tt-co-banners, #tt-co-cards) > :nth-child(2){animation-delay:.05s;}
+  html.tt-uni.tt-uni-swap :is(.tt-menu-screen:not([hidden]), .tt-admin-page-screen:not([hidden]), #tt-co-banners, #tt-co-cards) > :nth-child(3){animation-delay:.1s;}
+  html.tt-uni.tt-uni-swap :is(.tt-menu-screen:not([hidden]), .tt-admin-page-screen:not([hidden]), #tt-co-banners, #tt-co-cards) > :nth-child(4){animation-delay:.15s;}
+  html.tt-uni.tt-uni-swap :is(.tt-menu-screen:not([hidden]), .tt-admin-page-screen:not([hidden]), #tt-co-banners, #tt-co-cards) > :nth-child(n+5){animation-delay:.2s;}
+  html.tt-uni.tt-uni-swap #tt-uni-entries{animation-delay:.12s;}
+  /* little reactions */
+  .tt-uni-tick{display:inline-block; animation:tt-uni-tick .9s ease;}
+  .tt-uni-row.tt-uni-new{animation:tt-uni-newrow .9s cubic-bezier(.2,.8,.2,1) both;}
+  #tt-uni-title.tt-uni-title-in{animation:tt-uni-titlein .32s cubic-bezier(.2,.8,.2,1) both;}
+  .tt-uni-rail button[data-uni] .tt-uni-ic{transition:transform .28s cubic-bezier(.34,1.56,.64,1);}
+  .tt-uni-rail button[data-uni]:hover .tt-uni-ic{transform:translateY(-2px) scale(1.12);}
+  .tt-uni-rail button[data-uni].bump .tt-uni-ic{animation:tt-uni-bump .5s cubic-bezier(.34,1.56,.64,1);}
+  .tt-uni-iconbtn.tt-uni-ring .tt-uni-ic{transform-origin:50% 12%; animation:tt-uni-ring .9s ease;}
+  .tt-uni-badge.tt-uni-pop{animation:tt-uni-badgepop .45s cubic-bezier(.34,1.56,.64,1);}
+  /* cards lift a little under the pointer ('translate' is separate from the entrance animation's 'transform') */
+  html.tt-uni #tt-panels-container .tt-panel > .tt-earnings, html.tt-uni #tt-panels-container .tt-panel > .tt-clock, html.tt-uni .tt-uni-card{transition:translate .25s cubic-bezier(.2,.8,.2,1), border-color .25s, box-shadow .25s;}
+  @media (hover:hover){
+    html.tt-uni #tt-panels-container .tt-panel > .tt-earnings:hover, html.tt-uni #tt-panels-container .tt-panel > .tt-clock:hover, html.tt-uni .tt-uni-card:hover{translate:0 -3px; border-color:var(--amber-dim); box-shadow:0 18px 40px rgba(var(--shadow-rgb),.35);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html.tt-uni.tt-uni-swap *, .tt-uni-tick, .tt-uni-row.tt-uni-new, #tt-uni-title.tt-uni-title-in, .tt-uni-rail .tt-uni-ic, .tt-uni-iconbtn.tt-uni-ring .tt-uni-ic, .tt-uni-badge.tt-uni-pop{animation:none !important; transition:none !important;}
+    html.tt-uni .tt-uni-card:hover, html.tt-uni #tt-panels-container .tt-panel > *:hover{translate:none !important;}
   }
 
   /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
@@ -2342,7 +2386,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.082</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.084</div>
   </div>
 </div>
 
@@ -6135,9 +6179,10 @@ match /users/{userId}/meta/{docId} {
     const span = hi - lo, L = (h)=> ((h - lo) / span * 100).toFixed(2), step = span > 16 ? 4 : 2;
     const nowH = now.getHours() + now.getMinutes()/60;
     const total = secondsForDate(now);
+    const cw = ($('tt-enh-body-todayline') && $('tt-enh-body-todayline').clientWidth) || 560, minPct = 48 / cw * 100;
     let ticks = ''; for(let h = lo; h <= hi; h += step) ticks += `<span style="left:${L(h)}%">${String(h).padStart(2,'0')}</span>`;
     const usualBlock = H.usual ? `<div class="tt-tl-usual" style="left:${L(H.usual.start)}%;width:${(L(H.usual.end) - L(H.usual.start)).toFixed(2)}%"></div>` : '';
-    const blockHtml = blocks.map(b=> `<div class="tt-tl-block${b.live ? ' live' : ''}" style="left:${L(b.a)}%;width:${(L(b.b) - L(b.a)).toFixed(2)}%" title="${escapeHtml(fmtHMS(b.sec))}"><span>${escapeHtml(fmtHM(b.sec))}</span></div>`).join('');
+    const blockHtml = blocks.map(b=> `<div class="tt-tl-block${b.live ? ' live' : ''}" style="left:${L(b.a)}%;width:${(L(b.b) - L(b.a)).toFixed(2)}%" title="${escapeHtml(fmtHMS(b.sec))}">${(L(b.b) - L(b.a)) >= minPct ? `<span>${escapeHtml(fmtHM(b.sec))}</span>` : ''}</div>`).join('');
     const nowHtml = (nowH >= lo && nowH <= hi) ? `<div class="tt-tl-now" style="left:${L(nowH)}%"></div><span class="tt-tl-nowlbl" style="left:${L(nowH)}%">now ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : '';
     let nudge;
     if(!H.usual) nudge = 'Not enough history yet for a “usual day”.';
@@ -6217,7 +6262,7 @@ match /users/{userId}/meta/{docId} {
         ${ticks.map(v=> `<span class="yl" style="top:${pct(Y(v), 240)}%">${Math.round(v)}</span>`).join('')}
         ${xt.map(d=> `<span class="xl" style="left:${pct(X(d), 720)}%">${d}</span>`).join('')}
         <span class="dot" style="left:${pct(X(S.lastDay), 720)}%;top:${pct(Y(S.earned), 240)}%"></span>
-        ${last ? `<span class="dot" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;background:var(--ink)"></span><span class="tag" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;transform:translate(-100%,-170%);color:var(--amber)">≈ ${enhFmt(last[1])}</span>` : ''}
+        ${last ? `<span class="dot" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;background:var(--ink)"></span><span class="tag" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;transform:translate(-100%,85%);color:var(--amber)">≈ ${enhFmt(last[1])}</span>` : ''}
         ${tgt ? `<span class="tag" style="left:100%;top:${pct(Y(tgt), 240)}%;transform:translate(-100%,-170%)">target ${Math.round(tgt)}</span>` : ''}</div>`);
   }
 
@@ -6398,7 +6443,7 @@ match /users/{userId}/meta/{docId} {
   // hold its own state: it presses the existing Day/Week/Month/Custom, Net/Gross and currency controls, so every
   // screen, export and calculation stays in agreement with the canvas layout.
   const bgWrapHome = { parent: $('tt-bg-wrap').parentNode, next: $('tt-bg-wrap').nextSibling };
-  let uniHover = null, uniCache = {};
+  let uniHover = null, uniCache = {}, uniLastGlide = null, uniLastStat = {}, uniSeenRows = null, uniTitleSet = false, uniLastWarn = null;
   const uniSet = (id, html)=>{ const el = $(id); if(el && uniCache[id] !== html){ el.innerHTML = html; uniCache[id] = html; } };
 
   function applyUnified(){
@@ -6417,10 +6462,11 @@ match /users/{userId}/meta/{docId} {
   // which rail item matches what is on screen: the admin pages, one of the account pages, or the dashboard / calendar
   // the company DASHBOARD is a view of the dashboard (top toggle), not part of the Admin area
   const uniIsCo = ()=> document.documentElement.classList.contains('tt-admin-open') && adminScreen === 'company';
+  const uniMenuOpen = ()=> !$('tt-menu-overlay').hidden && !!currentRoute && currentRoute.view === 'account';
   function uniActiveKey(){
     const root = document.documentElement;
     if(root.classList.contains('tt-admin-open')) return uniIsCo() ? 'home' : 'admin';
-    if(!$('tt-menu-overlay').hidden){
+    if(uniMenuOpen()){
       const sc = currentRoute && currentRoute.screen;
       return sc === 'projects' ? 'projects' : sc === 'exports' ? 'reports' : 'settings';
     }
@@ -6432,9 +6478,34 @@ match /users/{userId}/meta/{docId} {
     if(!btn || btn.hidden || !rail.offsetHeight){ g.style.opacity = '0'; return; }
     g.style.opacity = '1'; g.style.top = (btn.getBoundingClientRect().top - rail.getBoundingClientRect().top) + 'px';
     rail.querySelectorAll('button[data-uni]').forEach(b=> b.classList.toggle('on', b === btn));
+    if(uniLastGlide && uniLastGlide !== btn) uniPulse(btn, 'bump');
+    uniLastGlide = btn;
   }
   // Account and admin screens are PAGES in Unified: the dashboard grid and period bar step aside, the rail and top bar stay
+  // Which "place" is on screen, and where it sits on the rail: moving down the rail slides content up, moving up slides it down,
+  // and going deeper inside one place slides it in from the side.
+  const UNI_ORDER = ['home', 'calendar', 'projects', 'reports', 'admin', 'settings'];
+  let uniPrevKey = null, uniPrevIdx = 0, uniSwapTimer = 0;
+  function uniViewKey(){
+    const root = document.documentElement;
+    if(root.classList.contains('tt-admin-open')) return 'admin:' + adminScreen + (adminScreen === 'company' ? ':' + coTab : '');
+    if(uniMenuOpen()) return 'menu:' + ((currentRoute && currentRoute.screen) || 'root');
+    return 'page:' + (root.dataset.uniPage || 'home');
+  }
+  function uniSwap(){
+    if(!uniOn()){ uniPrevKey = null; return; }
+    const root = document.documentElement, key = uniViewKey(), idx = UNI_ORDER.indexOf(uniActiveKey());
+    if(uniPrevKey !== null && key !== uniPrevKey){
+      root.dataset.uniDir = idx !== uniPrevIdx ? (idx > uniPrevIdx ? 'down' : 'up') : (/:root$|^page:/.test(key) ? 'back' : 'fwd');
+      root.classList.remove('tt-uni-swap'); void root.offsetWidth; root.classList.add('tt-uni-swap');   // restart even if one is still playing
+      clearTimeout(uniSwapTimer); uniSwapTimer = setTimeout(()=> root.classList.remove('tt-uni-swap'), 950);
+    }
+    uniPrevKey = key; uniPrevIdx = idx;
+  }
+  const uniPulse = (el, cls)=>{ if(!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); el.addEventListener('animationend', ()=> el.classList.remove(cls), { once:true }); };
+
   function uniSyncPage(){
+    uniSwap();
     const root = document.documentElement, co = uniIsCo();
     root.classList.toggle('tt-uni-pg', !$('tt-menu-overlay').hidden || root.classList.contains('tt-admin-open'));
     root.classList.toggle('tt-uni-co', co);
@@ -6565,6 +6636,14 @@ match /users/{userId}/meta/{docId} {
       <div class="tt-uni-statgrid">${stat(ENH_ICON.todayline, fmtHM(secs) + ' h', 'Hours')}${stat(ENH_ICON.heat, `${worked} of ${total}`, 'Worked days')}${stat(ENH_ICON.pocket, hasRate ? money(earn.convertedTotal) : '—', hasRate ? `Earned · ${earningsMode}` : 'Earned · no rate set')}${stat(ENH_ICON.curve, proj != null ? '≈ ' + money(proj) : '—', 'Month end · not real earnings', true)}</div>`);
   }
 
+  function uniTickStats(){
+    $('tt-uni-stats').querySelectorAll('.tt-uni-stat b').forEach((b, i)=>{
+      const k = 's' + i, v = b.textContent;
+      if(uniLastStat[k] !== undefined && uniLastStat[k] !== v && !active) uniPulse(b, 'tt-uni-tick');
+      uniLastStat[k] = v;
+    });
+  }
+
   function renderUniEntries(){
     const now = new Date(), todayKey = dateKey(now), yKey = dateKey(enhAddDays(now, -1));
     const payOf = (src, day)=>{
@@ -6572,7 +6651,7 @@ match /users/{userId}/meta/{docId} {
       return r && r.hasRate ? `${(earningsMode === 'gross' ? r.gross : r.net).toFixed(2)} ${r.currency}` : '';
     };
     const folder = '<svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
-    const row = (date, time, name, dur, pay, live)=> `<button type="button" class="tt-uni-row" data-date="${date}"><span class="tt-uni-rowdisc">${folder}${live ? '<span class="tt-uni-livedot"></span>' : ''}</span><span class="tt-uni-rowmain"><i>${escapeHtml(time)}</i> <b>${escapeHtml(name || 'No project')}</b></span> <span class="tt-uni-rowend"><b>+${escapeHtml(dur)} h</b> <i>${escapeHtml(pay)}</i></span></button>`;
+    const row = (date, time, name, dur, pay, live)=> `<button type="button" class="tt-uni-row" data-date="${date}" data-key="${escapeHtml((live ? 'live' : date) + '|' + time + '|' + (name || ''))}"><span class="tt-uni-rowdisc">${folder}${live ? '<span class="tt-uni-livedot"></span>' : ''}</span><span class="tt-uni-rowmain"><i>${escapeHtml(time)}</i> <b>${escapeHtml(name || 'No project')}</b></span> <span class="tt-uni-rowend"><b>+${escapeHtml(dur)} h</b> <i>${escapeHtml(pay)}</i></span></button>`;
     const label = (key)=>{ if(key === todayKey) return 'Today'; if(key === yKey) return 'Yesterday'; const [y, m, d] = key.split('-').map(Number), dt = new Date(y, m - 1, d); return `${WD_SHORT[(dt.getDay() + 6) % 7]} ${d} ${MON_SHORT[m - 1]}`; };
     const groups = []; const add = (key, html)=>{ let g = groups.find(x=> x.key === key); if(!g){ g = { key, rows:[] }; groups.push(g); } g.rows.push(html); };
     let shown = 0;
@@ -6593,7 +6672,9 @@ match /users/{userId}/meta/{docId} {
 
   function renderUniBar(){
     const co = uniIsCo(), gran = co ? coPeriod : granularity, custom = gran === 'custom';
-    $('tt-uni-title').textContent = co ? ($('tt-co-rangelabel').textContent || '—') : getRangeLabel();
+    const title = co ? ($('tt-co-rangelabel').textContent || '—') : getRangeLabel();
+    if($('tt-uni-title').textContent !== title){ $('tt-uni-title').textContent = title; if(uniTitleSet) uniPulse($('tt-uni-title'), 'tt-uni-title-in'); }
+    uniTitleSet = true;
     setActiveTab('tt-uni-gran', gran);
     setActiveTab('tt-uni-mode', earningsMode);
     $('tt-uni-currency').value = displayCurrency;
@@ -6616,6 +6697,13 @@ match /users/{userId}/meta/{docId} {
 
   window.addEventListener('resize', ()=>{ if(uniOn()) renderUniBar(); });
 
+  // an entry that just appeared slides in; the first draw stays quiet
+  function uniSlideNewRows(){
+    const rows = [...$('tt-uni-entries').querySelectorAll('.tt-uni-row')], keys = rows.map(r=> r.dataset.key);
+    if(uniSeenRows) rows.forEach(r=>{ if(!uniSeenRows.has(r.dataset.key)) uniPulse(r, 'tt-uni-new'); });
+    uniSeenRows = new Set(keys);
+  }
+
   function renderUnified(){
     if(!uniOn()) return;
     const user = auth.currentUser, name = user ? (user.displayName || user.email || '') : '';
@@ -6624,9 +6712,11 @@ match /users/{userId}/meta/{docId} {
     $('tt-uni-name').textContent = name;
     $('tt-uni-role').textContent = isAdmin ? 'Admin' : '';
     $('tt-uni-av').textContent = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
-    renderUniStats(); renderUniEntries();
+    renderUniStats(); uniTickStats(); renderUniEntries(); uniSlideNewRows();
     const warn = uniAlerts().filter(i=> i.kind === 'warn').length;
     $('tt-uni-badge').hidden = !warn; $('tt-uni-badge').textContent = String(warn);
+    if(uniLastWarn !== null && warn !== uniLastWarn){ uniPulse($('tt-uni-badge'), 'tt-uni-pop'); if(warn > uniLastWarn) uniPulse($('tt-uni-bell'), 'tt-uni-ring'); }
+    uniLastWarn = warn;
     $('tt-uni-bell').setAttribute('aria-label', warn ? `Alerts, ${warn} need attention` : 'Alerts');
     if(!$('tt-uni-bellpop').hidden) renderUniBell();
     uniGlide();
