@@ -840,7 +840,6 @@
   .tt-uni-rail{position:fixed; left:0; top:0; bottom:0; width:96px; z-index:800; flex-direction:column; align-items:center; padding:22px 0;
     border-right:1px solid var(--line); background:var(--ink); background:color-mix(in srgb, var(--panel) 35%, var(--ink));}
   html.tt-uni.tt-admin-open .tt-uni-rail{z-index:3100;}
-  html.tt-uni .tt-admin-page{padding-left:116px;}
   .tt-uni-rail-list{position:relative; display:flex; flex-direction:column; gap:10px;}
   .tt-uni-rail button[data-uni]{width:68px; height:62px; border-radius:18px; border:0; background:transparent; color:var(--paper-dim); cursor:pointer; position:relative; z-index:1;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-family:'Work Sans',sans-serif; transition:color .25s;}
@@ -849,7 +848,9 @@
   .tt-uni-rail button[data-uni]:hover{color:var(--paper);}
   .tt-uni-rail button[data-uni].on{color:var(--on-accent);}
   .tt-uni-rail button[data-uni]:focus-visible{outline:2px solid var(--amber); outline-offset:-2px;}
-  .tt-uni-glide{position:absolute; left:0; top:0; width:68px; height:62px; border-radius:18px; background:var(--amber);
+  .tt-bg-warn{font-size:12px; line-height:1.5; color:var(--err-text); background:rgba(214,69,65,.1); border:1px solid rgba(214,69,65,.4); border-radius:12px; padding:10px 12px; margin-bottom:10px;}
+  .tt-bg-warn[hidden]{display:none;}
+  .tt-uni-glide{position:absolute; left:14px; top:0; width:68px; height:62px; border-radius:18px; background:var(--amber);
     box-shadow:inset 0 1px 1px rgba(255,255,255,.55), 0 6px 16px rgba(232,163,61,.35); transition:top .42s cubic-bezier(.34,1.56,.64,1), opacity .2s;}
   /* the logo is the tab icon; it breathes while a timer runs */
   .tt-uni-logo{position:relative; width:48px; height:48px; border-radius:14px; overflow:hidden; margin-bottom:16px;
@@ -940,11 +941,31 @@
   @media (max-width:900px){
     html.tt-uni #tt-app-root{padding-left:0;}
     html.tt-uni .tt-uni-rail{display:none !important;}
-    html.tt-uni .tt-admin-page{padding-left:20px;}
     html.tt-uni .tt-uni-card{margin-top:12px;}
     .tt-uni-stepper h1{min-width:0; font-size:16px;}
     .tt-uni-note{display:none;}
   }
+  /* ---- account + admin screens become PAGES (desktop): same rail and top bar, cards instead of a side sheet ---- */
+  @media (min-width:901px){
+    html.tt-uni #tt-app-root{padding-top:74px;}
+    html.tt-uni #tt-uni-top{position:fixed; top:0; left:96px; right:0; z-index:3050; margin:0; min-height:74px; box-sizing:border-box; padding:15px 32px;
+      background:var(--ink); background:color-mix(in srgb, var(--ink) 90%, transparent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom:1px solid var(--line);}
+    html.tt-uni.tt-uni-pg #tt-panels-container, html.tt-uni.tt-uni-pg #tt-uni-controls, html.tt-uni.tt-uni-pg .tt-foot{display:none !important;}
+    html.tt-uni .tt-menu-overlay{inset:74px 0 0 96px; z-index:2900; justify-content:center; overflow-y:auto; background:transparent !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; transition:none;}
+    html.tt-uni .tt-menu-panel{max-width:1180px; width:100%; height:auto; min-height:100%; background:transparent; border:0; box-shadow:none; transform:none !important; opacity:1 !important; transition:none; padding:12px 32px 48px; overflow:visible;}
+    html.tt-uni .tt-menu-header{font-size:15px;}
+    html.tt-uni #tt-menu-screen-root:not([hidden]){display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px;}
+    html.tt-uni #tt-menu-screen-root .tt-menu-navrow{margin:0; padding:20px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);}
+    html.tt-uni .tt-menu-screen:not(#tt-menu-screen-root):not([hidden]){display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:20px; align-items:start;}
+    html.tt-uni .tt-menu-screen:not(#tt-menu-screen-root) > .tt-menu-section{margin:0; padding:22px; border:1px solid var(--line); border-radius:22px; background:var(--panel); background:color-mix(in srgb, var(--panel) 92%, transparent);}
+    html.tt-uni .tt-menu-screen:not(#tt-menu-screen-root) > :not(.tt-menu-section){grid-column:1 / -1;}
+    html.tt-uni .tt-admin-page{inset:74px 0 0 96px; background:transparent; padding:12px 32px 48px;}
+    html.tt-uni .tt-admin-page-inner{max-width:1180px;}
+    html.tt-uni #tt-admin-page-root:not([hidden]){display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
+    html.tt-uni #tt-admin-page-root .tt-admin-bigcard{margin:0; height:100%;}
+    html.tt-uni .tt-admin-exit-btn{width:auto; min-width:96px; padding:0 22px;}
+  }
+
   /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
   html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
   /* Calendar is its own page in Unified; on a phone it simply stays at the bottom */
@@ -1472,8 +1493,8 @@
 <div class="tt-root" id="tt-app-root" style="display:none;">
   <aside class="tt-uni-rail tt-uni-only" id="tt-uni-rail" aria-label="Main">
     <div class="tt-uni-logo" id="tt-uni-logo" role="img" aria-label="Double T"><svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text><rect class="tt-uni-ring" x="2" y="2" width="60" height="60" rx="11" fill="none" stroke="#F4C071" stroke-width="3" pathLength="100" stroke-dasharray="18 82" stroke-linecap="round"/></svg></div>
+    <div class="tt-uni-glide" id="tt-uni-glide" aria-hidden="true"></div>
     <div class="tt-uni-rail-list" id="tt-uni-rail-list">
-      <div class="tt-uni-glide" id="tt-uni-glide" aria-hidden="true"></div>
       <button type="button" data-uni="home" data-l="Home" aria-label="Dashboard"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
       <button type="button" data-uni="calendar" data-l="Calendar" aria-label="Calendar"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
       <button type="button" data-uni="projects" data-l="Projects" aria-label="Projects"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
@@ -1539,6 +1560,7 @@
         <div class="tt-bg-wrap" id="tt-bg-wrap" hidden>
           <button id="tt-bg-btn" class="tt-customize-btn" type="button" aria-haspopup="dialog" aria-expanded="false">Appearance</button>
           <div class="tt-bg-pop" id="tt-bg-pop" role="dialog" aria-label="Appearance" hidden>
+            <div class="tt-bg-warn" id="tt-bg-warn" role="alert" hidden></div>
             <div class="tt-bg-group-label">Layout</div>
             <div class="tt-segment tt-export-segment" id="tt-bg-layout">
               <button type="button" data-val="canvas" class="active">Canvas</button><button type="button" data-val="unified">Unified</button>
@@ -2308,7 +2330,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.080</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.081</div>
   </div>
 </div>
 
@@ -5641,6 +5663,9 @@ match /users/{userId}/meta/{docId} {
     renderBgPicker();
     unsubAppearance = onSnapshot(appearanceDoc(uid), async (snap)=>{
       if(uid !== bgUid || !snap.exists()) return;       // nothing saved yet: keep what's local
+      // A choice that hasn't reached the server yet (still saving, or the save was refused) must not be
+      // overwritten by the older copy that is still there; that is how a saved layout used to flip back.
+      if(bgSavePending || bgIsDirty(uid)) return;
       const remote = normalizeBgPref(snap.data());
       if(remote.kind === 'custom') await ensureBgImage(uid, remote.stamp);
       if(uid !== bgUid) return;
@@ -5649,6 +5674,18 @@ match /users/{userId}/meta/{docId} {
       applyBackground();
       renderBgPicker();
     }, (err)=> console.error('appearance listener error', err));
+    if(bgIsDirty(uid)){ bgShowWarn(true); saveBgPref(); }      // an earlier save never made it: try again now
+  }
+
+  // ---- "saved on this device only" bookkeeping ----
+  let bgSavePending = false;
+  const bgDirtyKey = (uid)=> 'tt-bg-dirty:' + uid;
+  function bgIsDirty(uid){ try{ return localStorage.getItem(bgDirtyKey(uid)) === '1'; }catch(e){ return false; } }
+  function bgSetDirty(uid, on){ try{ if(on) localStorage.setItem(bgDirtyKey(uid), '1'); else localStorage.removeItem(bgDirtyKey(uid)); }catch(e){} }
+  function bgShowWarn(on, code){
+    const el = $('tt-bg-warn'); if(!el) return;
+    el.hidden = !on;
+    if(on) el.textContent = `Saved on this device only${code ? ' (' + code + ')' : ''}. Your Firebase rules do not let this setting sync, so other devices will not see it. Allow read and write on users/{uid}/meta/appearance for the signed-in user.`;
   }
 
   function setBgStatus(text, isError){
@@ -5661,10 +5698,12 @@ match /users/{userId}/meta/{docId} {
     if(!bgUid) return;
     const uid = bgUid, snapshot = { ...bgPref };
     writeLocalBg(uid, snapshot);
+    bgSavePending = true; bgSetDirty(uid, true);
     clearTimeout(bgSaveTimer);
     bgSaveTimer = setTimeout(async ()=>{
-      try{ await setDoc(appearanceDoc(uid), snapshot); setBgStatus('Saved'); }
-      catch(err){ console.error('Could not save background', err); setBgStatus('Saved on this device only'); }
+      try{ await setDoc(appearanceDoc(uid), snapshot); bgSetDirty(uid, false); bgShowWarn(false); setBgStatus('Saved'); }
+      catch(err){ console.error('Could not save background', err); bgShowWarn(true, err && err.code); setBgStatus('Saved on this device only', true); }
+      finally{ bgSavePending = false; }
     }, 350);
   }
 
@@ -6363,19 +6402,32 @@ match /users/{userId}/meta/{docId} {
     uniGlide();
   }
 
+  // which rail item matches what is on screen: the admin pages, one of the account pages, or the dashboard / calendar
   function uniActiveKey(){
     const root = document.documentElement;
     if(root.classList.contains('tt-admin-open')) return 'admin';
+    if(!$('tt-menu-overlay').hidden){
+      const sc = currentRoute && currentRoute.screen;
+      return sc === 'projects' ? 'projects' : sc === 'exports' ? 'reports' : 'settings';
+    }
     return root.dataset.uniPage === 'calendar' ? 'calendar' : 'home';
   }
   function uniGlide(){
-    const list = $('tt-uni-rail-list'), g = $('tt-uni-glide');
-    const btn = list.querySelector(`button[data-uni="${uniHover || uniActiveKey()}"]`);
-    if(!btn || btn.hidden){ g.style.opacity = '0'; return; }
-    g.style.opacity = '1'; g.style.top = btn.offsetTop + 'px';
-    list.querySelectorAll('button').forEach(b=> b.classList.toggle('on', b === btn));
+    const rail = $('tt-uni-rail'), g = $('tt-uni-glide');
+    const btn = rail.querySelector(`button[data-uni="${uniHover || uniActiveKey()}"]`);
+    if(!btn || btn.hidden || !rail.offsetHeight){ g.style.opacity = '0'; return; }
+    g.style.opacity = '1'; g.style.top = (btn.getBoundingClientRect().top - rail.getBoundingClientRect().top) + 'px';
+    rail.querySelectorAll('button[data-uni]').forEach(b=> b.classList.toggle('on', b === btn));
   }
-  new MutationObserver(uniGlide).observe(document.documentElement, { attributes:true, attributeFilter:['class', 'data-uni-page'] });
+  // Account and admin screens are PAGES in Unified: the dashboard grid and period bar step aside, the rail and top bar stay
+  function uniSyncPage(){
+    const root = document.documentElement;
+    root.classList.toggle('tt-uni-pg', !$('tt-menu-overlay').hidden || root.classList.contains('tt-admin-open'));
+    uniGlide();
+  }
+  new MutationObserver(uniSyncPage).observe(document.documentElement, { attributes:true, attributeFilter:['class', 'data-uni-page'] });
+  new MutationObserver(uniSyncPage).observe($('tt-menu-overlay'), { attributes:true, attributeFilter:['hidden', 'class'] });
+  new MutationObserver(uniSyncPage).observe($('tt-menu-title'), { childList:true, characterData:true, subtree:true });
 
   function uniGo(item){
     const root = document.documentElement;
@@ -6391,10 +6443,10 @@ match /users/{userId}/meta/{docId} {
     else if(item === 'settings') go({ view:'account', screen:'root' });
   }
   $('tt-uni-rail').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-uni]'); if(b) uniGo(b.dataset.uni); });
-  const uniHoverOf = (e)=>{ const b = e.target.closest('#tt-uni-rail-list button[data-uni]'); return b ? b.dataset.uni : null; };
-  $('tt-uni-rail-list').addEventListener('mouseover', (e)=>{ const k = uniHoverOf(e); if(k){ uniHover = k; uniGlide(); } });
-  $('tt-uni-rail-list').addEventListener('focusin', (e)=>{ const k = uniHoverOf(e); if(k){ uniHover = k; uniGlide(); } });
-  ['mouseleave', 'focusout'].forEach(ev=> $('tt-uni-rail-list').addEventListener(ev, ()=>{ uniHover = null; uniGlide(); }));
+  const uniHoverOf = (e)=>{ const b = e.target.closest('#tt-uni-rail button[data-uni]'); return b ? b.dataset.uni : null; };
+  $('tt-uni-rail').addEventListener('mouseover', (e)=>{ const k = uniHoverOf(e); if(k){ uniHover = k; uniGlide(); } });
+  $('tt-uni-rail').addEventListener('focusin', (e)=>{ const k = uniHoverOf(e); if(k){ uniHover = k; uniGlide(); } });
+  ['mouseleave', 'focusout'].forEach(ev=> $('tt-uni-rail').addEventListener(ev, ()=>{ uniHover = null; uniGlide(); }));
 
   // top bar: each button presses the control that already exists
   $('tt-uni-view').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(b && b.dataset.val === 'company') $('tt-company-navrow').click(); });   // the COMPANY DASHBOARD
