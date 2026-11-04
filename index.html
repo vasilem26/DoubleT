@@ -829,6 +829,130 @@
     #tt-panels-container .tt-panel{scroll-margin-top:12px;}
   }
 
+  /* ---- Unified layout (opt-in: Appearance → Layout → Unified) ---- */
+  .tt-uni-only{display:none;}
+  html.tt-uni .tt-header{display:none;}
+  html.tt-uni #tt-app-root{padding-left:96px;}
+  html.tt-uni .tt-uni-rail{display:flex;}
+  html.tt-uni .tt-uni-top, html.tt-uni .tt-uni-controls{display:flex;}
+  html.tt-uni .tt-uni-card{display:flex;}
+  .tt-uni-ic{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .tt-uni-rail{position:fixed; left:0; top:0; bottom:0; width:96px; z-index:800; flex-direction:column; align-items:center; padding:22px 0;
+    border-right:1px solid var(--line); background:var(--ink); background:color-mix(in srgb, var(--panel) 35%, var(--ink));}
+  html.tt-uni.tt-admin-open .tt-uni-rail{z-index:3100;}
+  html.tt-uni .tt-admin-page{padding-left:116px;}
+  .tt-uni-rail-list{position:relative; display:flex; flex-direction:column; gap:10px;}
+  .tt-uni-rail button[data-uni]{width:68px; height:62px; border-radius:18px; border:0; background:transparent; color:var(--paper-dim); cursor:pointer; position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-family:'Work Sans',sans-serif; transition:color .25s;}
+  .tt-uni-rail button[data-uni][hidden]{display:none;}
+  .tt-uni-rail button[data-uni]::after{content:attr(data-l); font-size:10.5px; font-weight:600; letter-spacing:.02em;}
+  .tt-uni-rail button[data-uni]:hover{color:var(--paper);}
+  .tt-uni-rail button[data-uni].on{color:var(--on-accent);}
+  .tt-uni-rail button[data-uni]:focus-visible{outline:2px solid var(--amber); outline-offset:-2px;}
+  .tt-uni-glide{position:absolute; left:0; top:0; width:68px; height:62px; border-radius:18px; background:var(--amber);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.55), 0 6px 16px rgba(232,163,61,.35); transition:top .42s cubic-bezier(.34,1.56,.64,1), opacity .2s;}
+  /* the logo is the tab icon; it breathes while a timer runs */
+  .tt-uni-logo{position:relative; width:48px; height:48px; border-radius:14px; overflow:hidden; margin-bottom:16px;
+    box-shadow:0 0 0 1px rgba(232,163,61,.38), 0 6px 18px rgba(0,0,0,.35); transition:box-shadow .4s, transform .3s;}
+  .tt-uni-logo:hover{transform:rotate(-4deg) scale(1.06);}
+  .tt-uni-logo svg{display:block;}
+  .tt-uni-logo::after{content:''; position:absolute; inset:0; background:linear-gradient(115deg, transparent 38%, rgba(255,255,255,.3) 50%, transparent 62%); transform:translateX(-130%); animation:tt-uni-sheen 7s ease-in-out infinite;}
+  .tt-uni-ring{opacity:0; transition:opacity .4s;}
+  .tt-uni-logo text{transform-box:fill-box; transform-origin:center;}
+  .tt-uni-logo.live{box-shadow:0 0 0 1px rgba(232,163,61,.8), 0 0 24px rgba(232,163,61,.6);}
+  .tt-uni-logo.live .tt-uni-ring{opacity:1; animation:tt-uni-orbit 3s linear infinite;}
+  .tt-uni-logo.live text{animation:tt-uni-beat 1s ease-in-out infinite;}
+  .tt-uni-logo.live::after{animation:none; opacity:0;}
+  @keyframes tt-uni-sheen{0%,72%{transform:translateX(-130%);}100%{transform:translateX(130%);}}
+  @keyframes tt-uni-orbit{to{stroke-dashoffset:-100;}}
+  @keyframes tt-uni-beat{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+  .tt-uni-top{align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+  .tt-uni-spacer{flex:1;}
+  .tt-uni-iconbtn{width:44px; height:44px; padding:0; border-radius:50%; border:1px solid var(--line); background:var(--panel); color:var(--paper); display:grid; place-items:center; cursor:pointer; position:relative; font-size:22px; line-height:1; transition:border-color .2s, transform .2s;}
+  .tt-uni-iconbtn:hover{border-color:var(--amber-dim);}
+  .tt-uni-iconbtn:active{transform:scale(.92);}
+  .tt-uni-iconbtn:disabled{opacity:.4; cursor:default;}
+  .tt-uni-badge{position:absolute; top:-3px; right:-3px; min-width:18px; height:18px; border-radius:9px; background:var(--stop); color:#fff; font-size:11px; font-weight:700; display:grid; place-items:center; padding:0 4px; font-family:'Work Sans',sans-serif;}
+  .tt-uni-badge[hidden]{display:none;}
+  .tt-uni-bellwrap{position:relative;}
+  .tt-uni-pop{position:absolute; right:0; top:54px; z-index:600; width:390px; max-width:calc(100vw - 32px); padding:18px 20px; border-radius:20px; border:1px solid var(--line);
+    background:var(--panel); background:color-mix(in srgb, var(--panel) 96%, transparent); box-shadow:0 28px 60px rgba(var(--shadow-rgb),.5); animation:tt-uni-popin .28s cubic-bezier(.2,.9,.3,1.2) both; transform-origin:top right;}
+  .tt-uni-pop[hidden]{display:none;}
+  @keyframes tt-uni-popin{from{opacity:0; transform:scale(.92) translateY(-6px);}to{opacity:1; transform:none;}}
+  .tt-uni-account{display:flex; align-items:center; gap:10px; background:transparent; border:0; color:var(--paper); min-height:44px; padding:0 4px; cursor:pointer; font-family:'Work Sans',sans-serif;}
+  .tt-uni-who{text-align:right; line-height:1.25;}
+  .tt-uni-who b{display:block; font-size:14px; font-weight:600;}
+  .tt-uni-who i{display:block; font-size:12px; font-style:normal; color:var(--paper-dim);}
+  .tt-uni-av{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:14px; background:var(--amber-soft); color:var(--amber);}
+  .tt-uni-controls{align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
+  .tt-uni-stepper{display:flex; align-items:center; gap:6px;}
+  .tt-uni-stepper h1{margin:0 8px; font-family:'Space Mono',monospace; font-size:19px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; min-width:190px; text-align:center; color:var(--paper);}
+  .tt-uni-note{font-size:12.5px; color:var(--paper-dim);}
+  #tt-uni-currency{min-height:40px; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--paper); font-family:'Space Mono',monospace; font-size:13px; padding:0 14px;}
+  .tt-uni-custom{display:inline-flex; gap:10px; flex-wrap:wrap;}
+  .tt-uni-custom[hidden]{display:none;}
+  .tt-uni-custom label{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--paper-dim);}
+  .tt-uni-custom input{min-height:40px; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--paper); font-family:'Space Mono',monospace; font-size:13px; padding:0 10px;}
+  /* the two cards only Unified has */
+  .tt-uni-card{flex-direction:column; gap:14px; margin-top:0; min-width:0;}
+  .tt-uni-hd{display:flex; align-items:center; gap:10px;}
+  .tt-uni-statgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px;}
+  .tt-uni-stat{display:flex; align-items:center; gap:12px; min-width:0;}
+  .tt-uni-statdisc{width:44px; height:44px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; color:var(--amber); background:var(--amber-soft);}
+  .tt-uni-statdisc.dashed{border:1.5px dashed var(--amber-dim);}
+  .tt-uni-stat b{display:block; font-family:'Space Mono',monospace; font-size:17px; line-height:1.2; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .tt-uni-stat i{display:block; font-size:12px; font-style:normal; color:var(--paper-dim);}
+  .tt-uni-day{display:flex; justify-content:space-between; gap:10px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim); padding:14px 0 4px;}
+  .tt-uni-day:first-child{padding-top:0;}
+  .tt-uni-row{display:flex; align-items:center; gap:12px; width:calc(100% + 20px); margin:0 -10px; padding:8px 10px; min-height:56px; border:0; border-radius:14px; background:transparent; color:var(--paper); text-align:left; cursor:pointer; font-family:'Work Sans',sans-serif; transition:background .2s;}
+  .tt-uni-row:hover{background:var(--panel-2);}
+  .tt-uni-rowdisc{position:relative; width:40px; height:40px; flex-shrink:0; border-radius:12px; display:grid; place-items:center; color:var(--amber); background:var(--amber-soft);}
+  .tt-uni-rowmain{flex:1; min-width:0;}
+  .tt-uni-rowmain i{display:block; font-style:normal; font-size:11.5px; color:var(--paper-dim);}
+  .tt-uni-rowmain b{font-weight:600;}
+  .tt-uni-rowend{text-align:right;}
+  .tt-uni-rowend b{display:block; font-family:'Space Mono',monospace; font-size:14px; color:var(--amber);}
+  .tt-uni-rowend i{font-family:'Space Mono',monospace; font-style:normal; font-size:11.5px; color:var(--paper-dim);}
+  .tt-uni-livedot{position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:var(--stop); animation:tt-uni-pulse 1.4s ease-out infinite;}
+  @keyframes tt-uni-pulse{0%{box-shadow:0 0 0 0 rgba(193,68,60,.6);}100%{box-shadow:0 0 0 10px rgba(193,68,60,0);}}
+  @media (prefers-reduced-motion:reduce){ .tt-uni-logo::after, .tt-uni-ring, .tt-uni-logo text, .tt-uni-livedot, .tt-uni-pop{animation:none !important;} .tt-uni-glide{transition:none;} }
+
+  /* the grid: the same panels, arranged on twelve columns */
+  @media (min-width:901px){
+    html.tt-uni #tt-panels-container{position:static; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:20px; align-items:stretch; height:auto !important; max-width:1500px;}
+    html.tt-uni #tt-panels-container .tt-panel{position:static !important; width:auto !important; height:auto !important; left:auto !important; top:auto !important; display:flex; flex-direction:column; min-width:0;}
+    html.tt-uni #tt-panels-container .tt-panel > .tt-earnings, html.tt-uni #tt-panels-container .tt-panel > .tt-clock{flex:1 1 auto; margin-top:0;}
+    html.tt-uni .tt-panel.tt-panel-hidden{display:none !important;}
+    html.tt-uni .tt-enh{overflow:visible;}
+    html.tt-uni .tt-curve{flex:none; height:230px;}
+    html.tt-uni .tt-rh{flex:none; height:170px; min-height:0;}
+    html.tt-uni #tt-uni-stats{grid-column:1 / 9; grid-row:1;}
+    html.tt-uni .tt-panel[data-panel="timer"]{grid-column:9 / 13; grid-row:1 / 3;}
+    html.tt-uni .tt-panel[data-panel="todayline"]{grid-column:1 / 9; grid-row:2;}
+    html.tt-uni .tt-panel[data-panel="pace"]{grid-column:1 / 5; grid-row:3;}
+    html.tt-uni .tt-panel[data-panel="pocket"]{grid-column:1 / 5; grid-row:4;}
+    html.tt-uni .tt-panel[data-panel="curve"]{grid-column:5 / 9; grid-row:3 / 5;}
+    html.tt-uni #tt-uni-entries{grid-column:9 / 13; grid-row:3 / 7;}
+    html.tt-uni .tt-panel[data-panel="rhythm"]{grid-column:1 / 5; grid-row:5;}
+    html.tt-uni .tt-panel[data-panel="heat"]{grid-column:5 / 9; grid-row:5;}
+    html.tt-uni .tt-panel[data-panel="earnings"]{grid-column:1 / 9; grid-row:6;}
+  }
+  @media (max-width:900px){
+    html.tt-uni #tt-app-root{padding-left:0;}
+    html.tt-uni .tt-uni-rail{display:none !important;}
+    html.tt-uni .tt-admin-page{padding-left:20px;}
+    html.tt-uni .tt-uni-card{margin-top:12px;}
+    .tt-uni-stepper h1{min-width:0; font-size:16px;}
+    .tt-uni-note{display:none;}
+  }
+  /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
+  html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
+  /* Calendar is its own page in Unified; on a phone it simply stays at the bottom */
+  html.tt-uni:not([data-uni-page="calendar"]) .tt-panel[data-panel="browser"]{display:none !important;}
+  html.tt-uni[data-uni-page="calendar"] #tt-panels-container > :not([data-panel="browser"]){display:none !important;}
+  html.tt-uni[data-uni-page="calendar"] #tt-panels-container .tt-panel[data-panel="browser"]{grid-column:1 / -1; grid-row:auto;}
+  @media (max-width:900px){ html.tt-uni:not([data-uni-page="calendar"]) .tt-panel[data-panel="browser"]{display:block !important;} }
+
   /* ---- Companies ---- */
   .tt-admin-page-inner.tt-admin-wide{max-width:1040px;}
   .tt-co-list{display:flex; flex-direction:column; gap:10px; margin-bottom:22px;}
@@ -1346,6 +1470,19 @@
 <div class="tt-bg" id="tt-bg" aria-hidden="true"></div>
 
 <div class="tt-root" id="tt-app-root" style="display:none;">
+  <aside class="tt-uni-rail tt-uni-only" id="tt-uni-rail" aria-label="Main">
+    <div class="tt-uni-logo" id="tt-uni-logo" role="img" aria-label="Double T"><svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text><rect class="tt-uni-ring" x="2" y="2" width="60" height="60" rx="11" fill="none" stroke="#F4C071" stroke-width="3" pathLength="100" stroke-dasharray="18 82" stroke-linecap="round"/></svg></div>
+    <div class="tt-uni-rail-list" id="tt-uni-rail-list">
+      <div class="tt-uni-glide" id="tt-uni-glide" aria-hidden="true"></div>
+      <button type="button" data-uni="home" data-l="Home" aria-label="Dashboard"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
+      <button type="button" data-uni="calendar" data-l="Calendar" aria-label="Calendar"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button>
+      <button type="button" data-uni="projects" data-l="Projects" aria-label="Projects"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+      <button type="button" data-uni="reports" data-l="Reports" aria-label="Reports and export"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+      <button type="button" data-uni="admin" data-l="Admin" aria-label="Admin" id="tt-uni-admin" hidden><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 21v-4h6v4"/></svg></button>
+    </div>
+    <div style="flex:1"></div>
+    <button type="button" class="tt-uni-settings" data-uni="settings" data-l="Settings" aria-label="Settings and account"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+  </aside>
   <nav class="tt-bottomnav" id="tt-bottomnav" aria-label="Main">
     <button type="button" data-tab="today" class="active" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Today</span></button>
     <button type="button" data-tab="pace"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-9"/></svg><span>Pace</span></button>
@@ -1353,6 +1490,28 @@
     <button type="button" data-tab="more"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>More</span></button>
   </nav>
   <div class="tt-wrap">
+    <div class="tt-uni-top tt-uni-only" id="tt-uni-top">
+      <div class="tt-segment" id="tt-uni-view" role="group" aria-label="View" hidden>
+        <button type="button" data-val="personal" class="active">Personal</button><button type="button" data-val="company">Company</button>
+      </div>
+      <span class="tt-uni-spacer"></span>
+      <span id="tt-uni-bgslot"></span>
+      <button type="button" class="tt-uni-iconbtn" id="tt-uni-theme" aria-label="Toggle theme"><svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <div class="tt-uni-bellwrap">
+        <button type="button" class="tt-uni-iconbtn" id="tt-uni-bell" aria-label="Alerts" aria-expanded="false" aria-haspopup="dialog"><svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="tt-uni-badge" id="tt-uni-badge" hidden>0</span></button>
+        <div class="tt-uni-pop" id="tt-uni-bellpop" role="dialog" aria-label="Needs attention" hidden></div>
+      </div>
+      <button type="button" class="tt-uni-account" id="tt-uni-account" aria-label="Account menu"><span class="tt-uni-who"><b id="tt-uni-name"></b><i id="tt-uni-role"></i></span><span class="tt-uni-av" id="tt-uni-av"></span></button>
+    </div>
+    <div class="tt-uni-controls tt-uni-only" id="tt-uni-controls">
+      <div class="tt-uni-stepper"><button type="button" class="tt-uni-iconbtn" id="tt-uni-prev" aria-label="Previous period">&#8249;</button><h1 id="tt-uni-title">—</h1><button type="button" class="tt-uni-iconbtn" id="tt-uni-next" aria-label="Next period">&#8250;</button></div>
+      <div class="tt-segment" id="tt-uni-gran" role="group" aria-label="Period"><button type="button" data-g="day">Day</button><button type="button" data-g="week">Week</button><button type="button" data-g="month" class="active">Month</button><button type="button" data-g="custom">Custom</button></div>
+      <span class="tt-uni-custom" id="tt-uni-custom" hidden><label>From <input type="date" id="tt-uni-from"></label><label>To <input type="date" id="tt-uni-to"></label></span>
+      <span class="tt-uni-spacer"></span>
+      <span class="tt-uni-note">These controls drive every card</span>
+      <div class="tt-segment" id="tt-uni-mode" role="group" aria-label="Net or gross"><button type="button" data-val="net">Net</button><button type="button" data-val="gross">Gross</button></div>
+      <select id="tt-uni-currency" aria-label="Currency"><option>RON</option><option>EUR</option><option>USD</option><option>GBP</option></select>
+    </div>
     <div class="tt-header">
       <div class="tt-header-left" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
         <div class="tt-title">Double T</div>
@@ -1380,6 +1539,11 @@
         <div class="tt-bg-wrap" id="tt-bg-wrap" hidden>
           <button id="tt-bg-btn" class="tt-customize-btn" type="button" aria-haspopup="dialog" aria-expanded="false">Appearance</button>
           <div class="tt-bg-pop" id="tt-bg-pop" role="dialog" aria-label="Appearance" hidden>
+            <div class="tt-bg-group-label">Layout</div>
+            <div class="tt-segment tt-export-segment" id="tt-bg-layout">
+              <button type="button" data-val="canvas" class="active">Canvas</button><button type="button" data-val="unified">Unified</button>
+            </div>
+            <div class="tt-bg-hint">Canvas is the free-form layout you can drag and resize. Unified is a fixed grid with a side rail, one shared period bar, and a bell for alerts. Switch back here any time.</div>
             <div class="tt-bg-group-label">Dashboard panels</div>
             <div class="tt-segment tt-export-segment" id="tt-bg-panels">
               <button type="button" data-val="classic" class="active">Classic</button><button type="button" data-val="enhanced">Enhanced</button>
@@ -1846,6 +2010,7 @@
 
     <div id="tt-panels-container">
     <div id="tt-align-guides"></div>
+    <section class="tt-earnings tt-uni-card tt-uni-only" id="tt-uni-stats" aria-label="Statistics"></section>
     <div class="tt-panel" data-panel="timer">
       <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
@@ -1973,6 +2138,8 @@
       <div class="tt-panel-resize-handle" title="Drag to resize"></div>
       <div class="tt-earnings tt-enh" id="tt-enh-heat"></div>
     </div>
+
+    <section class="tt-earnings tt-uni-card tt-uni-only" id="tt-uni-entries" aria-label="Recent entries"></section>
 
     <div class="tt-panel" data-panel="earnings">
       <div class="tt-panel-handle" title="Drag to move">
@@ -2141,7 +2308,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.079</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.080</div>
   </div>
 </div>
 
@@ -2502,6 +2669,8 @@
     $('tt-admin-navrow').hidden = !isAdmin;
     $('tt-company-navrow').hidden = !isAdmin;
     $('tt-view-toggle').hidden = !isAdmin;
+    $('tt-uni-view').hidden = !isAdmin;
+    $('tt-uni-admin').hidden = !isAdmin;
     setDoc(doc(db, 'directory', user.uid), {
       uid: user.uid, email: user.email, displayName: user.displayName || ''
     }).catch(err=> console.error('Could not update directory record', err));
@@ -3148,6 +3317,7 @@
     const panel = $('tt-earnings');
     if(!panel) return;
     renderEnhancedPanels();   // same trigger points: rates, currency, mode, tax templates, every render and tick
+    renderUnified();
     const earn = computeMonthlyEarnings();
     renderAveragePanels(earn);
     // the Net/Gross toggle and currency picker exist on both money panels and share one setting
@@ -5182,7 +5352,7 @@ match /users/{userId}/meta/{docId} {
     { id:'waves',         label:'Waves',         preview:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 46' preserveAspectRatio='none'%3E%3Cpath d='M0 30 Q 20 20 40 30 T 80 28 V46 H0Z' fill='%233cbac4' fill-opacity='.45'/%3E%3Cpath d='M0 36 Q 20 28 40 36 T 80 34 V46 H0Z' fill='%23e8a33d' fill-opacity='.45'/%3E%3C/svg%3E\") center/100% 100% no-repeat, #16202b" },
     { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
   ];
-  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null };
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas' };
   const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let bgPref = { ...BG_DEFAULT };
   let bgImage = '';          // data URL of the custom image (this user's)
@@ -5203,6 +5373,7 @@ match /users/{userId}/meta/{docId} {
     p.stamp = typeof raw.stamp === 'string' ? raw.stamp.slice(0, 40) : '';
     p.style = raw.style === 'classic' ? 'classic' : 'glass';
     p.panels = raw.panels === 'enhanced' ? 'enhanced' : 'classic';
+    p.layout = raw.layout === 'unified' ? 'unified' : 'canvas';
     const t = raw.target, amt = t && Number(t.amount);
     if(t && typeof t === 'object' && Number.isFinite(amt) && amt > 0 && amt < 1e9
        && ['RON','EUR','USD','GBP'].includes(t.currency) && (t.mode === 'gross' || t.mode === 'net')){
@@ -5413,7 +5584,9 @@ match /users/{userId}/meta/{docId} {
     root.classList.toggle('tt-bg-static', bgPref.kind === 'fixed' || (bgPref.kind === 'custom' && !!bgImage));
     renderLiveVisuals();
     applyPanelModeVisibility();
+    applyUnified();
     renderEnhancedPanels(true);
+    renderUnified();
     const shown = bgPref.kind==='fixed' || bgPref.kind==='dynamic' || (bgPref.kind==='custom' && !!bgImage);
     const key = shown ? `${bgPref.kind}:${bgPref.id}:${bgPref.kind==='custom' ? bgPref.stamp : ''}` : 'none';
     if(key === bgAppliedKey) return;
@@ -5539,6 +5712,7 @@ match /users/{userId}/meta/{docId} {
     $('tt-bg-dim-row').hidden = !(bgPref.kind==='custom' && bgImage);
     setActiveTab('tt-bg-style', bgPref.style);
     setActiveTab('tt-bg-panels', bgPref.panels);
+    setActiveTab('tt-bg-layout', bgPref.layout);
     $('tt-bg-dim').value = String(bgPref.dim);
     $('tt-bg-dim-val').textContent = `${bgPref.dim}%`;
   }
@@ -5925,7 +6099,7 @@ match /users/{userId}/meta/{docId} {
       <div class="tt-enh-legend"><span><i style="background:var(--amber)"></i>Logged${blocks.length ? '' : ' · nothing yet today'}</span>${H.usual ? `<span><i style="border:1px dashed var(--paper-dim)"></i>Your usual window · ${toClock(H.usual.start)}–${toClock(H.usual.end)}</span>` : ''}<span style="color:var(--paper)">${escapeHtml(nudge)}</span></div>`);
   }
 
-  function enhRenderAttention(P, H){
+  function enhAttentionItems(P, H){
     const items = [];
     const plural = (n, w)=> `${n} ${w}${n === 1 ? '' : 's'}`;
     if(P.target && P.projected != null && P.remaining > 0 && P.earned < P.target.amount){
@@ -5957,6 +6131,11 @@ match /users/{userId}/meta/{docId} {
     if(noProject) items.push({ kind:'info', title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
     if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
     if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
+    return items;
+  }
+
+  function enhRenderAttention(P, H){
+    const items = enhAttentionItems(P, H);
     enhSet('attention', `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}${i.action ? ` <button type="button" class="tt-enh-link" data-enh="${i.action}">Set a target</button>` : ''}</span></div></div>`).join('')}</div>`);
   }
 
@@ -6042,7 +6221,7 @@ match /users/{userId}/meta/{docId} {
   // ---- orchestration: heavy numbers once a minute (or when something relevant changes), the live bits every second ----
   let enhSigLast = '', enhData = null;
   function renderEnhancedPanels(force){
-    if(bgPref.panels !== 'enhanced') return;
+    if(bgPref.panels !== 'enhanced' && !uniOn()) return;
     const on = (id)=>{ const el = panelEl(id); return !!el && !el.classList.contains('tt-panel-hidden'); };
     const sig = [entries.length, entries.length ? entries[entries.length - 1].id : '', entries.reduce((a, e)=> a + (e.durationSec || 0) + (e.note || '').length, 0), active ? active.startISO : '', Math.floor(Date.now() / 60000),
       earningsMode, displayCurrency, granularity, anchorDate.getTime(), customFromDate ? customFromDate.getTime() : '', customToDate ? customToDate.getTime() : '',
@@ -6163,6 +6342,191 @@ match /users/{userId}/meta/{docId} {
     }, { passive:true });
   })();
 
+  // ---------------- Unified layout ----------------
+  // A fixed grid around the same panels, plus a rail, a top bar and ONE shared period bar. The shared bar does not
+  // hold its own state: it presses the existing Day/Week/Month/Custom, Net/Gross and currency controls, so every
+  // screen, export and calculation stays in agreement with the canvas layout.
+  const bgWrapHome = { parent: $('tt-bg-wrap').parentNode, next: $('tt-bg-wrap').nextSibling };
+  let uniHover = null, uniCache = {};
+  const uniSet = (id, html)=>{ const el = $(id); if(el && uniCache[id] !== html){ el.innerHTML = html; uniCache[id] = html; } };
+
+  function applyUnified(){
+    const on = uniOn(), root = document.documentElement, wrap = $('tt-bg-wrap');
+    root.classList.toggle('tt-uni', on);
+    if(on){ if(!root.dataset.uniPage) root.dataset.uniPage = 'home'; $('tt-uni-bgslot').appendChild(wrap); wrap.hidden = false; }
+    else {
+      delete root.dataset.uniPage;
+      if(wrap.parentNode !== bgWrapHome.parent) bgWrapHome.parent.insertBefore(wrap, bgWrapHome.next);
+      wrap.hidden = !customizing;
+      $('tt-uni-bellpop').hidden = true;
+    }
+    uniGlide();
+  }
+
+  function uniActiveKey(){
+    const root = document.documentElement;
+    if(root.classList.contains('tt-admin-open')) return 'admin';
+    return root.dataset.uniPage === 'calendar' ? 'calendar' : 'home';
+  }
+  function uniGlide(){
+    const list = $('tt-uni-rail-list'), g = $('tt-uni-glide');
+    const btn = list.querySelector(`button[data-uni="${uniHover || uniActiveKey()}"]`);
+    if(!btn || btn.hidden){ g.style.opacity = '0'; return; }
+    g.style.opacity = '1'; g.style.top = btn.offsetTop + 'px';
+    list.querySelectorAll('button').forEach(b=> b.classList.toggle('on', b === btn));
+  }
+  new MutationObserver(uniGlide).observe(document.documentElement, { attributes:true, attributeFilter:['class', 'data-uni-page'] });
+
+  function uniGo(item){
+    const root = document.documentElement;
+    if(item === 'home' || item === 'calendar'){
+      root.dataset.uniPage = item;
+      go({ view:'dashboard' });
+      window.scrollTo(0, 0);
+      renderCurrentView(); renderUnified();
+    }
+    else if(item === 'projects') go({ view:'account', screen:'projects' });
+    else if(item === 'reports') go({ view:'account', screen:'exports' });
+    else if(item === 'admin') go({ view:'admin', screen:'root' });      // the admin area, NOT the company dashboard
+    else if(item === 'settings') go({ view:'account', screen:'root' });
+  }
+  $('tt-uni-rail').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-uni]'); if(b) uniGo(b.dataset.uni); });
+  const uniHoverOf = (e)=>{ const b = e.target.closest('#tt-uni-rail-list button[data-uni]'); return b ? b.dataset.uni : null; };
+  $('tt-uni-rail-list').addEventListener('mouseover', (e)=>{ const k = uniHoverOf(e); if(k){ uniHover = k; uniGlide(); } });
+  $('tt-uni-rail-list').addEventListener('focusin', (e)=>{ const k = uniHoverOf(e); if(k){ uniHover = k; uniGlide(); } });
+  ['mouseleave', 'focusout'].forEach(ev=> $('tt-uni-rail-list').addEventListener(ev, ()=>{ uniHover = null; uniGlide(); }));
+
+  // top bar: each button presses the control that already exists
+  $('tt-uni-view').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(b && b.dataset.val === 'company') $('tt-company-navrow').click(); });   // the COMPANY DASHBOARD
+  $('tt-uni-theme').addEventListener('click', ()=> $('tt-theme-toggle').click());
+  $('tt-uni-account').addEventListener('click', ()=> $('tt-menu-btn').click());
+
+  // period bar
+  $('tt-uni-prev').addEventListener('click', ()=>{ $('tt-prev').click(); renderUnified(); });
+  $('tt-uni-next').addEventListener('click', ()=>{ $('tt-next').click(); renderUnified(); });
+  $('tt-uni-gran').addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-g]'); if(!b) return;
+    uniPress(b.dataset.g);
+    renderUnified();
+  });
+  $('tt-uni-mode').addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-val]'); if(!b) return;
+    const orig = document.querySelector(`#tt-earnings-mode button[data-val="${b.dataset.val}"]`); if(orig) orig.click();
+    renderUnified();
+  });
+  $('tt-uni-currency').addEventListener('change', (e)=>{
+    const sel = $('tt-earnings-currency'); sel.value = e.target.value;
+    sel.dispatchEvent(new Event('change', { bubbles:true }));
+    renderUnified();
+  });
+  ['from', 'to'].forEach(k=> $('tt-uni-' + k).addEventListener('change', (e)=>{
+    const orig = $('tt-custom-' + k); orig.value = e.target.value;
+    orig.dispatchEvent(new Event('input', { bubbles:true })); orig.dispatchEvent(new Event('change', { bubbles:true }));
+    renderUnified();
+  }));
+
+  // the bell
+  const uniCloseBell = ()=>{ $('tt-uni-bellpop').hidden = true; $('tt-uni-bell').setAttribute('aria-expanded', 'false'); };
+  $('tt-uni-bell').addEventListener('click', ()=>{
+    const pop = $('tt-uni-bellpop'); pop.hidden = !pop.hidden;
+    $('tt-uni-bell').setAttribute('aria-expanded', String(!pop.hidden));
+    if(!pop.hidden) renderUniBell();
+  });
+  document.addEventListener('click', (e)=>{ if(!e.target.closest('.tt-uni-bellwrap')) uniCloseBell(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') uniCloseBell(); });
+  function uniAlerts(){ return enhData ? enhAttentionItems(enhData.P, enhData.H) : []; }
+  function renderUniBell(){
+    const items = uniAlerts();
+    $('tt-uni-bellpop').innerHTML = `<div class="tt-enh-head" style="margin-bottom:8px"><span class="tt-enh-disc">${ENH_ICON.attention}</span><span class="tt-enh-title">Needs attention</span></div>`
+      + `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span></div></div>`).join('') || '<div class="tt-enh-empty">Nothing needs your attention.</div>'}</div>`;
+  }
+
+  // The app disables Day while the Calendar view is on (it needs a week or a month), so the shared bar first moves to the List view
+  function uniPress(g){
+    if(g === 'day' && viewMode === 'calendar'){ const list = document.querySelector('#tt-viewmode-tabs button[data-v="list"]'); if(list) list.click(); }
+    const orig = document.querySelector(`#tt-granularity-tabs button[data-g="${g}"]`);
+    if(orig && !orig.disabled) orig.click();
+  }
+  // the calendar becomes a page: a recent entry opens its day
+  function uniOpenDay(dateStr){
+    const [y, m, d] = dateStr.split('-').map(Number);
+    uniPress('day');
+    anchorDate = new Date(y, m - 1, d);
+    document.documentElement.dataset.uniPage = 'calendar';
+    renderCurrentView(); renderUnified(); window.scrollTo(0, 0);
+  }
+  $('tt-uni-entries').addEventListener('click', (e)=>{
+    if(e.target.closest('[data-uni-cal]')){ uniGo('calendar'); return; }
+    const row = e.target.closest('[data-date]'); if(row) uniOpenDay(row.dataset.date);
+  });
+
+  function renderUniStats(){
+    const dates = getRangeDates(), secs = dates.reduce((a, d)=> a + secondsForDate(d), 0);
+    const worked = dates.filter(d=> secondsForDate(d) > 0).length;
+    const total = granularity === 'month' ? dates.filter(d=>{ const w = d.getDay(); return w >= 1 && w <= 5; }).length : dates.length;
+    const earn = computeMonthlyEarnings(dates), hasRate = Object.keys(earn.netByCurrency || {}).length > 0;
+    const P = enhData && enhData.P, pj = P && P.proj.projected;
+    const proj = pj ? (earningsMode === 'gross' ? pj.grossConvertedTotal : pj.netConvertedTotal) : null;
+    const money = (v)=> `${v.toFixed(2)} ${displayCurrency}`;
+    const stat = (icon, value, label, dashed)=> `<div class="tt-uni-stat"><span class="tt-uni-statdisc${dashed ? ' dashed' : ''}">${icon}</span><span><b>${escapeHtml(value)}</b> <i>${escapeHtml(label)}</i></span></div>`;
+    const title = { day:'Day', week:'Week', month:'Month', custom:'Range' }[granularity] || 'Month';
+    uniSet('tt-uni-stats', `<div class="tt-uni-hd"><span class="tt-enh-disc">${ENH_ICON.curve}</span><span class="tt-enh-title">${title} · statistics</span></div>
+      <div class="tt-uni-statgrid">${stat(ENH_ICON.todayline, fmtHM(secs) + ' h', 'Hours')}${stat(ENH_ICON.heat, `${worked} of ${total}`, 'Worked days')}${stat(ENH_ICON.pocket, hasRate ? money(earn.convertedTotal) : '—', hasRate ? `Earned · ${earningsMode}` : 'Earned · no rate set')}${stat(ENH_ICON.curve, proj != null ? '≈ ' + money(proj) : '—', 'Month end · not real earnings', true)}</div>`);
+  }
+
+  function renderUniEntries(){
+    const now = new Date(), todayKey = dateKey(now), yKey = dateKey(enhAddDays(now, -1));
+    const payOf = (src, day)=>{
+      const r = computeEarningsFor({ presets, taxTemplates, entries:[], active:null, ...src }, [day]).rows[0];
+      return r && r.hasRate ? `${(earningsMode === 'gross' ? r.gross : r.net).toFixed(2)} ${r.currency}` : '';
+    };
+    const folder = '<svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+    const row = (date, time, name, dur, pay, live)=> `<button type="button" class="tt-uni-row" data-date="${date}"><span class="tt-uni-rowdisc">${folder}${live ? '<span class="tt-uni-livedot"></span>' : ''}</span><span class="tt-uni-rowmain"><i>${escapeHtml(time)}</i> <b>${escapeHtml(name || 'No project')}</b></span> <span class="tt-uni-rowend"><b>+${escapeHtml(dur)} h</b> <i>${escapeHtml(pay)}</i></span></button>`;
+    const label = (key)=>{ if(key === todayKey) return 'Today'; if(key === yKey) return 'Yesterday'; const [y, m, d] = key.split('-').map(Number), dt = new Date(y, m - 1, d); return `${WD_SHORT[(dt.getDay() + 6) % 7]} ${d} ${MON_SHORT[m - 1]}`; };
+    const groups = []; const add = (key, html)=>{ let g = groups.find(x=> x.key === key); if(!g){ g = { key, rows:[] }; groups.push(g); } g.rows.push(html); };
+    let shown = 0;
+    if(active){
+      const a = new Date(active.startISO), key = dateKey(a);
+      add(key, row(key, `${clockTime(active.startISO, active.tz)}–now`, active.note, fmtHMS(Math.floor((Date.now() - a.getTime()) / 1000)).replace(/^0/, ''), payOf({ active }, new Date(a.getFullYear(), a.getMonth(), a.getDate())), true));
+      shown++;
+    }
+    for(let i = entries.length - 1; i >= 0 && shown < 8; i--){
+      const e = entries[i]; if(!e.date) continue;
+      const [y, m, d] = e.date.split('-').map(Number);
+      add(e.date, row(e.date, `${clockTime(e.startISO, e.tz)}–${clockTime(e.stopISO, e.tz)}`, e.note, fmtHM(e.durationSec || 0), payOf({ entries:[e] }, new Date(y, m - 1, d)), false));
+      shown++;
+    }
+    const body = groups.map(g=>{ const [y, m, d] = g.key.split('-').map(Number); return `<div class="tt-uni-day"><span>${label(g.key)}</span> <span>${fmtHM(secondsForDate(new Date(y, m - 1, d)))} h</span></div>${g.rows.join('')}`; }).join('');
+    uniSet('tt-uni-entries', `<div class="tt-uni-hd"><span class="tt-enh-disc">${ENH_ICON.attention.replace(/<path[^>]*>/, '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</span><span class="tt-enh-title">Recent entries</span></div><div>${body || '<div class="tt-enh-empty">No entries yet. Press Start to log your first one.</div>'}</div><button type="button" class="tt-enh-link" data-uni-cal="1" style="margin-top:auto;align-self:flex-start;min-height:44px">Open the calendar</button>`);
+  }
+
+  function renderUnified(){
+    if(!uniOn()) return;
+    const user = auth.currentUser, name = user ? (user.displayName || user.email || '') : '';
+    $('tt-uni-logo').classList.toggle('live', !!active);
+    $('tt-uni-title').textContent = getRangeLabel();
+    setActiveTab('tt-uni-gran', granularity);
+    setActiveTab('tt-uni-mode', earningsMode);
+    $('tt-uni-currency').value = displayCurrency;
+    const custom = granularity === 'custom';
+    $('tt-uni-custom').hidden = !custom;
+    $('tt-uni-prev').disabled = $('tt-uni-next').disabled = custom;
+    if(custom){ $('tt-uni-from').value = customFromDate ? dateKey(customFromDate) : ''; $('tt-uni-to').value = customToDate ? dateKey(customToDate) : ''; }
+    $('tt-uni-name').textContent = name;
+    $('tt-uni-role').textContent = isAdmin ? 'Admin' : '';
+    $('tt-uni-av').textContent = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
+    renderUniStats(); renderUniEntries();
+    const warn = uniAlerts().filter(i=> i.kind === 'warn').length;
+    $('tt-uni-badge').hidden = !warn; $('tt-uni-badge').textContent = String(warn);
+    $('tt-uni-bell').setAttribute('aria-label', warn ? `Alerts, ${warn} need attention` : 'Alerts');
+    if(!$('tt-uni-bellpop').hidden) renderUniBell();
+    uniGlide();
+  }
+  $('tt-bg-layout').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(btn) setBgPref({ layout: btn.dataset.val });
+  });
+
   onAuthStateChanged(auth, (user)=>{
     const uid = user ? user.uid : null;
     const identityChanged = uid !== lastAuthUid;
@@ -6176,6 +6540,8 @@ match /users/{userId}/meta/{docId} {
       $('tt-admin-navrow').hidden = true;
       $('tt-company-navrow').hidden = true;
       $('tt-view-toggle').hidden = true;
+      $('tt-uni-view').hidden = true;
+      $('tt-uni-admin').hidden = true;
       detachListeners();
     }
 
@@ -6399,6 +6765,7 @@ match /users/{userId}/meta/{docId} {
   let expandedDay = null;
 
   function renderCurrentView(){
+    renderUnified();
     const dates = getRangeDates();
     $('tt-rangelabel').textContent = getRangeLabel();
     const rangeTotal = dates.reduce((s,d)=>s+secondsForDate(d), 0);
@@ -7143,7 +7510,14 @@ match /users/{userId}/meta/{docId} {
   }
 
   // In Classic mode the enhanced panels are simply off (without touching what the person hid or placed)
-  function modeHiddenPanels(){ return bgPref.panels === 'enhanced' ? [] : Object.keys(ENHANCED_PANELS); }
+  // Unified is a fixed grid with its own set: the enhanced panels, the timer and earnings. Today/Month totals
+  // move into the stats strip, alerts into the bell, and the calendar becomes its own page.
+  function uniOn(){ return bgPref.layout === 'unified'; }
+  const UNI_OFF = ['today','month','attention','monthAvgPay','avgHours','avgPay'];
+  function modeHiddenPanels(){
+    if(uniOn()) return UNI_OFF;
+    return bgPref.panels === 'enhanced' ? [] : Object.keys(ENHANCED_PANELS);
+  }
   function applyPanelModeVisibility(){
     const off = new Set([...modeHiddenPanels(), ...(panelLayout.hidden || [])]);
     KNOWN_PANELS.forEach(id=>{ const el = panelEl(id); if(el) el.classList.toggle('tt-panel-hidden', off.has(id)); });
@@ -7358,7 +7732,7 @@ match /users/{userId}/meta/{docId} {
     $('tt-customize-btn').classList.remove('active');
     $('tt-reset-layout-btn').hidden = true;
     $('tt-restore-wrap').hidden = true;
-    $('tt-bg-wrap').hidden = true;
+    $('tt-bg-wrap').hidden = !uniOn();
     closeBgPicker();
     clearAlignGuides();
     panelLayout = readCurrentLayout();
