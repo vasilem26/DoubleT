@@ -544,6 +544,7 @@
     background:var(--panel); background:color-mix(in srgb, var(--panel) 90%, transparent);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 18px 48px rgba(var(--shadow-rgb),.45);
     -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    max-height:calc(100vh - 96px); overflow-y:auto; overscroll-behavior:contain;
   }
   .tt-bg-pop[hidden]{display:none;}
   .tt-bg-group-label{font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim); margin:12px 2px 8px;}
@@ -707,6 +708,125 @@
   @media (prefers-reduced-motion: reduce){
     html.tt-glass .tt-panel > *, html.tt-glass .tt-clock.tt-live::after, html.tt-glass .tt-punch::after{animation:none !important;}
     html.tt-glass .tt-ring{transition:none;}
+  }
+
+  /* ---- Enhanced panels (opt-in) ---- */
+  html{--enh-ok:#8FD9B6; --enh-info:#9DB8FF;}
+  html[data-theme="light"]{--enh-ok:#2E7D5B; --enh-info:#3B5FC0;}
+  .tt-view-toggle[hidden]{display:none;}
+  /* on a phone the toggle gets its own full-width row so the date and name keep their room */
+  @media (max-width:560px){
+    .tt-header{flex-wrap:wrap; row-gap:10px;}
+    .tt-view-toggle{flex:1 1 100%;}
+    .tt-view-toggle button{flex:1;}
+  }
+  .tt-view-toggle button{min-height:32px; padding:0 14px;}
+  .tt-bg-hint{font-size:11.5px; line-height:1.5; color:var(--paper-dim); margin:8px 2px 0;}
+  /* the panel is a column so the card takes whatever height is left after the (customize-only) drag handle */
+  .tt-panel-enh{display:flex; flex-direction:column;}
+  .tt-enh{margin-top:0; display:flex; flex-direction:column; gap:14px; flex:1 1 auto; min-height:0; overflow-x:hidden; overflow-y:auto; color:var(--paper);}
+  .tt-panel-enh > .tt-enh{box-sizing:border-box;}
+  @media (max-width:900px){ .tt-panel-enh{display:block;} .tt-enh{overflow:visible; margin-top:12px;} }
+  .tt-enh-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .tt-enh-body{display:flex; flex-direction:column; gap:14px; flex:1 1 auto; min-height:0;}
+  .tt-enh-disc{width:32px; height:32px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; color:var(--amber); background:var(--amber-soft); box-shadow:inset 0 1px 1px rgba(255,255,255,.2);}
+  .tt-enh-title{font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--paper-dim);}
+  .tt-enh-target-btn{margin-left:auto; min-height:34px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); color:var(--paper); font-size:12px; font-weight:600; cursor:pointer; transition:border-color .15s ease;}
+  .tt-enh-target-btn:hover{border-color:var(--amber-dim);}
+  .tt-enh-target-btn b{font-family:'Space Mono',monospace; color:var(--amber); margin-left:4px;}
+  .tt-pace-editor{display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; padding:12px; border:1px dashed var(--amber-dim); border-radius:14px;}
+  .tt-pace-editor[hidden]{display:none;}
+  .tt-pace-editor label{display:flex; flex-direction:column; gap:4px; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--paper-dim); font-family:'Space Mono',monospace;}
+  .tt-pace-editor input,.tt-pace-editor select{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; color:var(--paper); font-family:'Space Mono',monospace; font-size:14px; padding:8px 10px; min-height:38px; width:130px;}
+  .tt-pace-editor select{width:84px;}
+  .tt-pace-editor-actions{display:flex; gap:8px; flex-wrap:wrap; margin-left:auto;}
+  .tt-pace-error{flex-basis:100%; font-size:12px; color:var(--err-text); min-height:0;}
+  .tt-enh-pill{display:inline-flex; align-items:center; gap:6px; align-self:flex-start; border-radius:999px; padding:5px 11px; font-size:12px; font-weight:600;}
+  .tt-enh-pill.behind{background:var(--amber-soft); color:var(--amber);}
+  .tt-enh-pill.ok{background:rgba(143,217,182,.16); color:var(--enh-ok);}
+  .tt-enh-pill.plain{background:var(--panel-2); color:var(--paper);}
+  .tt-enh-headline{font-size:22px; line-height:1.25; font-weight:600; letter-spacing:-.01em;}
+  .tt-enh-sub{color:var(--paper-dim); font-size:13px;}
+  .tt-enh-bar{position:relative; height:14px; border-radius:999px; background:var(--panel-2); overflow:hidden;}
+  .tt-enh-bar .proj{position:absolute; top:0; bottom:0; left:0; background:repeating-linear-gradient(135deg, rgba(232,163,61,.42) 0 6px, rgba(232,163,61,.16) 6px 12px);}
+  .tt-enh-bar .earned{position:absolute; top:0; bottom:0; left:0; background:var(--amber); border-radius:999px;}
+  .tt-enh-legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--paper-dim); align-items:center;}
+  .tt-enh-legend b{font-family:'Space Mono',monospace; color:var(--paper); font-weight:700;}
+  .tt-enh-legend i{display:inline-block; width:16px; height:9px; border-radius:5px; margin-right:6px; vertical-align:middle;}
+  .tt-enh-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px;}
+  .tt-enh-tile{background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:11px 13px; min-width:0;}
+  .tt-enh-tile .k{font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim);}
+  .tt-enh-tile .v{font-family:'Space Mono',monospace; font-size:18px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere;}
+  .tt-enh-tile .n{font-size:11.5px; color:var(--paper-dim);}
+  .tt-enh-empty{color:var(--paper-dim); font-size:13px; padding:6px 0;}
+  .tt-enh-link{background:none; border:0; padding:0; color:var(--amber); font:inherit; font-weight:600; cursor:pointer; text-decoration:underline;}
+  /* today timeline */
+  .tt-tl{position:relative; height:80px; margin-top:8px;}
+  .tt-tl-usual{position:absolute; top:22px; height:40px; border-radius:12px; border:1px dashed var(--paper-dim); background:repeating-linear-gradient(135deg, rgba(255,255,255,.07) 0 6px, rgba(255,255,255,.02) 6px 12px);}
+  .tt-tl-block{position:absolute; top:22px; height:40px; border-radius:12px; background:var(--amber); color:var(--on-accent); display:grid; place-items:center; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; box-shadow:inset 0 1px 1px rgba(255,255,255,.5); overflow:hidden; min-width:3px;}
+  .tt-tl-block.live{background:repeating-linear-gradient(135deg, var(--amber) 0 8px, color-mix(in srgb, var(--amber) 72%, #fff) 8px 16px);}
+  .tt-tl-now{position:absolute; top:8px; bottom:4px; width:2px; border-radius:2px; background:var(--paper);}
+  .tt-tl-nowlbl{position:absolute; top:-6px; transform:translateX(-50%); font-family:'Space Mono',monospace; font-size:10.5px; font-weight:700; background:var(--paper); color:var(--ink); border-radius:6px; padding:1px 6px; white-space:nowrap;}
+  .tt-tl-axis{position:relative; height:16px;}
+  .tt-tl-axis span{position:absolute; transform:translateX(-50%); font-family:'Space Mono',monospace; font-size:10.5px; color:var(--paper-dim);}
+  /* needs attention */
+  .tt-attn{display:flex; flex-direction:column;}
+  .tt-attn-item{display:flex; gap:12px; padding:11px 0; border-top:1px solid var(--line);}
+  .tt-attn-item:first-child{border-top:0; padding-top:0;}
+  .tt-attn-item svg{flex-shrink:0; margin-top:2px;}
+  .tt-attn-item.warn svg{color:var(--amber);} .tt-attn-item.info svg{color:var(--enh-info);} .tt-attn-item.ok svg{color:var(--enh-ok);}
+  .tt-attn-item b{display:block; font-weight:600; font-size:13.5px;}
+  .tt-attn-item span{display:block; color:var(--paper-dim); font-size:12.5px;}
+  /* month curve */
+  .tt-curve-legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--paper-dim);}
+  .tt-curve-legend svg{vertical-align:middle; margin-right:5px;}
+  .tt-curve{position:relative; margin:8px 8px 24px 46px; flex:1; min-height:150px;}
+  .tt-curve > svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
+  .tt-curve .yl{position:absolute; left:-46px; width:40px; text-align:right; transform:translateY(-50%); font-family:'Space Mono',monospace; font-size:10.5px; color:var(--paper-dim);}
+  .tt-curve .xl{position:absolute; top:100%; margin-top:7px; transform:translateX(-50%); font-family:'Space Mono',monospace; font-size:10.5px; color:var(--paper-dim);}
+  .tt-curve .dot{position:absolute; width:12px; height:12px; transform:translate(-50%,-50%); border-radius:50%; background:var(--paper); border:3px solid var(--amber);}
+  .tt-curve .tag{position:absolute; font-family:'Space Mono',monospace; font-size:10.5px; font-weight:700; white-space:nowrap;}
+  /* gross to pocket */
+  .tt-pk-group + .tt-pk-group{margin-top:12px; padding-top:12px; border-top:1px solid var(--line);}
+  .tt-pk-row{margin-top:8px;}
+  .tt-pk-row .t{display:flex; justify-content:space-between; gap:10px; font-size:12.5px;}
+  .tt-pk-row .t b{font-family:'Space Mono',monospace; font-variant-numeric:tabular-nums;}
+  .tt-pk-row .bar{position:relative; height:10px; border-radius:5px; background:var(--panel-2); margin-top:5px;}
+  .tt-pk-row .bar i{position:absolute; top:0; bottom:0; border-radius:5px;}
+  /* rhythm + heatmap */
+  .tt-rh{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:10px; align-items:end; flex:1; min-height:140px;}
+  .tt-rh > div{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:5px;}
+  .tt-rh .num{font-family:'Space Mono',monospace; font-size:11.5px; font-weight:700;}
+  .tt-rh .bar{width:100%; max-width:40px; border-radius:9px 9px 4px 4px; background:color-mix(in srgb, var(--amber) 38%, transparent); border:2px solid transparent;}
+  .tt-rh .best .bar{background:var(--amber);} .tt-rh .now .bar{border-color:var(--paper);}
+  .tt-rh .lab{font-size:11.5px; color:var(--paper-dim);} .tt-rh .now .lab{color:var(--paper); font-weight:700;}
+  .tt-heat-wrap{display:flex; gap:8px; align-items:flex-start; flex:1; min-height:0;}
+  .tt-heat-days{display:grid; grid-template-rows:repeat(7,14px); gap:4px; margin-top:19px; font-size:10.5px; color:var(--paper-dim); line-height:14px;}
+  .tt-heat-main{flex:1; min-width:0;}
+  .tt-heat-months{display:grid; grid-template-columns:repeat(16,minmax(0,1fr)); gap:4px; height:15px; font-size:10.5px; color:var(--paper-dim);}
+  .tt-heat-grid{display:grid; grid-template-rows:repeat(7,14px); grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:4px; margin-top:4px;}
+  .tt-heat-grid i{border-radius:4px; border:1px solid transparent; background:var(--panel-2);}
+  .tt-heat-grid i.l1{background:rgba(232,163,61,.28);} .tt-heat-grid i.l2{background:rgba(232,163,61,.5);} .tt-heat-grid i.l3{background:rgba(232,163,61,.75);} .tt-heat-grid i.l4{background:var(--amber);}
+  .tt-heat-grid i.fut{background:transparent; border:1px dashed var(--line);} .tt-heat-grid i.today{border:2px solid var(--paper);}
+
+  /* ---- phone bottom menu (≤900px) ---- */
+  .tt-bottomnav{display:none;}
+  @media (max-width:900px){
+    .tt-bottomnav{
+      display:flex; position:fixed; left:0; right:0; bottom:0; z-index:800;
+      padding:6px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+      background:var(--ink); border-top:1px solid var(--line); box-shadow:0 -8px 24px rgba(0,0,0,.18);
+    }
+    .tt-bottomnav button{
+      flex:1; min-height:54px; border:0; background:transparent; color:var(--paper-dim); cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+      font-family:'Work Sans',sans-serif; font-size:11.5px; font-weight:600; transition:color .15s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .tt-bottomnav button.active{color:var(--amber);}
+    .tt-bottomnav button:active{transform:scale(.92);}
+    .tt-bottomnav button:focus-visible{outline:2px solid var(--amber); outline-offset:-2px; border-radius:12px;}
+    #tt-app-root{padding-bottom:calc(86px + env(safe-area-inset-bottom, 0px));}
+    #tt-panels-container .tt-panel{scroll-margin-top:12px;}
   }
 
   /* ---- Companies ---- */
@@ -1226,9 +1346,20 @@
 <div class="tt-bg" id="tt-bg" aria-hidden="true"></div>
 
 <div class="tt-root" id="tt-app-root" style="display:none;">
+  <nav class="tt-bottomnav" id="tt-bottomnav" aria-label="Main">
+    <button type="button" data-tab="today" class="active" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Today</span></button>
+    <button type="button" data-tab="pace"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-9"/></svg><span>Pace</span></button>
+    <button type="button" data-tab="money"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg><span>Money</span></button>
+    <button type="button" data-tab="more"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>More</span></button>
+  </nav>
   <div class="tt-wrap">
     <div class="tt-header">
-      <div class="tt-title">Double T</div>
+      <div class="tt-header-left" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div class="tt-title">Double T</div>
+        <div class="tt-segment tt-view-toggle" id="tt-view-toggle" role="group" aria-label="View" hidden>
+          <button type="button" data-val="personal" class="active">Personal</button><button type="button" data-val="company">Company</button>
+        </div>
+      </div>
       <div style="display:flex; align-items:center; gap:12px;">
         <div style="text-align:right;">
           <div class="tt-sub" id="tt-today-date"></div>
@@ -1249,6 +1380,11 @@
         <div class="tt-bg-wrap" id="tt-bg-wrap" hidden>
           <button id="tt-bg-btn" class="tt-customize-btn" type="button" aria-haspopup="dialog" aria-expanded="false">Appearance</button>
           <div class="tt-bg-pop" id="tt-bg-pop" role="dialog" aria-label="Appearance" hidden>
+            <div class="tt-bg-group-label">Dashboard panels</div>
+            <div class="tt-segment tt-export-segment" id="tt-bg-panels">
+              <button type="button" data-val="classic" class="active">Classic</button><button type="button" data-val="enhanced">Enhanced</button>
+            </div>
+            <div class="tt-bg-hint">Enhanced adds month pace with a target, a today timeline, attention alerts, a month curve, gross to pocket, a weekday rhythm and a 16-week heatmap. Drag, resize or Hide each one like any other panel. New panels start below your existing ones; Customize lets you move them wherever you like.</div>
             <div class="tt-bg-group-label">Panel style</div>
             <div class="tt-segment tt-export-segment" id="tt-bg-style">
               <button type="button" data-val="glass" class="active">Glass</button><button type="button" data-val="classic">Classic</button>
@@ -1574,6 +1710,9 @@
 
         <div class="tt-admin-page-screen" id="tt-admin-page-company" hidden>
           <div class="tt-co-head">
+            <div class="tt-segment" id="tt-co-viewtoggle" role="group" aria-label="View">
+              <button type="button" data-val="personal">Personal</button><button type="button" data-val="company" class="active">Company</button>
+            </div>
             <div class="tt-segment" id="tt-co-tabs">
               <button data-val="dashboard" class="active">Dashboard</button><button data-val="members">Members</button>
             </div>
@@ -1765,6 +1904,76 @@
     </div>
     </div>
 
+    <div class="tt-panel tt-panel-enh" data-panel="pace">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-pace"></div>
+    </div>
+
+    <div class="tt-panel tt-panel-enh" data-panel="todayline">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-todayline"></div>
+    </div>
+
+    <div class="tt-panel tt-panel-enh" data-panel="attention">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-attention"></div>
+    </div>
+
+    <div class="tt-panel tt-panel-enh" data-panel="curve">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-curve"></div>
+    </div>
+
+    <div class="tt-panel tt-panel-enh" data-panel="pocket">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-pocket"></div>
+    </div>
+
+    <div class="tt-panel tt-panel-enh" data-panel="rhythm">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-rhythm"></div>
+    </div>
+
+    <div class="tt-panel tt-panel-enh" data-panel="heat">
+      <div class="tt-panel-handle" title="Drag to move">
+        <span class="tt-panel-handle-icon">&#10021;</span>
+        <span class="tt-panel-handle-hint">drag corner to resize</span>
+        <button type="button" class="tt-panel-hide-btn" title="Hide this panel">Hide</button>
+      </div>
+      <div class="tt-panel-resize-handle" title="Drag to resize"></div>
+      <div class="tt-earnings tt-enh" id="tt-enh-heat"></div>
+    </div>
+
     <div class="tt-panel" data-panel="earnings">
       <div class="tt-panel-handle" title="Drag to move">
         <span class="tt-panel-handle-icon">&#10021;</span>
@@ -1932,7 +2141,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.078</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.079</div>
   </div>
 </div>
 
@@ -1978,9 +2187,15 @@
   let unsubPresets = null;
   let unsubPrefs = null;
   let unsubLayout = null;
-  const KNOWN_PANELS = ['timer','today','month','earnings','monthAvgPay','avgHours','avgPay','browser'];
+  // The "enhanced" panels are opt-in (Customize → Appearance → Dashboard panels). They share the same
+  // drag / resize / hide system as the classic ones.
+  const ENHANCED_PANELS = {
+    pace:'Month pace', todayline:'Today timeline', attention:'Needs attention', curve:'Month curve',
+    pocket:'Gross → pocket', rhythm:'Rhythm', heat:'Last 16 weeks'
+  };
+  const KNOWN_PANELS = ['timer','today','month','pace','todayline','attention','curve','pocket','rhythm','heat','earnings','monthAvgPay','avgHours','avgPay','browser'];
   // Panels the user may remove (and bring back from the "+ Panels" menu)
-  const HIDEABLE_PANELS = { monthAvgPay:'Month-end projection', avgHours:'Avg hours', avgPay:'Avg pay' };
+  const HIDEABLE_PANELS = { ...ENHANCED_PANELS, monthAvgPay:'Month-end projection', avgHours:'Avg hours', avgPay:'Avg pay' };
   // Panels that sit side by side as a row by default
   const PANEL_PAIRS = { today:'month', avgHours:'avgPay' };
   // x/width are percentages of the canvas width (responsive); y/height are pixels.
@@ -2286,6 +2501,7 @@
     isAdmin = (user.email === ADMIN_EMAIL);
     $('tt-admin-navrow').hidden = !isAdmin;
     $('tt-company-navrow').hidden = !isAdmin;
+    $('tt-view-toggle').hidden = !isAdmin;
     setDoc(doc(db, 'directory', user.uid), {
       uid: user.uid, email: user.email, displayName: user.displayName || ''
     }).catch(err=> console.error('Could not update directory record', err));
@@ -2931,6 +3147,7 @@
   function renderEarningsPanel(){
     const panel = $('tt-earnings');
     if(!panel) return;
+    renderEnhancedPanels();   // same trigger points: rates, currency, mode, tax templates, every render and tick
     const earn = computeMonthlyEarnings();
     renderAveragePanels(earn);
     // the Net/Gross toggle and currency picker exist on both money panels and share one setting
@@ -4965,7 +5182,7 @@ match /users/{userId}/meta/{docId} {
     { id:'waves',         label:'Waves',         preview:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 46' preserveAspectRatio='none'%3E%3Cpath d='M0 30 Q 20 20 40 30 T 80 28 V46 H0Z' fill='%233cbac4' fill-opacity='.45'/%3E%3Cpath d='M0 36 Q 20 28 40 36 T 80 34 V46 H0Z' fill='%23e8a33d' fill-opacity='.45'/%3E%3C/svg%3E\") center/100% 100% no-repeat, #16202b" },
     { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
   ];
-  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass' };
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null };
   const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let bgPref = { ...BG_DEFAULT };
   let bgImage = '';          // data URL of the custom image (this user's)
@@ -4985,6 +5202,12 @@ match /users/{userId}/meta/{docId} {
     if(Number.isFinite(dim)) p.dim = Math.min(80, Math.max(0, Math.round(dim)));
     p.stamp = typeof raw.stamp === 'string' ? raw.stamp.slice(0, 40) : '';
     p.style = raw.style === 'classic' ? 'classic' : 'glass';
+    p.panels = raw.panels === 'enhanced' ? 'enhanced' : 'classic';
+    const t = raw.target, amt = t && Number(t.amount);
+    if(t && typeof t === 'object' && Number.isFinite(amt) && amt > 0 && amt < 1e9
+       && ['RON','EUR','USD','GBP'].includes(t.currency) && (t.mode === 'gross' || t.mode === 'net')){
+      p.target = { amount: Math.round(amt*100)/100, currency: t.currency, mode: t.mode };
+    }
     return p;
   }
 
@@ -5189,6 +5412,8 @@ match /users/{userId}/meta/{docId} {
     root.classList.toggle('tt-bg-anim', bgPref.kind === 'dynamic');
     root.classList.toggle('tt-bg-static', bgPref.kind === 'fixed' || (bgPref.kind === 'custom' && !!bgImage));
     renderLiveVisuals();
+    applyPanelModeVisibility();
+    renderEnhancedPanels(true);
     const shown = bgPref.kind==='fixed' || bgPref.kind==='dynamic' || (bgPref.kind==='custom' && !!bgImage);
     const key = shown ? `${bgPref.kind}:${bgPref.id}:${bgPref.kind==='custom' ? bgPref.stamp : ''}` : 'none';
     if(key === bgAppliedKey) return;
@@ -5313,6 +5538,7 @@ match /users/{userId}/meta/{docId} {
     $('tt-bg-remove').hidden = !bgImage;
     $('tt-bg-dim-row').hidden = !(bgPref.kind==='custom' && bgImage);
     setActiveTab('tt-bg-style', bgPref.style);
+    setActiveTab('tt-bg-panels', bgPref.panels);
     $('tt-bg-dim').value = String(bgPref.dim);
     $('tt-bg-dim-val').textContent = `${bgPref.dim}%`;
   }
@@ -5479,6 +5705,464 @@ match /users/{userId}/meta/{docId} {
     });
   })();
 
+  // ---------------- Enhanced panels ----------------
+  // Opt-in (Customize → Appearance → Dashboard panels → Enhanced). Everything is worked out from the
+  // person's own entries, rates and tax templates with the same earnings functions the rest of the
+  // dashboard uses, so the numbers always agree with the Estimated / Projected panels.
+  const ENH_SVG = (d)=> `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ENH_ICON = {
+    pace: ENH_SVG('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+    todayline: ENH_SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    attention: ENH_SVG('<path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>'),
+    curve: ENH_SVG('<path d="M3 17l6-6 4 4 8-9"/>'),
+    pocket: ENH_SVG('<circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/>'),
+    rhythm: ENH_SVG('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+    heat: ENH_SVG('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>')
+  };
+  const ENH_STATE = {
+    warn: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg>',
+    info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+    ok: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'
+  };
+  const ENH_PILL_ICON = {
+    behind: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l6 6 4-4 8 8M21 11v6h-6"/></svg>',
+    ok: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>',
+    plain: ''
+  };
+  const WD_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const WD_LONG = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const MON_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const enhFmt = (n)=> n.toFixed(2);
+  const enhHM = (hours)=> fmtHM(Math.max(0, Math.round(hours * 3600)));
+  const enhAddDays = (d, n)=> new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  function fxConvert(amount, from, to){
+    if(from === to) return amount;
+    const a = rates[from], b = rates[to];
+    return (a && b) ? amount * a / b : null;
+  }
+
+  // ---- month pace: earned, projected, hours, rate — in the target's own currency and mode ----
+  function enhPace(){
+    const dates = getRangeDates();
+    const ref = (granularity === 'custom' && dates[0]) ? dates[0] : anchorDate;
+    const proj = computeMonthProjection({ entries, active, presets, taxTemplates }, secondsForDate, ref);
+    const t = bgPref.target;
+    const mode = t ? t.mode : earningsMode, cur = t ? t.currency : displayCurrency;
+    const val = (e)=>{
+      if(!e) return 0;
+      const x = fxConvert(mode === 'gross' ? e.grossConvertedTotal : e.netConvertedTotal, displayCurrency, cur);
+      return x == null ? 0 : x;
+    };
+    const y = ref.getFullYear(), m = ref.getMonth(), n = new Date(y, m+1, 0).getDate();
+    const now = new Date(), todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let secs = 0, worked = 0;
+    for(let d = 1; d <= n; d++){
+      const dt = new Date(y, m, d);
+      if(dt > todayMid) break;
+      const sec = secondsForDate(dt);
+      secs += sec; if(sec > 0) worked++;
+    }
+    const earned = val(proj.earn), projected = proj.projected ? val(proj.projected) : null, hours = secs / 3600;
+    return { ref, y, m, n, monthLabel: proj.monthLabel, mode, cur, target: t, proj, val, earned, projected,
+             worked, remaining: proj.remaining, hours, rate: hours > 0 ? earned / hours : 0, avgH: worked ? hours / worked : 0 };
+  }
+
+  // ---- history: weekday averages, heatmap, streaks, the usual working window ----
+  function enhHistory(){
+    const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = enhAddDays(today, -mondayIndex(today) - 15*7);
+    const days = [], wdSum = [0,0,0,0,0,0,0], wdN = [0,0,0,0,0,0,0];
+    for(let i = 0; i < 112; i++){
+      const dt = enhAddDays(start, i), fut = dt > today, sec = fut ? 0 : secondsForDate(dt);
+      days.push({ dt, d:i % 7, fut, sec });
+      if(!fut){ wdSum[i % 7] += sec; wdN[i % 7]++; }
+    }
+    const avg = wdSum.map((sum, i)=> wdN[i] ? sum / wdN[i] / 3600 : 0);
+    let idx = days.findIndex(x=> x.dt.getTime() === today.getTime());
+    if(days[idx].d < 5 && days[idx].sec === 0) idx--;           // today hasn't started yet: don't break the streak
+    let streak = 0;
+    for(; idx >= 0; idx--){ if(days[idx].d > 4) continue; if(days[idx].sec > 0) streak++; else break; }
+    let longest = 0, run = 0;
+    days.forEach(x=>{ if(x.fut || x.d > 4) return; if(x.sec > 0){ run++; longest = Math.max(longest, run); } else run = 0; });
+    // the usual day: average first start, last stop and length over the last 8 weeks (needs 3+ worked days)
+    const byDate = {};
+    entries.forEach(e=>{
+      if(!e.startISO || !e.stopISO || !e.date) return;
+      const a = new Date(e.startISO), b = new Date(e.stopISO);
+      const ha = a.getHours() + a.getMinutes()/60, hb = dateKey(a) === dateKey(b) ? b.getHours() + b.getMinutes()/60 : 24;
+      const r = byDate[e.date] || (byDate[e.date] = { min:24, max:0, secs:0 });
+      r.min = Math.min(r.min, ha); r.max = Math.max(r.max, hb); r.secs += e.durationSec || 0;
+    });
+    const cutoff = dateKey(enhAddDays(today, -56)), todayKey = dateKey(today);
+    const past = Object.keys(byDate).filter(k=> k >= cutoff && k < todayKey && byDate[k].secs > 0).map(k=> byDate[k]);
+    const usual = past.length >= 3 ? {
+      start: past.reduce((s,r)=>s + r.min, 0) / past.length,
+      end: past.reduce((s,r)=>s + r.max, 0) / past.length,
+      secs: past.reduce((s,r)=>s + r.secs, 0) / past.length
+    } : null;
+    const best = Math.max(...avg) > 0 ? avg.indexOf(Math.max(...avg)) : -1;
+    return { days, avg, streak, longest, usual, best, weeks: Math.max(...wdN) };
+  }
+
+  // ---- cumulative earnings through the month (actual, your pace, what's needed, the target) ----
+  function enhSeries(P){
+    const byDate = {};
+    entries.forEach(e=>{ if(e.date) (byDate[e.date] || (byDate[e.date] = [])).push(e); });
+    const now = new Date(), thisMonth = P.y === now.getFullYear() && P.m === now.getMonth();
+    const lastDay = thisMonth ? now.getDate() : (new Date(P.y, P.m, 1) <= now ? P.n : 0);
+    const actual = []; let acc = 0;
+    for(let d = 1; d <= lastDay; d++){
+      const dt = new Date(P.y, P.m, d);
+      acc += P.val(computeEarningsFor({ entries: byDate[dateKey(dt)] || [], active, presets, taxTemplates }, [dt]));
+      actual.push(acc);
+    }
+    const earned = actual.length ? actual[actual.length - 1] : 0;
+    const isWork = (d)=>{ const wd = new Date(P.y, P.m, d).getDay(); return wd >= 1 && wd <= 5; };
+    const proj = [];
+    if(thisMonth && P.projected != null && P.remaining > 0){
+      const perDay = (P.projected - earned) / P.remaining;
+      let futureWork = 0; for(let d = lastDay + 1; d <= P.n; d++) if(isWork(d)) futureWork++;
+      let v = earned;
+      proj.push([lastDay, v]);
+      if(P.remaining > futureWork){ v += perDay; proj.push([lastDay, v]); }   // today still to be worked
+      for(let d = lastDay + 1; d <= P.n; d++){ if(isWork(d)) v += perDay; proj.push([d, v]); }
+    }
+    return { lastDay, actual, earned, proj };
+  }
+
+  // ---- setting a panel body without redrawing it when nothing changed ----
+  const enhHtmlCache = {};
+  function enhSet(id, html){
+    const el = $('tt-enh-body-' + id);
+    if(el && enhHtmlCache[id] !== html){ el.innerHTML = html; enhHtmlCache[id] = html; }
+  }
+  const enhTile = (k, v, n)=> `<div class="tt-enh-tile"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div><div class="n">${escapeHtml(n || '')}</div></div>`;
+
+  function enhRenderPace(P){
+    const t = P.target, f = (v)=> `${enhFmt(v)} ${P.cur}`;
+    $('tt-pace-target-label').textContent = t ? `${Math.round(t.amount)} ${t.currency} · ${t.mode}` : 'not set';
+    $('tt-enh-title-pace').textContent = `${P.monthLabel} pace · ${P.mode}`;
+    const plural = (n, w)=> `${n} ${w}${n === 1 ? '' : 's'}`;
+    let pill = '', pillCls = 'plain', headline = '', sub = '', tiles = '', bar = '';
+    const earnedTile = enhTile('Earned so far', f(P.earned), `${plural(P.worked, 'worked day')} · ${enhHM(P.hours)} h`);
+    if(!t){
+      headline = 'Set a monthly target to see your pace';
+      sub = (P.projected != null ? `At your current pace ${P.monthLabel} comes to ≈ <b>${escapeHtml(f(P.projected))}</b> (${P.mode}). ` : 'Log hours on a project with a rate and the month will be projected. ')
+          + '<button type="button" class="tt-enh-link" data-enh="target">Set a target</button>';
+      tiles = earnedTile + (P.projected != null ? enhTile('Projected', f(P.projected), P.mode + ' at your pace') : '');
+    } else if(P.earned >= t.amount){
+      pill = 'Target reached'; pillCls = 'ok';
+      headline = `Target reached — ${f(P.earned - t.amount)} over`;
+      sub = `${escapeHtml(P.monthLabel)}: ${escapeHtml(f(P.earned))} earned against ${escapeHtml(f(t.amount))}.`;
+      tiles = earnedTile;
+    } else if(P.remaining === 0){
+      pill = 'Missed'; pillCls = 'behind';
+      headline = `Fell short by ${f(t.amount - P.earned)}`;
+      sub = `${escapeHtml(P.monthLabel)} is over: ${escapeHtml(f(P.earned))} against a ${escapeHtml(f(t.amount))} target.`;
+      tiles = earnedTile;
+    } else if(P.projected == null){
+      pill = 'No pace yet';
+      headline = 'Log time to see your pace';
+      sub = 'The pace needs at least one worked day and a rate on the project you track.';
+      tiles = earnedTile;
+    } else {
+      const gap = t.amount - P.projected, behind = gap > 0;
+      const needH = P.rate > 0 ? ((t.amount - P.earned) / P.remaining) / P.rate : null;
+      if(behind){
+        pill = 'Behind pace'; pillCls = 'behind';
+        headline = needH != null ? `${enhHM(needH)} h a day from here reaches ${Math.round(t.amount)} ${P.cur}` : `${f(gap)} short at your current pace`;
+        sub = `You average ${enhHM(P.avgH)} h across ${plural(P.worked, 'worked day')}. ${plural(P.remaining, 'working day')} left this month.`;
+      } else {
+        pill = 'On track'; pillCls = 'ok';
+        headline = `At this pace you finish ${f(-gap)} over target`;
+        sub = needH != null ? `${enhHM(needH)} h a day for the remaining ${plural(P.remaining, 'working day')} is enough.` : '';
+      }
+      tiles = earnedTile
+        + (needH != null ? enhTile('Needed per day', enhHM(needH) + ' h', `vs ${enhHM(P.avgH)} h you average`) : '')
+        + enhTile(behind ? 'Gap to target' : 'Ahead of target', f(Math.abs(gap)), behind ? 'short at your pace' : 'over target at your pace');
+      const ep = Math.min(100, P.earned / t.amount * 100), pp = Math.min(100, P.projected / t.amount * 100);
+      bar = `<div><div class="tt-enh-bar"><div class="proj" style="width:${pp.toFixed(1)}%"></div><div class="earned" style="width:${ep.toFixed(1)}%"></div></div>
+        <div class="tt-enh-legend" style="margin-top:10px"><span><i style="background:var(--amber)"></i>Earned <b>${escapeHtml(f(P.earned))}</b></span>
+        <span><i style="background:repeating-linear-gradient(135deg, rgba(232,163,61,.6) 0 4px, rgba(232,163,61,.2) 4px 8px)"></i>Projected <b>${escapeHtml(f(P.projected))}</b></span>
+        <span><i style="border:1.5px solid var(--paper)"></i>Target <b>${escapeHtml(f(t.amount))}</b></span></div></div>`;
+    }
+    const pillHtml = pill ? `<span class="tt-enh-pill ${pillCls}">${ENH_PILL_ICON[pillCls] || ''}${escapeHtml(pill)}</span>` : '';
+    enhSet('pace', `<div style="display:flex;flex-direction:column;gap:8px">${pillHtml}<div class="tt-enh-headline">${escapeHtml(headline)}</div><div class="tt-enh-sub">${sub}</div></div>${bar}<div class="tt-enh-tiles">${tiles}</div>`);
+  }
+
+  function enhRenderTodayline(H){
+    const now = new Date(), todayKey = dateKey(now);
+    const blocks = [];
+    entries.forEach(e=>{
+      if(e.date !== todayKey || !e.startISO || !e.stopISO) return;
+      const a = new Date(e.startISO), b = new Date(e.stopISO);
+      blocks.push({ a: a.getHours() + a.getMinutes()/60, b: dateKey(b) === todayKey ? b.getHours() + b.getMinutes()/60 : 24, sec: e.durationSec || 0, live:false });
+    });
+    if(active){
+      const a = new Date(active.startISO);
+      if(dateKey(a) === todayKey) blocks.push({ a: a.getHours() + a.getMinutes()/60, b: now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600, sec: Math.floor((Date.now() - a.getTime()) / 1000), live:true });
+    }
+    blocks.sort((x, y)=> x.a - y.a);
+    let lo = 6, hi = 22;
+    blocks.forEach(b=>{ lo = Math.min(lo, Math.floor(b.a)); hi = Math.max(hi, Math.ceil(b.b)); });
+    if(H.usual){ lo = Math.min(lo, Math.floor(H.usual.start)); hi = Math.max(hi, Math.ceil(H.usual.end)); }
+    lo = Math.max(0, lo - lo % 2); hi = Math.min(24, hi + hi % 2);
+    const span = hi - lo, L = (h)=> ((h - lo) / span * 100).toFixed(2), step = span > 16 ? 4 : 2;
+    const nowH = now.getHours() + now.getMinutes()/60;
+    const total = secondsForDate(now);
+    let ticks = ''; for(let h = lo; h <= hi; h += step) ticks += `<span style="left:${L(h)}%">${String(h).padStart(2,'0')}</span>`;
+    const usualBlock = H.usual ? `<div class="tt-tl-usual" style="left:${L(H.usual.start)}%;width:${(L(H.usual.end) - L(H.usual.start)).toFixed(2)}%"></div>` : '';
+    const blockHtml = blocks.map(b=> `<div class="tt-tl-block${b.live ? ' live' : ''}" style="left:${L(b.a)}%;width:${(L(b.b) - L(b.a)).toFixed(2)}%" title="${escapeHtml(fmtHMS(b.sec))}"><span>${escapeHtml(fmtHM(b.sec))}</span></div>`).join('');
+    const nowHtml = (nowH >= lo && nowH <= hi) ? `<div class="tt-tl-now" style="left:${L(nowH)}%"></div><span class="tt-tl-nowlbl" style="left:${L(nowH)}%">now ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : '';
+    let nudge;
+    if(!H.usual) nudge = 'Not enough history yet for a “usual day”.';
+    else if(H.usual.secs > total) nudge = `${fmtHM(Math.round(H.usual.secs - total))} h more matches your usual day.`;
+    else nudge = 'You are past your usual day.';
+    const toClock = (h)=> `${String(Math.floor(h)).padStart(2,'0')}:${String(Math.round((h % 1) * 60) % 60).padStart(2,'0')}`;
+    $('tt-enh-title-todayline').textContent = `Today · ${WD_SHORT[(now.getDay() + 6) % 7]} ${now.getDate()} ${MON_SHORT[now.getMonth()]}`;
+    enhSet('todayline', `<div class="tt-enh-legend" style="justify-content:space-between"><span class="tt-enh-pill plain"><b>${escapeHtml(fmtHM(total))} h</b>${H.usual ? ` <span style="color:var(--paper-dim);font-weight:500">of your usual ${escapeHtml(fmtHM(Math.round(H.usual.secs)))} h</span>` : ''}</span></div>
+      <div class="tt-tl">${usualBlock}${blockHtml}${nowHtml}</div><div class="tt-tl-axis">${ticks}</div>
+      <div class="tt-enh-legend"><span><i style="background:var(--amber)"></i>Logged${blocks.length ? '' : ' · nothing yet today'}</span>${H.usual ? `<span><i style="border:1px dashed var(--paper-dim)"></i>Your usual window · ${toClock(H.usual.start)}–${toClock(H.usual.end)}</span>` : ''}<span style="color:var(--paper)">${escapeHtml(nudge)}</span></div>`);
+  }
+
+  function enhRenderAttention(P, H){
+    const items = [];
+    const plural = (n, w)=> `${n} ${w}${n === 1 ? '' : 's'}`;
+    if(P.target && P.projected != null && P.remaining > 0 && P.earned < P.target.amount){
+      const gap = P.target.amount - P.projected;
+      if(gap > 0){
+        const needH = P.rate > 0 ? ((P.target.amount - P.earned) / P.remaining) / P.rate : null;
+        items.push({ kind:'warn', title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
+          body: needH != null ? `Add ${enhHM(Math.max(0, needH - P.avgH))} h on each of the ${plural(P.remaining, 'remaining weekday')} (${enhHM(needH)} h a day in total) to close the gap.` : 'Set a rate on the project you track to see what closing the gap takes.' });
+      }
+    } else if(!P.target){
+      items.push({ kind:'info', title:'No monthly target set', body:'Set one in Month pace to get a verdict and the hours per day it takes.', action:'target' });
+    }
+    if(active){
+      const elapsed = (Date.now() - new Date(active.startISO).getTime()) / 3600000;
+      if(elapsed >= 10) items.push({ kind:'warn', title:`Timer has been running ${enhHM(elapsed)} h`, body: dateKey(new Date(active.startISO)) !== dateKey(new Date()) ? 'It was started on a previous day. Still working?' : 'Still working? Stop it when you are done so the day stays accurate.' });
+    }
+    const now = new Date(), monthPrefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const monthEntries = entries.filter(e=> e.date && e.date.startsWith(monthPrefix));
+    const noRate = {}, names = new Set(monthEntries.map(e=> e.note || ''));
+    if(active) names.add(active.note || '');
+    names.forEach(name=>{
+      if(!name) return;
+      const meta = presets.find(p=> presetName(p) === name);
+      if(!(meta && typeof meta === 'object' && Number(meta.rate) > 0)) noRate[name] = true;
+    });
+    const noRateNames = Object.keys(noRate);
+    if(noRateNames.length) items.push({ kind:'warn', title:`${plural(noRateNames.length, 'project')} with hours but no rate`, body:`${noRateNames.slice(0, 3).join(', ')}${noRateNames.length > 3 ? '…' : ''} — their time counts as hours only. Set a rate in Menu → Projects.` });
+    const noProject = monthEntries.filter(e=> !e.note).length;
+    if(noProject) items.push({ kind:'info', title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
+    if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
+    if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
+    enhSet('attention', `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}${i.action ? ` <button type="button" class="tt-enh-link" data-enh="${i.action}">Set a target</button>` : ''}</span></div></div>`).join('')}</div>`);
+  }
+
+  function enhRenderCurve(P, S){
+    $('tt-enh-title-curve').textContent = `Month curve · cumulative ${P.mode}, ${P.cur}`;
+    if(!S.lastDay || (S.earned === 0 && !S.proj.length)){
+      enhSet('curve', `<div class="tt-enh-empty">${S.lastDay ? 'Nothing earned yet this month. Log hours on a project with a rate to see the curve.' : 'This month has not started yet.'}</div>`);
+      return;
+    }
+    const n = P.n, tgt = P.target ? P.target.amount : 0;
+    const ymax = Math.max(tgt, P.projected || 0, S.earned, 1) * 1.08;
+    const X = (d)=> 10 + (d - 1) / Math.max(1, n - 1) * 700, Y = (v)=> 232 - v / ymax * 214;
+    const path = (pts)=> pts.map((p, i)=> `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(' ');
+    const actualPts = [[1, 0]].concat(S.actual.map((v, i)=> [i + 1, v]));
+    const ticks = tgt ? [0, tgt / 3, tgt * 2 / 3, tgt] : [0, ymax / 3, ymax * 2 / 3, ymax / 1.08];
+    const xt = [1, 5, 10, 15, 20, 25, n].filter((d, i, a)=> a.indexOf(d) === i && d <= n);
+    const pct = (v, total)=> (v / total * 100).toFixed(2);
+    const last = S.proj.length ? S.proj[S.proj.length - 1] : null;
+    const lg = (dash, w, c)=> `<svg width="24" height="8" aria-hidden="true"><path d="M0 4h24" stroke="${c}" stroke-width="${w}" ${dash ? `stroke-dasharray="${dash}"` : ''} stroke-linecap="round" fill="none"/></svg>`;
+    enhSet('curve', `<div class="tt-curve-legend"><span>${lg('', 3, 'var(--amber)')}Actual</span>${S.proj.length ? `<span>${lg('7 5', 2, 'var(--amber)')}Your pace</span>` : ''}${tgt && S.proj.length ? `<span>${lg('2 5', 2, 'var(--paper)')}Needed</span>` : ''}${tgt ? `<span>${lg('10 5', 1.5, 'var(--paper-dim)')}Target</span>` : ''}</div>
+      <div class="tt-curve"><svg viewBox="0 0 720 240" preserveAspectRatio="none" role="img" aria-label="Cumulative ${P.mode} earnings this month in ${P.cur}: actual so far${S.proj.length ? ', your projected pace' : ''}${tgt ? ' and the target' : ''}">
+        <path d="${ticks.map(v=> `M0 ${Y(v).toFixed(1)} L720 ${Y(v).toFixed(1)}`).join(' ')}" stroke="var(--line)" stroke-width="1" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="${path(actualPts)} L${X(S.lastDay).toFixed(1)} ${Y(0).toFixed(1)} L${X(1).toFixed(1)} ${Y(0).toFixed(1)} Z" fill="var(--amber-soft)"/>
+        ${tgt ? `<path d="M${X(1).toFixed(1)} ${Y(tgt).toFixed(1)} L${X(n).toFixed(1)} ${Y(tgt).toFixed(1)}" stroke="var(--paper-dim)" stroke-width="1.5" stroke-dasharray="10 5" fill="none" vector-effect="non-scaling-stroke"/>` : ''}
+        ${tgt && S.proj.length ? `<path d="${path([[S.lastDay, S.earned], [n, tgt]])}" stroke="var(--paper)" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>` : ''}
+        ${S.proj.length ? `<path d="${path(S.proj)}" stroke="var(--amber)" stroke-width="2.5" stroke-dasharray="7 5" fill="none" vector-effect="non-scaling-stroke"/>` : ''}
+        <path d="${path(actualPts)}" stroke="var(--amber)" stroke-width="3.5" stroke-linejoin="round" fill="none" vector-effect="non-scaling-stroke"/></svg>
+        ${ticks.map(v=> `<span class="yl" style="top:${pct(Y(v), 240)}%">${Math.round(v)}</span>`).join('')}
+        ${xt.map(d=> `<span class="xl" style="left:${pct(X(d), 720)}%">${d}</span>`).join('')}
+        <span class="dot" style="left:${pct(X(S.lastDay), 720)}%;top:${pct(Y(S.earned), 240)}%"></span>
+        ${last ? `<span class="dot" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;background:var(--ink)"></span><span class="tag" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;transform:translate(-100%,-170%);color:var(--amber)">≈ ${enhFmt(last[1])}</span>` : ''}
+        ${tgt ? `<span class="tag" style="left:100%;top:${pct(Y(tgt), 240)}%;transform:translate(-100%,-170%)">target ${Math.round(tgt)}</span>` : ''}</div>`);
+  }
+
+  function enhRenderPocket(){
+    const dates = getRangeDates(), ref = (granularity === 'custom' && dates[0]) ? dates[0] : anchorDate;
+    const proj = computeMonthProjection({ entries, active, presets, taxTemplates }, secondsForDate, ref);
+    const e = proj.projected || null, basis = e || proj.earn;
+    const curs = Object.keys(basis.netByCurrency || {});
+    $('tt-enh-title-pocket').textContent = e ? 'From gross to pocket · projected' : 'From gross to pocket · so far';
+    if(!curs.length){ enhSet('pocket', '<div class="tt-enh-empty">Set an hourly rate on a project and log time to see where the gross goes.</div>'); return; }
+    const groups = curs.map(c=>{
+      const gross = basis.grossByCurrency[c], net = basis.netByCurrency[c];
+      const taxes = Object.entries(basis.taxByCurrency[c] || {});
+      let left = gross; const rows = [{ label:'Gross', value:`${enhFmt(gross)} ${c}`, l:0, w:100, fill:'var(--amber)' }];
+      taxes.forEach(([name, info])=>{
+        left -= info.amount;
+        const pcts = [...info.pcts].sort((a, b)=> a - b).join('/');
+        rows.push({ label:`${name}${pcts ? ' ' + pcts + '%' : ''}`, value:`−${enhFmt(info.amount)} ${c}`, l: gross > 0 ? left / gross * 100 : 0, w: gross > 0 ? info.amount / gross * 100 : 0, fill:'var(--paper-dim)' });
+      });
+      rows.push({ label: taxes.length ? 'In your pocket (net)' : 'Net (no taxes set)', value:`${enhFmt(net)} ${c}`, l:0, w: gross > 0 ? net / gross * 100 : 0, fill:'var(--paper)' });
+      return `<div class="tt-pk-group">${rows.map(r=> `<div class="tt-pk-row"><div class="t"><span>${escapeHtml(r.label)}</span> <b>${escapeHtml(r.value)}</b></div><div class="bar"><i style="left:${r.l.toFixed(2)}%;width:${r.w.toFixed(2)}%;background:${r.fill}"></i></div></div>`).join('')}</div>`;
+    }).join('');
+    const conv = basis.netConvertedTotal;
+    enhSet('pocket', `${groups}<div class="tt-enh-sub">Net total ≈ <b style="color:var(--paper);font-family:'Space Mono',monospace">${escapeHtml(enhFmt(conv))} ${escapeHtml(displayCurrency)}</b>, converted at your rates. Taxes follow the template on each project.</div>`);
+  }
+
+  function enhRenderRhythm(H){
+    const now = new Date(), todayWd = (now.getDay() + 6) % 7, max = Math.max(...H.avg, 0.0001);
+    enhSet('rhythm', `<div class="tt-rh">${H.avg.map((a, i)=> `<div class="${i === H.best ? 'best ' : ''}${i === todayWd ? 'now' : ''}"><span class="num">${a.toFixed(1)}</span><div class="bar" style="height:${Math.max(3, a / max * 78).toFixed(1)}%"></div><span class="lab">${WD_SHORT[i]}</span></div>`).join('')}</div>
+      <div class="tt-enh-sub">Average hours per weekday over the last 16 weeks. Today’s weekday is outlined${H.best >= 0 ? `; ${WD_LONG[H.best]} is your strongest.` : '.'}</div>`);
+  }
+
+  function enhRenderHeat(H){
+    const months = [];
+    for(let w = 0; w < 16; w++){
+      const mon = H.days[w * 7].dt, prev = w ? H.days[(w - 1) * 7].dt : null;
+      months.push(!prev || mon.getMonth() !== prev.getMonth() ? MON_SHORT[mon.getMonth()] : '');
+    }
+    const today = new Date(), todayKey = dateKey(today);
+    const cells = H.days.map(x=>{
+      const h = x.sec / 3600, lvl = h === 0 ? 0 : h < 2 ? 1 : h < 4 ? 2 : h < 6 ? 3 : 4;
+      const cls = x.fut ? 'fut' : 'l' + lvl, isToday = dateKey(x.dt) === todayKey ? ' today' : '';
+      return `<i class="${cls}${isToday}" title="${x.dt.getDate()} ${MON_SHORT[x.dt.getMonth()]}${x.fut ? '' : ' · ' + fmtHM(x.sec) + ' h'}"></i>`;
+    }).join('');
+    enhSet('heat', `<div class="tt-enh-legend" style="justify-content:space-between"><span class="tt-enh-pill plain"><b>${H.streak}</b> <span style="color:var(--paper-dim);font-weight:500">working day${H.streak === 1 ? '' : 's'} in a row · longest ${H.longest}</span></span></div>
+      <div class="tt-heat-wrap"><div class="tt-heat-days">${['Mon','','Wed','','Fri','',''].map(l=> `<span>${l}</span>`).join('')}</div>
+      <div class="tt-heat-main"><div class="tt-heat-months">${months.map(m=> `<span>${m}</span>`).join('')}</div>
+      <div class="tt-heat-grid" role="img" aria-label="Hours logged on each of the last 16 weeks of days, darker is more">${cells}</div></div></div>
+      <div class="tt-enh-legend"><span>Less</span><i style="width:14px;height:14px;border-radius:4px;background:var(--panel-2);display:inline-block"></i><i style="width:14px;height:14px;border-radius:4px;background:rgba(232,163,61,.5);display:inline-block"></i><i style="width:14px;height:14px;border-radius:4px;background:var(--amber);display:inline-block"></i><span>More</span></div>`);
+  }
+
+  // ---- orchestration: heavy numbers once a minute (or when something relevant changes), the live bits every second ----
+  let enhSigLast = '', enhData = null;
+  function renderEnhancedPanels(force){
+    if(bgPref.panels !== 'enhanced') return;
+    const on = (id)=>{ const el = panelEl(id); return !!el && !el.classList.contains('tt-panel-hidden'); };
+    const sig = [entries.length, entries.length ? entries[entries.length - 1].id : '', entries.reduce((a, e)=> a + (e.durationSec || 0) + (e.note || '').length, 0), active ? active.startISO : '', Math.floor(Date.now() / 60000),
+      earningsMode, displayCurrency, granularity, anchorDate.getTime(), customFromDate ? customFromDate.getTime() : '', customToDate ? customToDate.getTime() : '',
+      JSON.stringify(bgPref.target), JSON.stringify(rates), JSON.stringify(presets), taxTemplates.length].join('|');
+    if(force || sig !== enhSigLast || !enhData){
+      enhSigLast = sig;
+      const P = enhPace(), H = enhHistory();
+      enhData = { P, H, S: enhSeries(P) };
+    }
+    const { P, H, S } = enhData;
+    if(on('pace')) enhRenderPace(P);
+    if(on('attention')) enhRenderAttention(P, H);
+    if(on('curve')) enhRenderCurve(P, S);
+    if(on('pocket')) enhRenderPocket();
+    if(on('rhythm')) enhRenderRhythm(H);
+    if(on('heat')) enhRenderHeat(H);
+    if(on('todayline')) enhRenderTodayline(H);
+  }
+
+  // ---- card skeletons and the target editor ----
+  (function initEnhancedPanels(){
+    Object.keys(ENHANCED_PANELS).forEach(id=>{
+      const card = $('tt-enh-' + id);
+      if(!card) return;
+      const extra = id === 'pace' ? '<button type="button" class="tt-enh-target-btn" id="tt-pace-target-btn" aria-expanded="false">Target<b id="tt-pace-target-label">not set</b></button>' : '';
+      const editor = id === 'pace' ? `<form class="tt-pace-editor" id="tt-pace-editor" hidden>
+          <label>Monthly target<input type="number" id="tt-pace-amount" min="1" step="any" inputmode="decimal" placeholder="6000"></label>
+          <label>Currency<select id="tt-pace-currency"><option>RON</option><option>EUR</option><option>USD</option><option>GBP</option></select></label>
+          <div class="tt-segment" id="tt-pace-mode" role="group" aria-label="Net or gross"><button type="button" data-val="gross" class="active">Gross</button><button type="button" data-val="net">Net</button></div>
+          <div class="tt-pace-editor-actions"><button type="submit" class="tt-btn primary tt-menu-btn-inline">Save</button><button type="button" class="tt-btn" id="tt-pace-clear">Clear</button><button type="button" class="tt-btn" id="tt-pace-cancel">Cancel</button></div>
+          <div class="tt-pace-error" id="tt-pace-error" role="alert"></div></form>` : '';
+      card.innerHTML = `<div class="tt-enh-head"><span class="tt-enh-disc">${ENH_ICON[id]}</span><span class="tt-enh-title" id="tt-enh-title-${id}">${escapeHtml(ENHANCED_PANELS[id])}</span>${extra}</div>${editor}<div class="tt-enh-body" id="tt-enh-body-${id}"></div>`;
+    });
+    const editor = $('tt-pace-editor');
+    if(!editor) return;
+    initLiquidSegment($('tt-pace-mode'));
+    const close = ()=>{ editor.hidden = true; $('tt-pace-target-btn').setAttribute('aria-expanded', 'false'); $('tt-pace-error').textContent = ''; };
+    const open = ()=>{
+      const t = bgPref.target;
+      $('tt-pace-amount').value = t ? String(t.amount) : '';
+      $('tt-pace-currency').value = t ? t.currency : displayCurrency;
+      setActiveTab('tt-pace-mode', t ? t.mode : earningsMode);
+      editor.hidden = false; $('tt-pace-target-btn').setAttribute('aria-expanded', 'true');
+      $('tt-pace-amount').focus();
+    };
+    $('tt-pace-target-btn').addEventListener('click', ()=> editor.hidden ? open() : close());
+    $('tt-pace-mode').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(b) setActiveTab('tt-pace-mode', b.dataset.val); });
+    $('tt-pace-cancel').addEventListener('click', close);
+    $('tt-pace-clear').addEventListener('click', ()=>{ setBgPref({ target:null }); close(); });
+    editor.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const amount = Number($('tt-pace-amount').value);
+      if(!Number.isFinite(amount) || amount <= 0){ $('tt-pace-error').textContent = 'Enter an amount above zero.'; return; }
+      const mode = document.querySelector('#tt-pace-mode button.active').dataset.val;
+      setBgPref({ target:{ amount, currency:$('tt-pace-currency').value, mode } });
+      close();
+    });
+    // "Set a target" links inside the panels
+    document.addEventListener('click', (e)=>{
+      if(!e.target.closest('[data-enh="target"]')) return;
+      const btn = $('tt-pace-target-btn'), panel = panelEl('pace');
+      if(panel && !panel.classList.contains('tt-panel-hidden')){ if(editor.hidden) open(); panel.scrollIntoView({ block:'nearest' }); }
+      else if(btn) btn.click();
+    });
+  })();
+  $('tt-bg-panels').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(btn) setBgPref({ panels: btn.dataset.val });
+  });
+
+  // ---------------- Personal | Company toggle (admin) ----------------
+  $('tt-view-toggle').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(btn && btn.dataset.val === 'company') $('tt-company-navrow').click();
+  });
+  $('tt-co-viewtoggle').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-val]');
+    if(btn && btn.dataset.val === 'personal') go({ view:'dashboard' });
+  });
+
+  // ---------------- Phone bottom menu ----------------
+  (function initBottomNav(){
+    const nav = $('tt-bottomnav');
+    if(!nav) return;
+    const shown = (id)=>{ const el = panelEl(id); return el && !el.classList.contains('tt-panel-hidden') ? el : null; };
+    const targetOf = (tab)=> tab === 'today' ? shown('timer')
+      : tab === 'pace' ? (shown('pace') || shown('monthAvgPay') || shown('earnings'))
+      : tab === 'money' ? (shown('earnings') || shown('monthAvgPay')) : null;
+    const setActive = (tab)=> nav.querySelectorAll('button').forEach(b=>{
+      const on = b.dataset.tab === tab;
+      b.classList.toggle('active', on);
+      if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    nav.addEventListener('click', (e)=>{
+      const b = e.target.closest('button[data-tab]');
+      if(!b) return;
+      const tab = b.dataset.tab;
+      if(tab === 'more'){ $('tt-menu-btn').click(); return; }
+      const el = targetOf(tab);
+      if(el){ el.scrollIntoView({ behavior: bgReducedMotion.matches ? 'auto' : 'smooth', block:'start' }); setActive(tab); }
+    });
+    let ticking = false;
+    window.addEventListener('scroll', ()=>{
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(()=>{
+        ticking = false;
+        if(getComputedStyle(nav).display === 'none') return;
+        let cur = 'today', best = -Infinity;
+        ['today', 'pace', 'money'].forEach(tab=>{
+          const el = targetOf(tab);
+          if(!el) return;
+          const top = el.getBoundingClientRect().top;
+          if(top <= 140 && top > best){ best = top; cur = tab; }   // the section nearest the top of the screen
+        });
+        setActive(cur);
+      });
+    }, { passive:true });
+  })();
+
   onAuthStateChanged(auth, (user)=>{
     const uid = user ? user.uid : null;
     const identityChanged = uid !== lastAuthUid;
@@ -5491,6 +6175,7 @@ match /users/{userId}/meta/{docId} {
       isAdmin = false;
       $('tt-admin-navrow').hidden = true;
       $('tt-company-navrow').hidden = true;
+      $('tt-view-toggle').hidden = true;
       detachListeners();
     }
 
@@ -5542,6 +6227,7 @@ match /users/{userId}/meta/{docId} {
       presets = (snap.exists() && Array.isArray(snap.data().list)) ? snap.data().list : [];
       renderProjectSelect();
       renderPresetManager();
+      renderEnhancedPanels();   // rates and tax templates feed the money panels
     }, (err)=> console.error('presets listener error', err));
 
     unsubPrefs = onSnapshot(prefsDoc(uid), (snap)=>{
@@ -6386,7 +7072,7 @@ match /users/{userId}/meta/{docId} {
     const gapPx = 12;
     const halfWidthPx = (colWidthPx - gapPx) / 2;
     const pct = px => +((px/containerWidth)*100).toFixed(3);
-    return {
+    const out = {
       timer:    { x: pct(colXPx), width: pct(colWidthPx) },
       today:    { x: pct(colXPx), width: pct(halfWidthPx) },
       month:    { x: pct(colXPx + halfWidthPx + gapPx), width: pct(halfWidthPx) },
@@ -6396,6 +7082,8 @@ match /users/{userId}/meta/{docId} {
       monthAvgPay: { x: pct(colXPx), width: pct(colWidthPx) },
       browser:  { x: pct(colXPx), width: pct(colWidthPx) }
     };
+    Object.keys(ENHANCED_PANELS).forEach(id=>{ out[id] = { x: pct(colXPx), width: pct(colWidthPx) }; });
+    return out;
   }
 
   function panelsContainerEl(){ return document.getElementById('tt-panels-container'); }
@@ -6408,7 +7096,8 @@ match /users/{userId}/meta/{docId} {
   // values remove that failure mode entirely. A panel taller than its default
   // is still fully visible (see overflow:visible below) and can be resized
   // larger any time.
-  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, monthAvgPay:560, avgHours:130, avgPay:130, browser:700 };
+  const DEFAULT_HEIGHT = { timer:580, today:120, month:120, earnings:600, monthAvgPay:560, avgHours:130, avgPay:130, browser:700,
+    pace:350, todayline:260, attention:300, curve:400, pocket:340, rhythm:300, heat:300 };
 
   function computeDefaultPositions(missingIds, existingPositions){
     const xw = getCenteredColumnXW();
@@ -6435,7 +7124,8 @@ match /users/{userId}/meta/{docId} {
         y += h + gap;
         i += 2;
       } else {
-        positions[id] = { ...xw[id], y, height:null };
+        // enhanced panels get a fixed height (their content is built to fit it), so stacking can't overlap
+        positions[id] = { ...xw[id], y, height: ENHANCED_PANELS[id] ? DEFAULT_HEIGHT[id] : null };
         y += DEFAULT_HEIGHT[id] + gap;
         i += 1;
       }
@@ -6452,10 +7142,19 @@ match /users/{userId}/meta/{docId} {
     el.style.height = pos.height!=null ? pos.height + 'px' : '';
   }
 
+  // In Classic mode the enhanced panels are simply off (without touching what the person hid or placed)
+  function modeHiddenPanels(){ return bgPref.panels === 'enhanced' ? [] : Object.keys(ENHANCED_PANELS); }
+  function applyPanelModeVisibility(){
+    const off = new Set([...modeHiddenPanels(), ...(panelLayout.hidden || [])]);
+    KNOWN_PANELS.forEach(id=>{ const el = panelEl(id); if(el) el.classList.toggle('tt-panel-hidden', off.has(id)); });
+    updateContainerHeight();
+    updateRestoreButton();
+  }
+
   function applyPanelLayout(layout){
     const container = panelsContainerEl();
     if(!container) return;
-    const hidden = new Set(layout.hidden || []);
+    const hidden = new Set([...(layout.hidden || []), ...modeHiddenPanels()]);
     KNOWN_PANELS.forEach(id=>{
       const el = panelEl(id);
       if(el) el.classList.toggle('tt-panel-hidden', hidden.has(id));
@@ -6504,7 +7203,7 @@ match /users/{userId}/meta/{docId} {
     });
     // hidden panels aren't measurable — keep wherever they were last placed
     const hidden = (panelLayout.hidden || []).filter(id=>KNOWN_PANELS.includes(id));
-    hidden.forEach(id=>{
+    [...hidden, ...modeHiddenPanels()].forEach(id=>{
       if(panelLayout.positions[id]) positions[id] = panelLayout.positions[id];
     });
     return { positions, hidden, layoutVersion: 2 };
@@ -6595,7 +7294,7 @@ match /users/{userId}/meta/{docId} {
 
   // "+ Panels" appears only while customizing AND at least one removable panel is hidden
   function hiddenHideablePanels(){
-    return (panelLayout.hidden||[]).filter(id=>HIDEABLE_PANELS[id]);
+    return (panelLayout.hidden||[]).filter(id=>HIDEABLE_PANELS[id] && !(ENHANCED_PANELS[id] && bgPref.panels !== 'enhanced'));
   }
   function updateRestoreButton(){
     const list = hiddenHideablePanels();
@@ -6630,6 +7329,7 @@ match /users/{userId}/meta/{docId} {
     applyOnePanel(id, panelLayout.positions[id]);
     updateContainerHeight();
     updateRestoreButton();
+    if(ENHANCED_PANELS[id]) renderEnhancedPanels(true);   // it wasn't being drawn while hidden
   }
 
   panelsContainerEl().addEventListener('click', (e)=>{
@@ -6700,8 +7400,8 @@ match /users/{userId}/meta/{docId} {
         y += h + gap;
         i += 2;
       } else {
-        const h = panelEl(id).offsetHeight;
-        positions[id] = { ...xw[id], y, height:null };
+        const h = ENHANCED_PANELS[id] ? DEFAULT_HEIGHT[id] : panelEl(id).offsetHeight;
+        positions[id] = { ...xw[id], y, height: ENHANCED_PANELS[id] ? DEFAULT_HEIGHT[id] : null };
         y += h + gap;
         i += 1;
       }
