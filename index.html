@@ -1101,6 +1101,14 @@
   }
   @media (max-width:900px){ .tt-uni-entlist{max-height:560px;} }
 
+  /* Personal <-> Company: a curtain sweeps the page area, the switch happens behind it, then it lifts on the new view */
+  .tt-uni-curtain{display:none;}
+  @media (min-width:901px){
+    html.tt-uni .tt-uni-curtain{display:block; position:fixed; top:74px; left:96px; right:0; bottom:0; z-index:3030; background:var(--ink); pointer-events:none; overflow:hidden; will-change:transform; box-shadow:inset 0 0 140px rgba(232,163,61,.07);}
+    html.tt-uni .tt-uni-curtain[hidden]{display:none;}
+    .tt-uni-curtain::before, .tt-uni-curtain::after{content:''; position:absolute; top:0; bottom:0; width:3px; background:linear-gradient(to bottom, transparent, var(--amber) 28%, var(--amber) 72%, transparent); box-shadow:0 0 28px 5px rgba(232,163,61,.5);}
+    .tt-uni-curtain::before{left:0;} .tt-uni-curtain::after{right:0;}
+  }
   /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
   html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
   /* Calendar is its own page in Unified; on a phone it simply stays at the bottom */
@@ -1495,7 +1503,21 @@
   .tt-modal-actions{display:flex; gap:10px;}
   .tt-modal-actions .tt-btn{margin:0;}
 
-  .tt-foot{margin-top:14px;font-size:11px;color:var(--paper-dim);opacity:.55;text-align:center;}
+  .tt-foot{margin-top:24px; padding:12px 0 8px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 24px; font-size:12.5px; color:var(--paper-dim);}
+  .tt-foot-left{display:flex; align-items:center; gap:10px;}
+  .tt-foot-logo{display:inline-flex; border-radius:7px; overflow:hidden; box-shadow:0 0 0 1px rgba(232,163,61,.35);}
+  .tt-foot-logo svg{display:block;}
+  .tt-foot-ver{font-family:'Space Mono',monospace; font-size:11.5px; letter-spacing:.02em; padding:3px 10px; border:1px solid var(--line); border-radius:999px; background:var(--panel-2); color:var(--paper);}
+  .tt-foot-status{display:flex; align-items:center; gap:8px;}
+  .tt-foot-dot{width:8px; height:8px; border-radius:50%; background:var(--enh-ok); box-shadow:0 0 0 0 rgba(143,217,182,.5); animation:tt-foot-live 2.8s ease-out infinite;}
+  .tt-foot-status.off .tt-foot-dot{background:var(--amber); animation:none;}
+  @keyframes tt-foot-live{0%{box-shadow:0 0 0 0 rgba(143,217,182,.5);}70%,100%{box-shadow:0 0 0 8px rgba(143,217,182,0);}}
+  .tt-foot-links{display:flex; flex-wrap:wrap; gap:0 4px;}
+  .tt-foot-links button{min-height:44px; padding:0 12px; border:0; background:transparent; color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer; border-radius:10px; transition:color .2s, background .2s;}
+  .tt-foot-links button:hover{color:var(--amber); background:var(--panel-2);}
+  .tt-foot-links button[hidden]{display:none;}
+  @media (max-width:600px){ .tt-foot{justify-content:center; text-align:center;} .tt-foot-links{justify-content:center;} }
+  @media (prefers-reduced-motion:reduce){ .tt-foot-dot{animation:none;} }
   .tt-csv-columns{
     display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;
   }
@@ -1639,6 +1661,7 @@
     <div style="flex:1"></div>
     <button type="button" class="tt-uni-settings" data-uni="settings" data-l="Settings" aria-label="Settings and account"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   </aside>
+  <div class="tt-uni-curtain" id="tt-uni-curtain" aria-hidden="true" hidden></div>
   <nav class="tt-bottomnav" id="tt-bottomnav" aria-label="Main">
     <button type="button" data-tab="today" class="active" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Today</span></button>
     <button type="button" data-tab="pace"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-9"/></svg><span>Pace</span></button>
@@ -2478,7 +2501,16 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.086</div>
+    <footer class="tt-foot" id="tt-foot">
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.087</span></div>
+      <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
+      <nav class="tt-foot-links" aria-label="Shortcuts">
+        <button type="button" data-foot="projects">Projects</button>
+        <button type="button" data-foot="reports">Reports</button>
+        <button type="button" data-foot="settings">Settings</button>
+        <button type="button" data-foot="admin" id="tt-foot-admin" hidden>Admin</button>
+      </nav>
+    </footer>
   </div>
 </div>
 
@@ -2841,6 +2873,7 @@
     $('tt-view-toggle').hidden = !isAdmin;
     $('tt-uni-view').hidden = !isAdmin;
     $('tt-uni-admin').hidden = !isAdmin;
+    $('tt-foot-admin').hidden = !isAdmin;
     setDoc(doc(db, 'directory', user.uid), {
       uid: user.uid, email: user.email, displayName: user.displayName || ''
     }).catch(err=> console.error('Could not update directory record', err));
@@ -6500,6 +6533,22 @@ match /users/{userId}/meta/{docId} {
     if(btn) setBgPref({ panels: btn.dataset.val });
   });
 
+  // ---------------- footer: connection + shortcuts ----------------
+  function renderFootStatus(){
+    const on = navigator.onLine !== false;
+    $('tt-foot-status').classList.toggle('off', !on);
+    $('tt-foot-status-text').textContent = on ? 'Online · entries sync automatically' : 'Offline · reconnect to sync';
+  }
+  window.addEventListener('online', renderFootStatus); window.addEventListener('offline', renderFootStatus); renderFootStatus();
+  $('tt-foot').addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-foot]'); if(!b) return;
+    const k = b.dataset.foot;
+    if(k === 'projects') go({ view:'account', screen:'projects' });
+    else if(k === 'reports') go({ view:'account', screen:'exports' });
+    else if(k === 'settings') go({ view:'account', screen:'root' });
+    else if(k === 'admin') go({ view:'admin', screen:'root' });
+  });
+
   // ---------------- Personal | Company toggle (admin) ----------------
   $('tt-view-toggle').addEventListener('click', (e)=>{
     const btn = e.target.closest('button[data-val]');
@@ -6638,6 +6687,7 @@ match /users/{userId}/meta/{docId} {
 
   function uniGo(item){
     const root = document.documentElement;
+    if(item === 'home' && uniIsCo()){ root.dataset.uniPage = 'home'; uniSwitchView(false); return; }   // leaving the company view is the same sweep, backwards
     if(item === 'home' || item === 'calendar'){
       root.dataset.uniPage = item;
       go({ view:'dashboard' });
@@ -6665,10 +6715,32 @@ match /users/{userId}/meta/{docId} {
       go({ view:'admin', screen:'company', cid: (list.find(c=> c.id === last) || list[0]).id });
     }catch(err){ go({ view:'admin', screen:'companies' }); }               // that screen shows the error and what to fix
   }
+  // Personal <-> Company: the curtain sweeps in from the side you are heading to, the switch happens while it covers the page,
+  // and it lifts only when the new view is ready (or after 1.5 s, so a slow load can never leave it stuck)
+  let uniBusy = false;
+  const uniWait = (cond, ms)=> new Promise(res=>{ const t0 = Date.now(); (function tick(){ if(cond() || Date.now() - t0 > ms) return res(); setTimeout(tick, 40); })(); });
+  async function uniSwitchView(toCompany){
+    const root = document.documentElement;
+    if(uniBusy || toCompany === uniIsCo()) return;
+    const run = toCompany ? uniOpenCompany : async ()=>{ go({ view:'dashboard' }); };
+    const ready = ()=> toCompany ? (root.classList.contains('tt-admin-open') && (adminScreen !== 'company' || $('tt-co-dashboard').classList.contains('tt-uni-has'))) : !root.classList.contains('tt-admin-open');
+    setActiveTab('tt-uni-view', toCompany ? 'company' : 'personal');                 // the toggle's thumb moves at once
+    if(!window.matchMedia('(min-width:901px)').matches || bgReducedMotion.matches){ await run(); return; }
+    uniBusy = true;
+    const c = $('tt-uni-curtain'), dir = toCompany ? 1 : -1;
+    try{
+      c.hidden = false;
+      await c.animate([{ transform:`translateX(${dir * 100}%)` }, { transform:'translateX(0)' }], { duration:210, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards' }).finished;
+      await run(); await uniWait(ready, 1500);
+      await c.animate([{ transform:'translateX(0)' }, { transform:`translateX(${-dir * 100}%)` }], { duration:320, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' }).finished;
+    }catch(err){ console.error('view switch', err); }
+    finally{ c.getAnimations().forEach(a=> a.cancel()); c.hidden = true; uniBusy = false; }
+  }
   $('tt-uni-view').addEventListener('click', (e)=>{
     const b = e.target.closest('button[data-val]'); if(!b) return;
-    if(b.dataset.val === 'company'){ if(!uniIsCo()) uniOpenCompany(); }
-    else if(uniIsCo() || document.documentElement.classList.contains('tt-admin-open')) go({ view:'dashboard' });
+    if(b.dataset.val === 'company') uniSwitchView(true);
+    else if(uniIsCo()) uniSwitchView(false);
+    else if(document.documentElement.classList.contains('tt-admin-open')) go({ view:'dashboard' });
   });
   $('tt-uni-cosel').addEventListener('change', (e)=>{ coTab = 'dashboard'; go({ view:'admin', screen:'company', cid:e.target.value }); });
   $('tt-uni-theme').addEventListener('click', ()=> $('tt-theme-toggle').click());
@@ -7004,6 +7076,7 @@ match /users/{userId}/meta/{docId} {
       $('tt-view-toggle').hidden = true;
       $('tt-uni-view').hidden = true;
       $('tt-uni-admin').hidden = true;
+      $('tt-foot-admin').hidden = true;
       detachListeners();
     }
 
