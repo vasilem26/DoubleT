@@ -917,7 +917,7 @@
   .tt-uni-stat{display:flex; align-items:center; gap:12px; min-width:0;}
   .tt-uni-statdisc{width:44px; height:44px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; color:var(--amber); background:var(--amber-soft);}
   .tt-uni-statdisc.dashed{border:1.5px dashed var(--amber-dim);}
-  .tt-uni-stat b{display:block; font-family:'Space Mono',monospace; font-size:17px; line-height:1.2; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .tt-uni-stat b{display:block; font-family:'Space Mono',monospace; font-size:17px; line-height:1.2; font-variant-numeric:tabular-nums; overflow-wrap:anywhere;}
   .tt-uni-stat i{display:block; font-size:12px; font-style:normal; color:var(--paper-dim);}
   .tt-uni-day{display:flex; justify-content:space-between; gap:10px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim); padding:14px 0 4px;}
   .tt-uni-day:first-child{padding-top:0;}
@@ -941,7 +941,7 @@
     html.tt-uni #tt-panels-container .tt-panel > .tt-earnings, html.tt-uni #tt-panels-container .tt-panel > .tt-clock{flex:1 1 auto; margin-top:0;}
     html.tt-uni .tt-panel.tt-panel-hidden{display:none !important;}
     html.tt-uni .tt-enh{overflow:visible;}
-    html.tt-uni .tt-curve{flex:none; height:230px;}
+    html.tt-uni .tt-curve{flex:1 1 220px; height:auto; min-height:220px;}
     html.tt-uni .tt-rh{flex:none; height:170px; min-height:0;}
     html.tt-uni #tt-uni-stats{grid-column:1 / 9; grid-row:1;}
     html.tt-uni .tt-panel[data-panel="timer"]{grid-column:9 / 13; grid-row:1 / 3;}
@@ -1036,6 +1036,70 @@
     html.tt-uni.tt-uni-swap *, .tt-uni-tick, .tt-uni-row.tt-uni-new, #tt-uni-title.tt-uni-title-in, .tt-uni-rail .tt-uni-ic, .tt-uni-iconbtn.tt-uni-ring .tt-uni-ic, .tt-uni-badge.tt-uni-pop{animation:none !important; transition:none !important;}
     html.tt-uni .tt-uni-card:hover, html.tt-uni #tt-panels-container .tt-panel > *:hover{translate:none !important;}
   }
+
+  /* recent entries: the list fills the card and scrolls, the button sits at the bottom */
+  .tt-uni-entlist{flex:1 1 auto; min-height:0; overflow-y:auto; margin:0 -10px; padding:0 10px; overscroll-behavior:contain; scrollbar-width:thin;}
+  .tt-uni-calbtn{display:flex; align-items:center; gap:10px; width:100%; min-height:48px; padding:0 16px; border:1px solid var(--line); border-radius:14px; background:var(--panel-2); color:var(--paper); font-family:'Work Sans',sans-serif; font-size:13.5px; font-weight:600; cursor:pointer; transition:border-color .2s, background .2s;}
+  .tt-uni-calbtn span{flex:1; text-align:left;}
+  .tt-uni-calbtn:hover{border-color:var(--amber-dim);}
+  .tt-uni-calbtn .tt-uni-ic{color:var(--amber);}
+  /* earned per day */
+  .tt-daybars{display:flex; align-items:flex-end; gap:3px; height:120px; flex:none;}
+  .tt-day{flex:1; min-width:0; border-radius:3px 3px 1px 1px;}
+  .tt-day.a{background:var(--amber);} .tt-day.t{background:var(--paper);}
+  .tt-day.p{background:repeating-linear-gradient(135deg, rgba(232,163,61,.5) 0 3px, rgba(232,163,61,.16) 3px 6px);}
+  .tt-day.w{background:var(--panel-2);}
+  .tt-dayaxis{display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:10.5px; color:var(--paper-dim); margin-top:-6px;}
+  /* company dashboard */
+  .tt-uni-cogrid{display:none; flex-direction:column; gap:16px;}
+  html.tt-uni.tt-uni-co #tt-co-dashboard.tt-uni-has #tt-uni-co{display:flex;}
+  html.tt-uni.tt-uni-co #tt-co-dashboard.tt-uni-has #tt-co-banners, html.tt-uni.tt-uni-co #tt-co-dashboard.tt-uni-has #tt-co-cards, html.tt-uni.tt-uni-co #tt-co-dashboard.tt-uni-has .tt-co-section-label{display:none !important;}
+  .tt-uni-corows{display:flex; flex-direction:column;}
+  .tt-uni-coperson{display:flex; align-items:center; gap:12px; min-width:0;}
+  .tt-uni-corows .tt-uni-coperson{padding:10px 0; border-top:1px solid var(--line);}
+  .tt-uni-corows .tt-uni-coperson:first-child{border-top:0; padding-top:2px;}
+  .tt-uni-coav{width:38px; height:38px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--on-accent); background:var(--c, var(--amber));}
+  .tt-uni-coname{flex:1; min-width:0;}
+  .tt-uni-coname b{display:block; font-weight:600; overflow-wrap:anywhere;}
+  .tt-uni-coname i{display:block; font-style:normal; font-size:12px; color:var(--paper-dim); overflow-wrap:anywhere;}
+  .tt-uni-corow-end b{font-family:'Space Mono',monospace; font-size:14px; color:var(--amber); white-space:nowrap;}
+  .tt-uni-scrollx{overflow-x:auto;}
+  #tt-uni-co-stats .tt-uni-statgrid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .tt-uni-cotable{min-width:700px; display:flex; flex-direction:column;}
+  .tt-uni-corowh, .tt-uni-corowb{display:grid; grid-template-columns:minmax(200px,1.5fr) minmax(170px,2fr) 60px 90px minmax(110px,1fr) minmax(120px,1fr); gap:14px; align-items:center;}
+  .tt-uni-corowh{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim); padding-bottom:8px;}
+  .tt-uni-corowb{padding:12px 0; border-top:1px solid var(--line); font-size:13px;}
+  .tt-uni-corowb .mono{font-family:'Space Mono',monospace; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .tt-uni-approx{color:var(--amber);}
+  .tt-uni-cohours{display:flex; justify-content:space-between; gap:8px; font-size:13px;}
+  .tt-uni-cohours b{font-family:'Space Mono',monospace;} .tt-uni-cohours i{font-style:normal; color:var(--paper-dim);}
+  .tt-uni-cobar{display:block; height:8px; border-radius:4px; background:var(--panel-2); margin-top:6px; overflow:hidden;}
+  .tt-uni-cobar i{display:block; height:100%; border-radius:4px;}
+  em.tt-uni-cochip{display:inline-block; font-style:normal; font-size:11px; font-weight:600; border-radius:999px; padding:1px 8px; margin-top:3px; background:var(--amber-soft); color:var(--amber);}
+  em.tt-uni-cochip.bad{background:rgba(214,69,65,.14); color:var(--err-text);}
+  .tt-uni-stack{display:flex; align-items:flex-end; gap:3px; height:190px; flex:1 1 auto; min-height:150px;}
+  .tt-uni-col{flex:1; min-width:0; height:100%; display:flex; align-items:flex-end;}
+  .tt-uni-colbar{width:100%; display:flex; flex-direction:column-reverse; border-radius:3px 3px 1px 1px; overflow:hidden; min-height:0;}
+  .tt-uni-colbar i{display:block; min-height:0;}
+  .tt-uni-colbar.empty{background:var(--panel-2);}
+  .tt-heat-grid.tt-cov{grid-template-rows:repeat(7,22px);}
+  .tt-heat-days.tt-cov{grid-template-rows:repeat(7,22px); line-height:22px;}
+  .tt-heat-grid.tt-cov i.l0{background:var(--panel-2);}
+  html.tt-uni #tt-uni-co .tt-rh{flex:none; height:170px; min-height:0;}
+  html.tt-uni.tt-uni-swap #tt-uni-co > *{animation:var(--uni-in, tt-uni-in-down) .42s cubic-bezier(.2,.8,.2,1) both;}
+  html.tt-uni.tt-uni-swap #tt-uni-co > :nth-child(2){animation-delay:.05s;} html.tt-uni.tt-uni-swap #tt-uni-co > :nth-child(3){animation-delay:.1s;} html.tt-uni.tt-uni-swap #tt-uni-co > :nth-child(4){animation-delay:.15s;} html.tt-uni.tt-uni-swap #tt-uni-co > :nth-child(n+5){animation-delay:.2s;}
+  @media (min-width:901px){
+    html.tt-uni #tt-uni-entries{contain:size; min-height:0;}
+    html.tt-uni.tt-uni-co #tt-co-dashboard.tt-uni-has #tt-uni-co{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:24px; align-items:stretch;}
+    html.tt-uni #tt-uni-co-stats{grid-column:1 / 9; grid-row:1;}
+    html.tt-uni #tt-uni-co-today{grid-column:9 / 13; grid-row:1;}
+    html.tt-uni #tt-uni-co-members{grid-column:1 / 13; grid-row:2;}
+    html.tt-uni #tt-uni-co-days{grid-column:1 / 9; grid-row:3;}
+    html.tt-uni #tt-uni-co-rhythm{grid-column:9 / 13; grid-row:3;}
+    html.tt-uni #tt-uni-co-cov{grid-column:1 / 9; grid-row:4;}
+    html.tt-uni #tt-uni-co-alerts{grid-column:9 / 13; grid-row:4;}
+  }
+  @media (max-width:900px){ .tt-uni-entlist{max-height:560px;} }
 
   /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
   html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
@@ -2008,6 +2072,15 @@
                 <div class="tt-custom-range-field"><label>To</label><input type="date" id="tt-co-custom-to" /></div>
               </div>
             </div>
+            <div class="tt-uni-cogrid tt-uni-only" id="tt-uni-co">
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-stats" aria-label="Team statistics"></section>
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-today" aria-label="Today"></section>
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-members" aria-label="Members"></section>
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-days" aria-label="Hours per day"></section>
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-rhythm" aria-label="Weekday rhythm"></section>
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-cov" aria-label="Coverage"></section>
+              <section class="tt-earnings tt-uni-card" id="tt-uni-co-alerts" aria-label="Team alerts"></section>
+            </div>
             <div class="tt-co-banners" id="tt-co-banners"></div>
             <div class="tt-menu-label tt-co-section-label">Members</div>
             <div class="tt-co-cards" id="tt-co-cards"></div>
@@ -2405,7 +2478,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.085</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.086</div>
   </div>
 </div>
 
@@ -4801,6 +4874,7 @@ match /users/{userId}/meta/{docId} {
 
     if(!members.length){
       $('tt-co-banners').innerHTML = '';
+      $('tt-co-dashboard').classList.remove('tt-uni-has');
       $('tt-co-cards').innerHTML = `<div class="tt-preset-empty">No members yet. <button type="button" class="tt-btn tt-menu-btn-inline" id="tt-co-goto-members" style="margin-left:6px;">Add members</button></div>`;
       return;
     }
@@ -4861,6 +4935,8 @@ match /users/{userId}/meta/{docId} {
         </div>
       </div>`;
     }).join('');
+    $('tt-co-dashboard').classList.add('tt-uni-has');
+    renderUniCompany(stats);
   }
 
   // Delegated clicks for the buttons that dashboard rendering creates
@@ -6255,6 +6331,22 @@ match /users/{userId}/meta/{docId} {
     enhSet('attention', `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}${i.action ? ` <button type="button" class="tt-enh-link" data-enh="${i.action}">Set a target</button>` : ''}</span></div></div>`).join('')}</div>`);
   }
 
+  // earned each day: what happened (solid), what your pace adds on the days still to come (hatched), today in white
+  function enhDayBars(P, S){
+    const n = P.n, cumAt = {}; S.proj.forEach(([d, v])=>{ cumAt[d] = v; });
+    const now = new Date(), thisMonth = P.y === now.getFullYear() && P.m === now.getMonth();
+    const vals = []; let maxV = 0;
+    for(let d = 1; d <= n; d++){
+      let v = 0, kind = 'w';
+      if(d <= S.lastDay){ v = S.actual[d - 1] - (d > 1 ? S.actual[d - 2] : 0); kind = 'a'; }
+      else if(cumAt[d] != null && cumAt[d - 1] != null){ v = Math.max(0, cumAt[d] - cumAt[d - 1]); kind = v > 0 ? 'p' : 'w'; }
+      vals.push({ d, v, kind: kind + (thisMonth && d === S.lastDay ? ' t' : '') }); maxV = Math.max(maxV, v);
+    }
+    return `<div class="tt-enh-sub" style="margin-top:2px">Earned per day · ${P.mode}, ${P.cur}</div>
+      <div class="tt-daybars" role="img" aria-label="${P.mode} earnings for each day of the month; hatched bars are your projected pace">${vals.map(x=> `<div class="tt-day ${x.kind}" style="height:${x.v > 0 ? Math.max(4, x.v / (maxV || 1) * 100).toFixed(1) : 3}%" title="${x.d} · ${x.v.toFixed(2)} ${P.cur}${x.kind.startsWith('p') ? ' (projected)' : ''}"></div>`).join('')}</div>
+      <div class="tt-dayaxis"><span>1</span><span>${Math.round(n / 3)}</span><span>${Math.round(n * 2 / 3)}</span><span>${n}</span></div>`;
+  }
+
   function enhRenderCurve(P, S){
     $('tt-enh-title-curve').textContent = `Month curve · cumulative ${P.mode}, ${P.cur}`;
     if(!S.lastDay || (S.earned === 0 && !S.proj.length)){
@@ -6282,8 +6374,8 @@ match /users/{userId}/meta/{docId} {
         ${ticks.map(v=> `<span class="yl" style="top:${pct(Y(v), 240)}%">${Math.round(v)}</span>`).join('')}
         ${xt.map(d=> `<span class="xl" style="left:${pct(X(d), 720)}%">${d}</span>`).join('')}
         <span class="dot" style="left:${pct(X(S.lastDay), 720)}%;top:${pct(Y(S.earned), 240)}%"></span>
-        ${last ? `<span class="dot" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;background:var(--ink)"></span><span class="tag" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;transform:translate(-100%,85%);color:var(--amber)">≈ ${enhFmt(last[1])}</span>` : ''}
-        ${tgt ? `<span class="tag" style="left:100%;top:${pct(Y(tgt), 240)}%;transform:translate(-100%,-170%)">target ${Math.round(tgt)}</span>` : ''}</div>`);
+        ${last ? `<span class="dot" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;background:var(--ink)"></span><span class="tag" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;transform:translate(-100%,${Y(last[1]) / 240 * 100 > 78 ? '-170%' : '150%'});color:var(--amber)">≈ ${enhFmt(last[1])}</span>` : ''}
+        ${tgt ? `<span class="tag" style="left:100%;top:${pct(Y(tgt), 240)}%;transform:translate(-100%,-170%)">target ${Math.round(tgt)}</span>` : ''}</div>${uniOn() ? enhDayBars(P, S) : ''}`);
   }
 
   function enhRenderPocket(){
@@ -6725,14 +6817,14 @@ match /users/{userId}/meta/{docId} {
       add(key, row(key, `${clockTime(active.startISO, active.tz)}–now`, active.note, fmtHMS(Math.floor((Date.now() - a.getTime()) / 1000)).replace(/^0/, ''), payOf({ active }, new Date(a.getFullYear(), a.getMonth(), a.getDate())), true));
       shown++;
     }
-    for(let i = entries.length - 1; i >= 0 && shown < 8; i--){
+    for(let i = entries.length - 1; i >= 0 && shown < 40; i--){
       const e = entries[i]; if(!e.date) continue;
       const [y, m, d] = e.date.split('-').map(Number);
       add(e.date, row(e.date, `${clockTime(e.startISO, e.tz)}–${clockTime(e.stopISO, e.tz)}`, e.note, fmtHM(e.durationSec || 0), payOf({ entries:[e] }, new Date(y, m - 1, d)), false));
       shown++;
     }
     const body = groups.map(g=>{ const [y, m, d] = g.key.split('-').map(Number); return `<div class="tt-uni-day"><span>${label(g.key)}</span> <span>${fmtHM(secondsForDate(new Date(y, m - 1, d)))} h</span></div>${g.rows.join('')}`; }).join('');
-    uniSet('tt-uni-entries', `<div class="tt-uni-hd"><span class="tt-enh-disc">${ENH_ICON.attention.replace(/<path[^>]*>/, '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</span><span class="tt-enh-title">Recent entries</span></div><div>${body || '<div class="tt-enh-empty">No entries yet. Press Start to log your first one.</div>'}</div><button type="button" class="tt-enh-link" data-uni-cal="1" style="margin-top:auto;align-self:flex-start;min-height:44px">Open the calendar</button>`);
+    uniSet('tt-uni-entries', `<div class="tt-uni-hd"><span class="tt-enh-disc">${ENH_ICON.attention.replace(/<path[^>]*>/, '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</span><span class="tt-enh-title">Recent entries</span></div><div class="tt-uni-entlist">${body || '<div class="tt-enh-empty">No entries yet. Press Start to log your first one.</div>'}</div><button type="button" class="tt-uni-calbtn" data-uni-cal="1"><svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span>See all entries</span><svg class="tt-uni-ic" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`);
   }
 
   function renderUniBar(){
@@ -6767,6 +6859,112 @@ match /users/{userId}/meta/{docId} {
     const rows = [...$('tt-uni-entries').querySelectorAll('.tt-uni-row')], keys = rows.map(r=> r.dataset.key);
     if(uniSeenRows) rows.forEach(r=>{ if(!uniSeenRows.has(r.dataset.key)) uniPulse(r, 'tt-uni-new'); });
     uniSeenRows = new Set(keys);
+  }
+
+  // ---- the company dashboard in the Unified layout: the same grid and cards as the personal one, with team statistics ----
+  const UNI_CO_COLORS = ['var(--amber)', 'var(--paper)', '#9DB8FF', 'var(--enh-ok)', '#E98FA3', '#C9A7FF'];
+  function renderUniCompany(stats){
+    if(!uniOn() || !$('tt-uni-co')) return;
+    const { members, totals, dates } = stats, now = new Date(), todayKey = dateKey(now);
+    const nameOf = (m)=> m.user.displayName || m.user.email || 'Unknown user';
+    const initials = (m)=> nameOf(m).split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
+    const color = (i)=> UNI_CO_COLORS[i % UNI_CO_COLORS.length];
+    const hd = (icon, title, extra)=> `<div class="tt-uni-hd"><span class="tt-enh-disc">${icon}</span><span class="tt-enh-title">${escapeHtml(title)}</span>${extra || ''}</div>`;
+    const anyIncome = members.some(m=> m.hasRates), modeWord = earningsMode;
+    const ents = members.map(m=> getEntriesForUid(m.uid));
+    const byDate = ents.map(list=>{ const o = {}; list.forEach(e=>{ if(e.date) o[e.date] = (o[e.date] || 0) + (e.durationSec || 0); }); return o; });
+    const WD = (d)=> (d.getDay() + 6) % 7;
+
+    // statistics strip
+    const stat = (icon, value, label, dashed)=> `<div class="tt-uni-stat"><span class="tt-uni-statdisc${dashed ? ' dashed' : ''}">${icon}</span><span><b>${escapeHtml(value)}</b> <i>${escapeHtml(label)}</i></span></div>`;
+    uniSet('tt-uni-co-stats', hd(ENH_ICON.curve, `${coLabel(dates)} · team`)
+      + `<div class="tt-uni-statgrid">${stat(ENH_ICON.todayline, fmtHM(totals.seconds) + ' h', `Team hours · ${members.length} member${members.length === 1 ? '' : 's'}`)}${stat(ENH_ICON.heat, `${totals.active} of ${members.length}`, 'Members who logged time')}${stat(ENH_ICON.pocket, anyIncome ? coMoney(coPick(totals.gross, totals.net)) : '—', anyIncome ? `Income · ${modeWord}` : 'Income · no rates set')}${stat(ENH_ICON.curve, anyIncome ? '≈ ' + coMoney(coPick(totals.projGross, totals.projNet)) : '—', 'Month end · not real earnings', true)}</div>`);
+
+    // today: who has worked, and when they last stopped
+    const todayRows = members.map((m, i)=>{
+      const mine = ents[i].filter(e=> e.date === todayKey), secs = mine.reduce((a, e)=> a + (e.durationSec || 0), 0);
+      const last = mine.reduce((a, e)=> (e.stopISO && (!a || e.stopISO > a.stopISO)) ? e : a, null);
+      return { m, i, secs, last };
+    }).sort((a, b)=> b.secs - a.secs);
+    const workedToday = todayRows.filter(r=> r.secs > 0).length;
+    uniSet('tt-uni-co-today', hd(ENH_ICON.todayline, `Today · ${WD_SHORT[WD(now)]} ${now.getDate()} ${MON_SHORT[now.getMonth()]}`, `<span class="tt-enh-pill plain" style="margin-left:auto"><b>${workedToday} of ${members.length}</b> <span style="color:var(--paper-dim);font-weight:500">worked</span></span>`)
+      + `<div class="tt-uni-corows">${todayRows.map(r=> `<div class="tt-uni-coperson"><span class="tt-uni-coav" style="--c:${color(r.i)}">${escapeHtml(initials(r.m))}</span><span class="tt-uni-coname"><b>${escapeHtml(nameOf(r.m))}</b> <i>${r.last ? 'last entry ended ' + escapeHtml(clockTime(r.last.stopISO, r.last.tz)) : 'nothing logged yet today'}</i></span><span class="tt-uni-corow-end"><b>${r.secs ? '+' + escapeHtml(fmtHM(r.secs)) + ' h' : '—'}</b></span></div>`).join('')}</div>`);
+
+    // members, ranked by hours
+    const maxSec = Math.max(1, ...members.map(m=> m.seconds));
+    const money = (m, kind)=> {
+      if(!m.hasRates) return '—';
+      if(kind === 'earn') return coMoney(coPick(m.earn.grossConvertedTotal || 0, m.earn.netConvertedTotal || 0));
+      return m.proj.projected ? '≈ ' + coMoney(coPick(m.proj.projected.grossConvertedTotal, m.proj.projected.netConvertedTotal)) : '—';
+    };
+    const order = members.map((m, i)=> ({ m, i })).sort((a, b)=> b.m.seconds - a.m.seconds);
+    uniSet('tt-uni-co-members', hd(ENH_ICON.heat, `Members · ${coLabel(dates)}`)
+      + `<div class="tt-uni-scrollx"><div class="tt-uni-cotable"><div class="tt-uni-corowh"><span>Member</span><span>Hours · share of team</span><span>Days</span><span>Avg / day</span><span>Income</span><span>Month end</span></div>`
+      + order.map(({ m, i })=>{
+          const share = totals.seconds ? m.seconds / totals.seconds * 100 : 0, avg = m.workedDays ? Math.round(m.seconds / m.workedDays) : 0;
+          const chip = !m.fin.ok ? '<em class="tt-uni-cochip bad">Rates unreadable</em>' : (m.seconds > 0 && !m.hasRates ? '<em class="tt-uni-cochip">No rate set</em>' : '');
+          return `<div class="tt-uni-corowb"><span class="tt-uni-coperson"><span class="tt-uni-coav" style="--c:${color(i)}">${escapeHtml(initials(m))}</span><span class="tt-uni-coname"><b>${escapeHtml(nameOf(m))}</b> <i>${escapeHtml(m.user.email || '')}</i>${chip}</span></span>`
+            + `<span><span class="tt-uni-cohours"><b>${escapeHtml(fmtHM(m.seconds))} h</b> <i>${share.toFixed(0)}%</i></span><span class="tt-uni-cobar"><i style="width:${(m.seconds / maxSec * 100).toFixed(1)}%;background:${color(i)}"></i></span></span>`
+            + `<span class="mono">${m.workedDays}</span><span class="mono">${m.workedDays ? escapeHtml(fmtHM(avg)) + ' h' : '—'}</span><span class="mono">${escapeHtml(money(m, 'earn'))}</span><span class="mono tt-uni-approx">${escapeHtml(money(m, 'proj'))}</span></div>`;
+        }).join('') + '</div></div>');
+
+    // hours per day (per week when the range is long), stacked by member
+    let buckets;
+    if(dates.length > 45){
+      const map = new Map();
+      dates.forEach(d=>{ const k = dateKey(enhAddDays(d, -WD(d))); if(!map.has(k)) map.set(k, []); map.get(k).push(d); });
+      buckets = [...map.values()].map(ds=> ({ label: `${ds[0].getDate()} ${MON_SHORT[ds[0].getMonth()]}`, per: members.map((m, i)=> ds.reduce((a, d)=> a + (byDate[i][dateKey(d)] || 0), 0)) }));
+    } else buckets = dates.map(d=> ({ label: `${WD_SHORT[WD(d)]} ${d.getDate()} ${MON_SHORT[d.getMonth()]}`, per: members.map((m, i)=> byDate[i][dateKey(d)] || 0) }));
+    const maxB = Math.max(1, ...buckets.map(b=> b.per.reduce((a, x)=> a + x, 0)));
+    const legend = `<div class="tt-enh-legend">${members.map((m, i)=> `<span><i style="background:${color(i)}"></i>${escapeHtml(nameOf(m))}</span>`).join('')}</div>`;
+    uniSet('tt-uni-co-days', hd(ENH_ICON.rhythm, dates.length > 45 ? 'Hours per week · by member' : 'Hours per day · by member')
+      + (buckets.length < 2 ? '<div class="tt-enh-empty">Pick Week or Month in the bar above to see the day-by-day picture.</div>' : legend
+      + `<div class="tt-uni-stack" role="img" aria-label="Hours logged in each period, stacked by member">${buckets.map(b=>{ const tot = b.per.reduce((a, x)=> a + x, 0);
+          return `<div class="tt-uni-col" title="${escapeHtml(b.label)} · ${escapeHtml(fmtHM(tot))} h${b.per.map((x, i)=> x ? ' · ' + escapeHtml(nameOf(members[i])) + ' ' + escapeHtml(fmtHM(x)) : '').join('')}"><div class="tt-uni-colbar${tot ? '' : ' empty'}" style="height:${tot ? (tot / maxB * 100).toFixed(1) + '%' : '3px'}">${b.per.map((x, i)=> x ? `<i style="flex:${x} 1 0;background:${color(i)}"></i>` : '').join('')}</div></div>`; }).join('')}</div>`
+      + `<div class="tt-dayaxis"><span>${escapeHtml(buckets[0].label)}</span><span>${escapeHtml(buckets[Math.floor(buckets.length / 2)].label)}</span><span>${escapeHtml(buckets[buckets.length - 1].label)}</span></div>`));
+
+    // weekday rhythm of the team (last 16 weeks)
+    const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), start = enhAddDays(today0, -mondayIndex(today0) - 15 * 7);
+    const wdSum = [0,0,0,0,0,0,0], wdN = [0,0,0,0,0,0,0];
+    for(let d = new Date(start); d <= today0; d = enhAddDays(d, 1)){ const k = dateKey(d), w = WD(d); wdN[w]++; byDate.forEach(o=>{ wdSum[w] += o[k] || 0; }); }
+    const avg = wdSum.map((v, i)=> wdN[i] ? v / wdN[i] / 3600 : 0), best = Math.max(...avg) > 0 ? avg.indexOf(Math.max(...avg)) : -1, mx = Math.max(...avg, 0.0001);
+    uniSet('tt-uni-co-rhythm', hd(ENH_ICON.rhythm, 'Team rhythm · hours per weekday')
+      + `<div class="tt-rh">${avg.map((a, i)=> `<div class="${i === best ? 'best ' : ''}${i === WD(now) ? 'now' : ''}"><span class="num">${a.toFixed(1)}</span><div class="bar" style="height:${Math.max(3, a / mx * 78).toFixed(1)}%"></div><span class="lab">${WD_SHORT[i]}</span></div>`).join('')}</div>`
+      + `<div class="tt-enh-sub">Combined hours of the whole team on an average day, last 16 weeks${best >= 0 ? `; ${WD_LONG[best]} is the busiest.` : '.'}</div>`);
+
+    // coverage: how many members are tracking, by weekday and hour (average over the last 8 weeks)
+    const acc = Array.from({ length: 7 }, ()=> new Array(16).fill(0)), cutoff = enhAddDays(today0, -56).getTime();
+    ents.forEach(list=> list.forEach(e=>{
+      if(!e.startISO || !e.stopISO) return;
+      let t = new Date(e.startISO).getTime(); const end = new Date(e.stopISO).getTime();
+      if(end < cutoff) return;
+      while(t < end){
+        const d = new Date(t), hourEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours() + 1).getTime(), seg = Math.min(end, hourEnd) - t;
+        const h = d.getHours(); if(h >= 6 && h < 22) acc[WD(d)][h - 6] += seg / 60000;
+        t += Math.max(seg, 1);
+      }
+    }));
+    const cov = acc.map(r=> r.map(v=> v / (60 * 8))), covMax = Math.max(0.0001, ...cov.map(r=> Math.max(...r)));
+    let gap = null;
+    for(let w = 0; w < 5 && !gap; w++) for(let h = 9; h < 17; h++){ if(cov[w][h - 6] === 0 && cov.some((r, x)=> x < 5 && r[h - 6] > 0)){ gap = `${WD_LONG[w]} ${String(h).padStart(2, '0')}:00–${String(h + 1).padStart(2, '0')}:00`; break; } }
+    const cells = []; for(let h = 0; h < 16; h++) for(let w = 0; w < 7; w++){
+      const v = cov[w][h], lvl = v === 0 ? 0 : v <= covMax * .25 ? 1 : v <= covMax * .5 ? 2 : v <= covMax * .75 ? 3 : 4;
+      cells.push(`<i class="l${lvl}" title="${WD_SHORT[w]} ${String(h + 6).padStart(2, '0')}:00 · ${v.toFixed(1)} member${v === 1 ? '' : 's'} on average"></i>`);
+    }
+    uniSet('tt-uni-co-cov', hd(ENH_ICON.heat, 'Coverage · who is tracking, by hour')
+      + `<div class="tt-heat-wrap"><div class="tt-heat-days tt-cov">${['Mon','','Wed','','Fri','',''].map(l=> `<span>${l}</span>`).join('')}</div><div class="tt-heat-main"><div class="tt-heat-months">${Array.from({ length: 16 }, (_, h)=> `<span>${h % 2 === 0 ? String(h + 6).padStart(2, '0') : ''}</span>`).join('')}</div><div class="tt-heat-grid tt-cov" role="img" aria-label="Average number of members tracking time in each hour of each weekday, last 8 weeks">${cells.join('')}</div></div></div>`
+      + `<div class="tt-enh-legend"><span>Fewer</span><i style="width:14px;height:14px;border-radius:4px;background:var(--panel-2);display:inline-block"></i><i style="width:14px;height:14px;border-radius:4px;background:rgba(232,163,61,.5);display:inline-block"></i><i style="width:14px;height:14px;border-radius:4px;background:var(--amber);display:inline-block"></i><span>More members</span><span style="margin-left:auto;color:var(--paper)">${gap ? 'Nobody tracks ' + escapeHtml(gap) + ' on a typical week.' : 'Working hours are covered every weekday.'}</span></div>`);
+
+    // what needs a look
+    const items = [];
+    const unread = members.filter(m=> !m.fin.ok); if(unread.length) items.push({ kind:'warn', title:`Rates unreadable for ${unread.map(nameOf).join(', ')}`, body:'Their income is left out until the rates can be read. The retry is in the notice above the dashboard.' });
+    const noRate = members.filter(m=> m.fin.ok && m.seconds > 0 && !m.hasRates); if(noRate.length) items.push({ kind:'warn', title:`${noRate.map(nameOf).join(', ')} ${noRate.length === 1 ? 'has' : 'have'} hours but no rate`, body:'Their time counts as hours only. Set a rate on the project they log.' });
+    const idle = members.filter(m=> m.seconds === 0); if(idle.length) items.push({ kind:'info', title:`${idle.map(nameOf).join(', ')} logged no time in this period`, body:'Nothing recorded between these dates.' });
+    if(order.length > 1 && totals.seconds > 0 && order[0].m.seconds / totals.seconds >= 0.6) items.push({ kind:'info', title:`${nameOf(order[0].m)} carries ${(order[0].m.seconds / totals.seconds * 100).toFixed(0)}% of the hours`, body:'Worth knowing before holidays.' });
+    if(gap) items.push({ kind:'info', title:`Nobody is tracking ${gap}`, body:'Inside working hours, over the last 8 weeks.' });
+    if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', title:'Nothing needs your attention', body:'Rates are readable and everyone with hours has one.' });
+    uniSet('tt-uni-co-alerts', hd(ENH_ICON.attention, 'Needs attention · team')
+      + `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span></div></div>`).join('')}</div>`);
   }
 
   function renderUnified(){
