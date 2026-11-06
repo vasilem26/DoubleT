@@ -882,6 +882,20 @@
     background:var(--panel); box-shadow:0 0 0 1px var(--line), 0 28px 60px rgba(var(--shadow-rgb),.55); isolation:isolate; animation:tt-uni-popin .28s cubic-bezier(.2,.9,.3,1.2) both; transform-origin:top right;}
   .tt-uni-pop[hidden]{display:none;}
   @keyframes tt-uni-popin{from{opacity:0; transform:scale(.92) translateY(-6px);}to{opacity:1; transform:none;}}
+  .tt-uni-acctwrap{position:relative;}
+  .tt-uni-acctpop{width:300px; display:flex; flex-direction:column; gap:12px;}
+  .tt-uni-acct-head{display:flex; align-items:center; gap:12px;}
+  .tt-uni-acct-head b{display:block; font-weight:600; font-size:15px;}
+  .tt-uni-acct-head i{display:block; font-style:normal; font-size:12.5px; color:var(--paper-dim); overflow-wrap:anywhere;}
+  .tt-uni-acct-head em{display:inline-block; margin-top:4px; font-style:normal; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--amber); background:var(--amber-soft); border-radius:999px; padding:1px 8px;}
+  .tt-uni-acct-tz{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 0 0; border-top:1px solid var(--line); font-size:13px;}
+  .tt-uni-acct-tz span{color:var(--paper-dim);} .tt-uni-acct-tz b{font-family:'Space Mono',monospace; font-weight:700; font-size:12.5px;}
+  .tt-uni-acctpop small{color:var(--paper-dim); font-size:11.5px; line-height:1.45; margin-top:-6px;}
+  .tt-uni-unreaddot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--amber); margin-right:8px; vertical-align:middle;}
+  .tt-attn-item.read{opacity:.55;}
+  .tt-uni-markread{min-height:44px; display:inline-flex; align-items:center; padding:0; font-size:13px;}
+  .tt-uni-readall{width:100%; margin-top:10px; min-height:44px;}
+  .tt-uni-readall:disabled{opacity:.5; cursor:default;}
   .tt-uni-account{display:flex; align-items:center; gap:10px; background:transparent; border:0; color:var(--paper); min-height:44px; padding:0 4px; cursor:pointer; font-family:'Work Sans',sans-serif;}
   .tt-uni-who{text-align:right; line-height:1.25;}
   .tt-uni-who b{display:block; font-size:14px; font-weight:600;}
@@ -941,6 +955,8 @@
     html.tt-uni .tt-panel[data-panel="earnings"]{grid-column:1 / 9; grid-row:6;}
   }
   @media (max-width:900px){
+    /* on a phone the small cards are pinned inside the screen instead of hanging off their button */
+    .tt-uni-pop{position:fixed; top:72px; left:12px; right:12px; width:auto; max-width:none; max-height:calc(100vh - 96px); overflow-y:auto;}
     html.tt-uni #tt-app-root{padding-left:0;}
     html.tt-uni .tt-uni-rail{display:none !important;}
     html.tt-uni .tt-uni-card{margin-top:12px;}
@@ -1578,7 +1594,10 @@
         <button type="button" class="tt-uni-iconbtn" id="tt-uni-bell" aria-label="Alerts" aria-expanded="false" aria-haspopup="dialog"><svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="tt-uni-badge" id="tt-uni-badge" hidden>0</span></button>
         <div class="tt-uni-pop" id="tt-uni-bellpop" role="dialog" aria-label="Needs attention" hidden></div>
       </div>
-      <button type="button" class="tt-uni-account" id="tt-uni-account" aria-label="Account menu"><span class="tt-uni-who"><b id="tt-uni-name"></b><i id="tt-uni-role"></i></span><span class="tt-uni-av" id="tt-uni-av"></span></button>
+      <div class="tt-uni-acctwrap">
+        <button type="button" class="tt-uni-account" id="tt-uni-account" aria-label="Account" aria-haspopup="dialog" aria-expanded="false"><span class="tt-uni-who"><b id="tt-uni-name"></b><i id="tt-uni-role"></i></span><span class="tt-uni-av" id="tt-uni-av"></span></button>
+        <div class="tt-uni-pop tt-uni-acctpop" id="tt-uni-acctpop" role="dialog" aria-label="Account" hidden></div>
+      </div>
     </div>
     <div class="tt-uni-controls tt-uni-only" id="tt-uni-controls">
       <div class="tt-uni-stepper"><button type="button" class="tt-uni-iconbtn" id="tt-uni-prev" aria-label="Previous period">&#8249;</button><h1 id="tt-uni-title">—</h1><button type="button" class="tt-uni-iconbtn" id="tt-uni-next" aria-label="Next period">&#8250;</button></div>
@@ -2386,7 +2405,7 @@
       </div>
     </div>
 
-    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.084</div>
+    <div class="tt-foot">Signed-in entries sync automatically across every device you log into. Export whenever you want an .xlsx copy.<br/>Double T v1.085</div>
   </div>
 </div>
 
@@ -6186,8 +6205,9 @@ match /users/{userId}/meta/{docId} {
     const nowHtml = (nowH >= lo && nowH <= hi) ? `<div class="tt-tl-now" style="left:${L(nowH)}%"></div><span class="tt-tl-nowlbl" style="left:${L(nowH)}%">now ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : '';
     let nudge;
     if(!H.usual) nudge = 'Not enough history yet for a “usual day”.';
-    else if(H.usual.secs > total) nudge = `${fmtHM(Math.round(H.usual.secs - total))} h more matches your usual day.`;
-    else nudge = 'You are past your usual day.';
+    else if(H.usual.secs - total >= 60) nudge = `${fmtHM(Math.round(H.usual.secs - total))} h more matches your usual day.`;
+    else if(total - H.usual.secs >= 60) nudge = `${fmtHM(Math.round(total - H.usual.secs))} h more than your usual day.`;
+    else nudge = 'Right on your usual day.';
     const toClock = (h)=> `${String(Math.floor(h)).padStart(2,'0')}:${String(Math.round((h % 1) * 60) % 60).padStart(2,'0')}`;
     $('tt-enh-title-todayline').textContent = `Today · ${WD_SHORT[(now.getDay() + 6) % 7]} ${now.getDate()} ${MON_SHORT[now.getMonth()]}`;
     enhSet('todayline', `<div class="tt-enh-legend" style="justify-content:space-between"><span class="tt-enh-pill plain"><b>${escapeHtml(fmtHM(total))} h</b>${H.usual ? ` <span style="color:var(--paper-dim);font-weight:500">of your usual ${escapeHtml(fmtHM(Math.round(H.usual.secs)))} h</span>` : ''}</span></div>
@@ -6202,15 +6222,15 @@ match /users/{userId}/meta/{docId} {
       const gap = P.target.amount - P.projected;
       if(gap > 0){
         const needH = P.rate > 0 ? ((P.target.amount - P.earned) / P.remaining) / P.rate : null;
-        items.push({ kind:'warn', title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
+        items.push({ kind:'warn', key:`forecast:${P.y}-${P.m}:${Math.round(P.target.amount)}`, title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
           body: needH != null ? `Add ${enhHM(Math.max(0, needH - P.avgH))} h on each of the ${plural(P.remaining, 'remaining weekday')} (${enhHM(needH)} h a day in total) to close the gap.` : 'Set a rate on the project you track to see what closing the gap takes.' });
       }
     } else if(!P.target){
-      items.push({ kind:'info', title:'No monthly target set', body:'Set one in Month pace to get a verdict and the hours per day it takes.', action:'target' });
+      items.push({ kind:'info', key:'notarget', title:'No monthly target set', body:'Set one in Month pace to get a verdict and the hours per day it takes.', action:'target' });
     }
     if(active){
       const elapsed = (Date.now() - new Date(active.startISO).getTime()) / 3600000;
-      if(elapsed >= 10) items.push({ kind:'warn', title:`Timer has been running ${enhHM(elapsed)} h`, body: dateKey(new Date(active.startISO)) !== dateKey(new Date()) ? 'It was started on a previous day. Still working?' : 'Still working? Stop it when you are done so the day stays accurate.' });
+      if(elapsed >= 10) items.push({ kind:'warn', key:`timer:${active.startISO}`, title:`Timer has been running ${enhHM(elapsed)} h`, body: dateKey(new Date(active.startISO)) !== dateKey(new Date()) ? 'It was started on a previous day. Still working?' : 'Still working? Stop it when you are done so the day stays accurate.' });
     }
     const now = new Date(), monthPrefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const monthEntries = entries.filter(e=> e.date && e.date.startsWith(monthPrefix));
@@ -6222,11 +6242,11 @@ match /users/{userId}/meta/{docId} {
       if(!(meta && typeof meta === 'object' && Number(meta.rate) > 0)) noRate[name] = true;
     });
     const noRateNames = Object.keys(noRate);
-    if(noRateNames.length) items.push({ kind:'warn', title:`${plural(noRateNames.length, 'project')} with hours but no rate`, body:`${noRateNames.slice(0, 3).join(', ')}${noRateNames.length > 3 ? '…' : ''} — their time counts as hours only. Set a rate in Menu → Projects.` });
+    if(noRateNames.length) items.push({ kind:'warn', key:`norate:${noRateNames.join(',')}`, title:`${plural(noRateNames.length, 'project')} with hours but no rate`, body:`${noRateNames.slice(0, 3).join(', ')}${noRateNames.length > 3 ? '…' : ''} — their time counts as hours only. Set a rate in Menu → Projects.` });
     const noProject = monthEntries.filter(e=> !e.note).length;
-    if(noProject) items.push({ kind:'info', title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
-    if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
-    if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
+    if(noProject) items.push({ kind:'info', key:`noproject:${monthPrefix}`, title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
+    if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', key:`best:${H.best}`, title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
+    if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', key:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
     return items;
   }
 
@@ -6560,7 +6580,6 @@ match /users/{userId}/meta/{docId} {
   });
   $('tt-uni-cosel').addEventListener('change', (e)=>{ coTab = 'dashboard'; go({ view:'admin', screen:'company', cid:e.target.value }); });
   $('tt-uni-theme').addEventListener('click', ()=> $('tt-theme-toggle').click());
-  $('tt-uni-account').addEventListener('click', ()=> $('tt-menu-btn').click());
 
   // the period bar drives the personal dashboard, or the company dashboard while you are in it
   $('tt-uni-prev').addEventListener('click', ()=>{ $(uniIsCo() ? 'tt-co-prev' : 'tt-prev').click(); renderUnified(); });
@@ -6590,18 +6609,64 @@ match /users/{userId}/meta/{docId} {
   // the bell
   const uniCloseBell = ()=>{ $('tt-uni-bellpop').hidden = true; $('tt-uni-bell').setAttribute('aria-expanded', 'false'); };
   $('tt-uni-bell').addEventListener('click', ()=>{
+    uniCloseAcct();
     const pop = $('tt-uni-bellpop'); pop.hidden = !pop.hidden;
     $('tt-uni-bell').setAttribute('aria-expanded', String(!pop.hidden));
     if(!pop.hidden) renderUniBell();
   });
-  document.addEventListener('click', (e)=>{ if(!e.target.closest('.tt-uni-bellwrap')) uniCloseBell(); });
+  // judged by the click's original path: a button that redrew the panel is no longer in the page by the time this runs
+  const uniClickedIn = (e, cls)=> e.composedPath().some(n=> n.classList && n.classList.contains(cls));
+  document.addEventListener('click', (e)=>{ if(!uniClickedIn(e, 'tt-uni-bellwrap')) uniCloseBell(); });
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') uniCloseBell(); });
-  function uniAlerts(){ return enhData ? enhAttentionItems(enhData.P, enhData.H) : []; }
-  function renderUniBell(){
-    const items = uniAlerts();
-    $('tt-uni-bellpop').innerHTML = `<div class="tt-enh-head" style="margin-bottom:8px"><span class="tt-enh-disc">${ENH_ICON.attention}</span><span class="tt-enh-title">Needs attention</span></div>`
-      + `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span></div></div>`).join('') || '<div class="tt-enh-empty">Nothing needs your attention.</div>'}</div>`;
+  // Read state is kept on this device, per person. An alert keeps its key while its numbers drift, so reading it once
+  // dismisses it until something genuinely new comes up (a new month, a new target, a different project without a rate).
+  const uniReadKey = ()=> 'tt-notif-read:' + (auth.currentUser ? auth.currentUser.uid : '');
+  function uniReadSet(){ try{ return new Set(JSON.parse(localStorage.getItem(uniReadKey()) || '[]')); }catch(e){ return new Set(); } }
+  function uniReadSave(set){ try{ localStorage.setItem(uniReadKey(), JSON.stringify([...set].slice(-100))); }catch(e){} }
+  function uniAlerts(){
+    if(!enhData) return [];
+    const read = uniReadSet();
+    return enhAttentionItems(enhData.P, enhData.H).map(i=> ({ ...i, read: i.kind === 'ok' || read.has(i.key) }));
   }
+  const uniUnread = ()=> uniAlerts().filter(i=> i.kind !== 'ok' && !i.read).length;
+  function renderUniBell(){
+    const items = uniAlerts(), unread = items.filter(i=> i.kind !== 'ok' && !i.read).length;
+    const row = (i)=> `<div class="tt-attn-item ${i.kind}${i.read ? ' read' : ''}">${ENH_STATE[i.kind]}<div><b>${i.read ? '' : '<i class="tt-uni-unreaddot" aria-label="Unread"></i>'}${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span>${(!i.read && i.kind !== 'ok') ? `<button type="button" class="tt-enh-link tt-uni-markread" data-read="${escapeHtml(i.key)}" aria-label="Mark as read: ${escapeHtml(i.title)}">Mark as read</button>` : ''}</div></div>`;
+    uniSet('tt-uni-bellpop', `<div class="tt-enh-head" style="margin-bottom:8px"><span class="tt-enh-disc">${ENH_ICON.attention}</span><span class="tt-enh-title">Needs attention${unread ? ` · ${unread} unread` : ''}</span></div>`
+      + `<div class="tt-attn">${items.map(row).join('') || '<div class="tt-enh-empty">Nothing needs your attention.</div>'}</div>`
+      + `<button type="button" class="tt-btn tt-uni-readall" data-readall="1"${unread ? '' : ' disabled'}>${unread ? 'Mark all as read' : 'All read'}</button>`);
+  }
+  $('tt-uni-bellpop').addEventListener('click', (e)=>{
+    const one = e.target.closest('[data-read]'), all = e.target.closest('[data-readall]');
+    if(!one && !all) return;
+    const read = uniReadSet();
+    if(one) read.add(one.dataset.read);
+    else uniAlerts().forEach(i=>{ if(i.kind !== 'ok') read.add(i.key); });
+    uniReadSave(read);
+    renderUnified();
+    // the button you pressed is gone: keep keyboard focus inside the panel
+    const next = $('tt-uni-bellpop').querySelector('[data-read]') || $('tt-uni-bellpop').querySelector('[data-readall]');
+    if(next) next.focus();
+  });
+
+  // the account button opens a small card (who you are, your time zone, sign out), not the whole Settings page
+  const uniCloseAcct = ()=>{ $('tt-uni-acctpop').hidden = true; $('tt-uni-account').setAttribute('aria-expanded', 'false'); };
+  function renderUniAcct(){
+    const u = auth.currentUser, name = u ? (u.displayName || u.email || '') : '', email = u ? (u.email || '') : '';
+    const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
+    uniSet('tt-uni-acctpop', `<div class="tt-uni-acct-head"><span class="tt-uni-av">${escapeHtml(initials)}</span><div><b>${escapeHtml(name)}</b><i>${escapeHtml(email && email !== name ? email : '')}</i>${isAdmin ? '<em>Admin</em>' : ''}</div></div>`
+      + `<div class="tt-uni-acct-tz"><span>Time zone</span><b>${escapeHtml(browserTimeZone() || '—')}</b></div><small>Entries are stamped with the time zone of the device they are recorded on.</small>`
+      + `<button type="button" class="tt-btn danger" id="tt-uni-signout" style="width:100%">Sign out</button>`);
+  }
+  $('tt-uni-account').addEventListener('click', ()=>{
+    const pop = $('tt-uni-acctpop'), open = pop.hidden;
+    uniCloseBell(); pop.hidden = !open;
+    $('tt-uni-account').setAttribute('aria-expanded', String(open));
+    if(open) renderUniAcct();
+  });
+  $('tt-uni-acctpop').addEventListener('click', (e)=>{ if(e.target.closest('#tt-uni-signout')){ uniCloseAcct(); $('tt-menu-signout').click(); } });
+  document.addEventListener('click', (e)=>{ if(!uniClickedIn(e, 'tt-uni-acctwrap')) uniCloseAcct(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') uniCloseAcct(); });
 
   // The app disables Day while the Calendar view is on (it needs a week or a month), so the shared bar first moves to the List view
   function uniPress(g){
@@ -6713,11 +6778,11 @@ match /users/{userId}/meta/{docId} {
     $('tt-uni-role').textContent = isAdmin ? 'Admin' : '';
     $('tt-uni-av').textContent = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
     renderUniStats(); uniTickStats(); renderUniEntries(); uniSlideNewRows();
-    const warn = uniAlerts().filter(i=> i.kind === 'warn').length;
+    const warn = uniUnread();
     $('tt-uni-badge').hidden = !warn; $('tt-uni-badge').textContent = String(warn);
     if(uniLastWarn !== null && warn !== uniLastWarn){ uniPulse($('tt-uni-badge'), 'tt-uni-pop'); if(warn > uniLastWarn) uniPulse($('tt-uni-bell'), 'tt-uni-ring'); }
     uniLastWarn = warn;
-    $('tt-uni-bell').setAttribute('aria-label', warn ? `Alerts, ${warn} need attention` : 'Alerts');
+    $('tt-uni-bell').setAttribute('aria-label', warn ? `Alerts, ${warn} unread` : 'Alerts');
     if(!$('tt-uni-bellpop').hidden) renderUniBell();
     uniGlide();
   }
