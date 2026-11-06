@@ -1124,6 +1124,82 @@
     .tt-uni-curtain::before, .tt-uni-curtain::after{content:''; position:absolute; top:0; bottom:0; width:3px; background:linear-gradient(to bottom, transparent, var(--amber) 28%, var(--amber) 72%, transparent); box-shadow:0 0 28px 5px rgba(232,163,61,.5);}
     .tt-uni-curtain::before{left:0;} .tt-uni-curtain::after{right:0;}
   }
+  /* ---- account pages: Settings · Projects · Export (Unified) ---- */
+  .tt-uni-snav, .tt-uni-ptabs, .tt-uni-phead{display:none;}
+  .tt-uni-navrow{display:none !important;}
+  html.tt-uni .tt-menu-navrow.tt-uni-navrow{display:flex !important;}
+  html.tt-uni .tt-menu-section.tt-uni-only{display:block;}
+  html.tt-uni .tt-menu-section{position:relative;}
+  .tt-uni-descoff:not(.tt-uni-descon){display:none;}
+  .tt-uni-secinfo{position:absolute; top:16px; right:16px; width:26px; height:26px; padding:0; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--paper-dim); font-family:'Space Mono',monospace; font-size:12px; font-weight:700; cursor:pointer; display:grid; place-items:center;}
+  .tt-uni-secinfo:hover{color:var(--amber); border-color:var(--amber-dim);}
+  .tt-uni-fieldrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .tt-uni-fieldrow .tt-menu-input{width:auto; flex:1 1 140px; max-width:220px;}
+  .tt-uni-switchrow{display:flex; align-items:center; gap:16px; min-height:58px; border-top:1px solid var(--line);}
+  .tt-uni-switchrow:first-child{border-top:0;}
+  .tt-uni-switchrow span{flex:1; font-weight:600;}
+  .tt-uni-sw{width:52px; height:30px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); position:relative; padding:0; cursor:pointer; flex-shrink:0; transition:background .25s, border-color .25s;}
+  .tt-uni-sw::after{content:''; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:var(--paper); transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+  .tt-uni-sw.on{background:var(--amber); border-color:var(--amber);}
+  .tt-uni-sw.on::after{transform:translateX(22px); background:var(--on-accent);}
+  .tt-uni-sw:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  #tt-uni-appwrap > .tt-bg-pop{position:static; display:block; width:auto; max-width:none; max-height:none; overflow:visible; padding:0; background:none; border:0; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; transform:none; animation:none;}
+  @media (min-width:901px){
+    /* the page header: a plain title, no line under it, no back arrow or close (the rail does that) */
+    html.tt-uni .tt-menu-header{border:0 !important; padding:0 0 20px; margin:0; background:none;}
+    html.tt-uni #tt-menu-title{font-family:'Work Sans',sans-serif; font-size:30px; font-weight:700; letter-spacing:-.01em; text-transform:none; color:var(--paper);}
+    html.tt-uni #tt-menu-back, html.tt-uni #tt-menu-close{display:none;}
+    html.tt-uni .tt-menu-titlebar{cursor:default;}
+    html.tt-uni .tt-menu-titlebar:hover span{color:var(--paper);}
+    /* Settings: a list of sections on the left, one section on the right */
+    html.tt-uni.tt-uni-settings .tt-menu-panel{display:grid; grid-template-columns:240px minmax(0,760px); column-gap:28px; align-content:start;}
+    html.tt-uni.tt-uni-settings .tt-menu-header{grid-column:1 / -1;}
+    html.tt-uni.tt-uni-settings .tt-uni-snav{display:flex; flex-direction:column; gap:6px; grid-column:1; position:sticky; top:20px; align-self:start;}
+    html.tt-uni.tt-uni-settings .tt-menu-screen:not([hidden]){grid-column:2; display:flex !important; flex-direction:column; gap:20px;}
+    html.tt-uni .tt-menu-screen:not([hidden]) > .tt-menu-section{width:100%; max-width:none; box-sizing:border-box; justify-self:stretch; align-self:stretch;}
+    .tt-uni-snav button{display:flex; align-items:center; gap:12px; min-height:48px; padding:0 16px; border-radius:16px; border:1px solid transparent; background:transparent; color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:14px; font-weight:600; text-align:left; cursor:pointer; transition:color .2s, background .2s, border-color .2s;}
+    .tt-uni-snav button:hover{color:var(--paper); background:var(--panel-2);}
+    .tt-uni-snav button.active{color:var(--paper); background:var(--amber-soft); border-color:var(--amber-dim);}
+    .tt-uni-snav button.active .tt-uni-ic{color:var(--amber);}
+    /* Projects: three tabs, a table of projects */
+    html.tt-uni #tt-menu-screen-projects:not([hidden]){display:flex !important; flex-direction:column; gap:20px;}
+    html.tt-uni #tt-menu-screen-projects .tt-uni-ptabs{display:flex; gap:6px; flex-wrap:wrap;}
+    .tt-uni-ptabs button{min-height:44px; padding:0 18px; border-radius:14px; border:1px solid transparent; background:transparent; color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:14px; font-weight:600; display:inline-flex; align-items:center; gap:8px; cursor:pointer; transition:color .2s, background .2s;}
+    .tt-uni-ptabs button:hover{color:var(--paper); background:var(--panel-2);}
+    .tt-uni-ptabs button.active{color:var(--on-accent); background:var(--amber); box-shadow:inset 0 1px 1px rgba(255,255,255,.55), 0 4px 12px rgba(232,163,61,.3);}
+    .tt-uni-ptabs .n{font-family:'Space Mono',monospace; font-size:11px; padding:1px 7px; border-radius:999px; background:rgba(127,127,127,.22);}
+    html.tt-uni #tt-menu-screen-projects[data-ptab="projects"] > .tt-menu-section:not([data-ptab="projects"]),
+    html.tt-uni #tt-menu-screen-projects[data-ptab="tax"] > .tt-menu-section:not([data-ptab="tax"]),
+    html.tt-uni #tt-menu-screen-projects[data-ptab="rates"] > .tt-menu-section:not([data-ptab="rates"]){display:none;}
+    html.tt-uni #tt-menu-screen-projects > .tt-menu-section > .tt-menu-label{display:none;}
+    html.tt-uni .tt-uni-phead, html.tt-uni .tt-project-card{display:grid; grid-template-columns:minmax(170px,2fr) 110px 120px minmax(150px,1.3fr) 44px; gap:14px; align-items:center;}
+    html.tt-uni .tt-uni-phead{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--paper-dim); padding:0 6px 8px;}
+    html.tt-uni .tt-project-card{padding:8px 6px; margin:0; border:0; border-top:1px solid var(--line); border-radius:0; background:none; box-shadow:none;}
+    html.tt-uni .tt-project-card-head, html.tt-uni .tt-project-card-fields{display:contents;}
+    html.tt-uni .tt-project-card-name{order:1; font-weight:600; overflow-wrap:anywhere;}
+    html.tt-uni .tt-project-card-head .tt-preset-remove{order:5; justify-self:center;}
+    html.tt-uni .tt-project-field{margin:0; grid-column:auto;}
+    html.tt-uni .tt-project-field:nth-child(1){order:2;} html.tt-uni .tt-project-field:nth-child(2){order:3;} html.tt-uni .tt-project-field:nth-child(3){order:4;}
+    html.tt-uni .tt-project-field > span{display:none;}
+    /* Export: numbered steps on the left, the result on the right */
+    html.tt-uni #tt-menu-screen-exports:not([hidden]){display:grid !important; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:20px; align-items:start;}
+    html.tt-uni #tt-menu-screen-exports > .tt-menu-section{padding-left:76px !important;}
+    html.tt-uni #tt-menu-screen-exports > .tt-menu-section::before{content:''; position:absolute; left:22px; top:20px; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:'Space Mono',monospace; font-weight:700; font-size:14px; color:var(--on-accent); background:var(--amber);}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(4){grid-column:1; order:1;}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(4)::before{content:'1';}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(1){grid-column:1; order:2;}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(1)::before{content:'2';}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(2){grid-column:1; order:3;}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(2)::before{display:none;}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(3){grid-column:1; order:4;}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(3)::before{content:'3';}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(5){grid-column:2; grid-row:1; order:5; align-self:start; position:sticky; top:20px; padding-left:22px !important;}
+    html.tt-uni #tt-export-preview{margin:0 0 16px !important; font-size:14px; line-height:1.5; color:var(--paper);}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(5)::before{display:none;}
+    html.tt-uni #tt-menu-screen-exports > .tt-menu-section > .tt-menu-label{font-size:16px; font-weight:600; text-transform:none; letter-spacing:0; color:var(--paper);}
+    html.tt-uni #tt-menu-screen-exports > :nth-child(5) > .tt-menu-label{font-size:11px; font-weight:400; text-transform:uppercase; letter-spacing:.06em; color:var(--paper-dim);}
+  }
+
   /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
   html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
   /* Calendar is its own page in Unified; on a phone it simply stays at the bottom */
@@ -1797,11 +1873,37 @@
           <button id="tt-menu-close" class="tt-menu-close" type="button" aria-label="Close menu">&times;</button>
         </div>
 
+      <nav class="tt-uni-snav tt-uni-only" id="tt-uni-snav" aria-label="Settings sections">
+        <button type="button" data-sec="user"><svg class="tt-uni-ic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>Account</button>
+        <button type="button" data-sec="money"><svg class="tt-uni-ic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>Money</button>
+        <button type="button" data-sec="alerts"><svg class="tt-uni-ic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>Alerts</button>
+        <button type="button" data-sec="appearance"><svg class="tt-uni-ic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>Appearance</button>
+        <button type="button" data-sec="data"><svg class="tt-uni-ic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Data</button>
+      </nav>
+
         <div class="tt-menu-screen" id="tt-menu-screen-root">
           <button type="button" class="tt-menu-navrow" data-screen="user">
             <span class="tt-menu-navrow-label">
               <svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               User
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow tt-uni-navrow" data-screen="money">
+            <span class="tt-menu-navrow-label"><svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5V8M12 16v1.5"/></svg>
+              Money
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow tt-uni-navrow" data-screen="alerts">
+            <span class="tt-menu-navrow-label"><svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              Alerts
+            </span>
+            <span class="tt-menu-chevron">&#8250;</span>
+          </button>
+          <button type="button" class="tt-menu-navrow tt-uni-navrow" data-screen="appearance">
+            <span class="tt-menu-navrow-label"><svg class="tt-menu-navrow-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>
+              Appearance
             </span>
             <span class="tt-menu-chevron">&#8250;</span>
           </button>
@@ -1845,6 +1947,38 @@
           </div>
         </div>
 
+        <div class="tt-menu-screen" id="tt-menu-screen-money" hidden>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Monthly target</div>
+            <div class="tt-uni-fieldrow">
+              <input type="number" id="tt-money-amount" class="tt-menu-input" min="1" step="any" inputmode="decimal" placeholder="6000" aria-label="Target amount" />
+              <select id="tt-money-currency" class="tt-menu-input" aria-label="Target currency"><option>RON</option><option>EUR</option><option>USD</option><option>GBP</option></select>
+              <div class="tt-segment" id="tt-money-mode" role="group" aria-label="Target in net or gross"><button type="button" data-val="gross" class="active">Gross</button><button type="button" data-val="net">Net</button></div>
+            </div>
+            <div class="tt-menu-row" style="margin-top:12px;"><button type="button" class="tt-btn primary tt-menu-btn-inline" id="tt-money-save">Save target</button><button type="button" class="tt-btn tt-menu-btn-inline" id="tt-money-clear">Clear</button></div>
+            <div class="tt-menu-msg" id="tt-money-msg" role="status"></div>
+            <div class="tt-menu-static-value" id="tt-money-current"></div>
+          </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Show money in</div>
+            <div class="tt-uni-fieldrow">
+              <select id="tt-money-display-currency" class="tt-menu-input" aria-label="Display currency"><option>RON</option><option>EUR</option><option>USD</option><option>GBP</option></select>
+              <div class="tt-segment" id="tt-money-display-mode" role="group" aria-label="Show net or gross"><button type="button" data-val="net">Net</button><button type="button" data-val="gross">Gross</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tt-menu-screen" id="tt-menu-screen-alerts" hidden>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">The bell watches</div>
+            <div class="tt-uni-switchrows" id="tt-alert-rules"></div>
+          </div>
+        </div>
+
+        <div class="tt-menu-screen" id="tt-menu-screen-appearance" hidden>
+          <div class="tt-menu-section" id="tt-uni-appwrap"></div>
+        </div>
+
         <div class="tt-menu-screen" id="tt-menu-screen-user" hidden>
           <div class="tt-menu-section">
             <div class="tt-menu-label">Email</div>
@@ -1872,14 +2006,28 @@
             <button class="tt-btn primary tt-menu-btn-inline" id="tt-save-password" style="margin-top:10px; width:100%;">Update password</button>
             <div class="tt-menu-msg" id="tt-password-msg"></div>
           </div>
+          <div class="tt-menu-section tt-uni-only">
+            <div class="tt-menu-label">Time zone</div>
+            <div class="tt-menu-static-value" id="tt-uni-tz"></div>
+          </div>
+          <div class="tt-menu-section tt-uni-only">
+            <div class="tt-menu-label">This device</div>
+            <button type="button" class="tt-btn danger tt-menu-bigbtn" id="tt-uni-acct-signout">Sign out</button>
+          </div>
         </div>
 
-        <div class="tt-menu-screen" id="tt-menu-screen-projects" hidden>
+        <div class="tt-menu-screen" id="tt-menu-screen-projects" hidden data-ptab="projects">
+          <div class="tt-uni-ptabs tt-uni-only" id="tt-uni-ptabs" role="tablist" aria-label="Project settings">
+            <button type="button" role="tab" data-ptab="projects">Projects <span class="n" id="tt-ptab-n-projects">0</span></button>
+            <button type="button" role="tab" data-ptab="tax">Tax templates <span class="n" id="tt-ptab-n-tax">0</span></button>
+            <button type="button" role="tab" data-ptab="rates">Exchange rates</button>
+          </div>
           <div class="tt-menu-section">
             <div class="tt-menu-label">Your projects</div>
             <div class="tt-menu-desc" style="margin-top:-4px;">
               Set a rate/hour, currency and tax template per project to see monthly earnings estimates on the dashboard.
             </div>
+            <div class="tt-uni-phead tt-uni-only" aria-hidden="true"><span>Project</span><span>Rate / h</span><span>Currency</span><span>Tax template</span><span></span></div>
             <div id="tt-preset-manager"></div>
             <div class="tt-menu-row" style="margin-top:10px;">
               <input type="text" id="tt-new-preset" class="tt-menu-input" placeholder="e.g. FNRGW - Support" maxlength="60" />
@@ -2519,7 +2667,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.088</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.089</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -2902,14 +3050,23 @@
     return user.providerData.some(p=>p.providerId==='password');
   }
 
-  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data' };
+  const MENU_SCREEN_TITLES = { root:'Account', user:'User', projects:'Projects', exports:'Exports', data:'Manage data', money:'Money', alerts:'Alerts', appearance:'Appearance' };
+  // Unified, desktop: Account / Money / Alerts / Appearance / Data are sections of one Settings page
+  const SETTINGS_SECTIONS = ['user', 'money', 'alerts', 'appearance', 'data'];
+  const uniDesk = ()=> window.matchMedia('(min-width:901px)').matches;
 
   function showMenuScreen(name){
+    if(!uniOn() && ['money', 'alerts', 'appearance'].includes(name)) name = 'root';          // these exist only in Unified
+    if(uniOn() && uniDesk() && name === 'root') name = 'user';                              // Settings opens on Account
     document.querySelectorAll('.tt-menu-screen').forEach(el=>{
       el.hidden = (el.id !== `tt-menu-screen-${name}`);
     });
-    $('tt-menu-title').textContent = MENU_SCREEN_TITLES[name] || 'Account';
+    $('tt-menu-title').textContent = (uniOn() && uniDesk())
+      ? (name === 'projects' ? 'Projects' : name === 'exports' ? 'Export' : 'Settings')
+      : (MENU_SCREEN_TITLES[name] || 'Account');
     $('tt-menu-back').hidden = (name==='root');
+    document.documentElement.classList.toggle('tt-uni-settings', uniOn() && uniDesk() && SETTINGS_SECTIONS.includes(name));
+    if(typeof uniOnScreen === 'function') uniOnScreen(name);
     if(name==='exports'){
       exportPeriod = (granularity==='day' || granularity==='week') ? granularity : 'month';
       setActiveTab('tt-export-period', exportPeriod);
@@ -5193,7 +5350,7 @@ match /users/{userId}/meta/{docId} {
     return p.endsWith('/') ? p.slice(0, -1) : '';
   })();
 
-  const MENU_SCREENS = ['root','user','projects','exports','data'];
+  const MENU_SCREENS = ['root','user','projects','exports','data','money','alerts','appearance'];
   const ADMIN_SCREEN_SEGMENT = {
     'manage-users':'manage', 'manage-entries':'manage',
     'export-users':'export', 'export-entries':'export',
@@ -5575,7 +5732,8 @@ match /users/{userId}/meta/{docId} {
     { id:'waves',         label:'Waves',         preview:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 46' preserveAspectRatio='none'%3E%3Cpath d='M0 30 Q 20 20 40 30 T 80 28 V46 H0Z' fill='%233cbac4' fill-opacity='.45'/%3E%3Cpath d='M0 36 Q 20 28 40 36 T 80 34 V46 H0Z' fill='%23e8a33d' fill-opacity='.45'/%3E%3C/svg%3E\") center/100% 100% no-repeat, #16202b" },
     { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
   ];
-  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas' };
+  const ALERT_KEYS = ['forecast', 'timer', 'norate', 'noproject', 'notarget', 'best'];
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas', alerts:{ forecast:true, timer:true, norate:true, noproject:true, notarget:true, best:true } };
   const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let bgPref = { ...BG_DEFAULT };
   let bgImage = '';          // data URL of the custom image (this user's)
@@ -5597,6 +5755,7 @@ match /users/{userId}/meta/{docId} {
     p.style = raw.style === 'classic' ? 'classic' : 'glass';
     p.panels = raw.panels === 'enhanced' ? 'enhanced' : 'classic';
     p.layout = raw.layout === 'unified' ? 'unified' : 'canvas';
+    p.alerts = {}; ALERT_KEYS.forEach(k=>{ p.alerts[k] = !(raw.alerts && raw.alerts[k] === false); });
     const t = raw.target, amt = t && Number(t.amount);
     if(t && typeof t === 'object' && Number.isFinite(amt) && amt > 0 && amt < 1e9
        && ['RON','EUR','USD','GBP'].includes(t.currency) && (t.mode === 'gross' || t.mode === 'net')){
@@ -5958,7 +6117,7 @@ match /users/{userId}/meta/{docId} {
   }
 
   function openBgPicker(){ $('tt-bg-pop').hidden = false; $('tt-bg-btn').setAttribute('aria-expanded', 'true'); renderBgPicker(); }
-  function closeBgPicker(){ const pop = $('tt-bg-pop'); if(pop) pop.hidden = true; const btn = $('tt-bg-btn'); if(btn) btn.setAttribute('aria-expanded', 'false'); }
+  function closeBgPicker(){ const pop = $('tt-bg-pop'); if(pop && pop.dataset.inPage === '1') return; if(pop) pop.hidden = true; const btn = $('tt-bg-btn'); if(btn) btn.setAttribute('aria-expanded', 'false'); }
   $('tt-bg-btn').addEventListener('click', (e)=>{ e.stopPropagation(); if($('tt-bg-pop').hidden) openBgPicker(); else closeBgPicker(); });
   document.addEventListener('click', (e)=>{ if(!e.target.closest('#tt-bg-wrap')) closeBgPicker(); });
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !$('tt-bg-pop').hidden){ closeBgPicker(); $('tt-bg-btn').focus(); } });
@@ -6348,15 +6507,15 @@ match /users/{userId}/meta/{docId} {
       const gap = P.target.amount - P.projected;
       if(gap > 0){
         const needH = P.rate > 0 ? ((P.target.amount - P.earned) / P.remaining) / P.rate : null;
-        items.push({ kind:'warn', key:`forecast:${P.y}-${P.m}:${Math.round(P.target.amount)}`, title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
+        items.push({ kind:'warn', rule:'forecast', key:`forecast:${P.y}-${P.m}:${Math.round(P.target.amount)}`, title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
           body: needH != null ? `Add ${enhHM(Math.max(0, needH - P.avgH))} h on each of the ${plural(P.remaining, 'remaining weekday')} (${enhHM(needH)} h a day in total) to close the gap.` : 'Set a rate on the project you track to see what closing the gap takes.' });
       }
     } else if(!P.target){
-      items.push({ kind:'info', key:'notarget', title:'No monthly target set', body:'Set one in Month pace to get a verdict and the hours per day it takes.', action:'target' });
+      items.push({ kind:'info', rule:'notarget', key:'notarget', title:'No monthly target set', body:'Set one in Month pace to get a verdict and the hours per day it takes.', action:'target' });
     }
     if(active){
       const elapsed = (Date.now() - new Date(active.startISO).getTime()) / 3600000;
-      if(elapsed >= 10) items.push({ kind:'warn', key:`timer:${active.startISO}`, title:`Timer has been running ${enhHM(elapsed)} h`, body: dateKey(new Date(active.startISO)) !== dateKey(new Date()) ? 'It was started on a previous day. Still working?' : 'Still working? Stop it when you are done so the day stays accurate.' });
+      if(elapsed >= 10) items.push({ kind:'warn', rule:'timer', key:`timer:${active.startISO}`, title:`Timer has been running ${enhHM(elapsed)} h`, body: dateKey(new Date(active.startISO)) !== dateKey(new Date()) ? 'It was started on a previous day. Still working?' : 'Still working? Stop it when you are done so the day stays accurate.' });
     }
     const now = new Date(), monthPrefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const monthEntries = entries.filter(e=> e.date && e.date.startsWith(monthPrefix));
@@ -6368,10 +6527,11 @@ match /users/{userId}/meta/{docId} {
       if(!(meta && typeof meta === 'object' && Number(meta.rate) > 0)) noRate[name] = true;
     });
     const noRateNames = Object.keys(noRate);
-    if(noRateNames.length) items.push({ kind:'warn', key:`norate:${noRateNames.join(',')}`, title:`${plural(noRateNames.length, 'project')} with hours but no rate`, body:`${noRateNames.slice(0, 3).join(', ')}${noRateNames.length > 3 ? '…' : ''} — their time counts as hours only. Set a rate in Menu → Projects.` });
+    if(noRateNames.length) items.push({ kind:'warn', rule:'norate', key:`norate:${noRateNames.join(',')}`, title:`${plural(noRateNames.length, 'project')} with hours but no rate`, body:`${noRateNames.slice(0, 3).join(', ')}${noRateNames.length > 3 ? '…' : ''} — their time counts as hours only. Set a rate in Menu → Projects.` });
     const noProject = monthEntries.filter(e=> !e.note).length;
-    if(noProject) items.push({ kind:'info', key:`noproject:${monthPrefix}`, title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
-    if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', key:`best:${H.best}`, title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
+    if(noProject) items.push({ kind:'info', rule:'noproject', key:`noproject:${monthPrefix}`, title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
+    if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', rule:'best', key:`best:${H.best}`, title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
+    for(let i = items.length - 1; i >= 0; i--) if(items[i].rule && bgPref.alerts && bgPref.alerts[items[i].rule] === false) items.splice(i, 1);
     if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', key:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
     return items;
   }
@@ -6660,6 +6820,7 @@ match /users/{userId}/meta/{docId} {
       $('tt-uni-bellpop').hidden = true;
     }
     uniGlide();
+    uniMountPages(on);
   }
 
   // which rail item matches what is on screen: the admin pages, one of the account pages, or the dashboard / calendar
@@ -7081,6 +7242,100 @@ match /users/{userId}/meta/{docId} {
       + `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span></div></div>`).join('')}</div>`);
   }
 
+  // ---------------- account pages in Unified: Settings · Projects · Export ----------------
+  // These regroup the screens that already exist (every control, and its handler, is the original one); only the arrangement is new.
+  const ALERT_LABELS = { forecast:'Forecast is under the monthly target', timer:'A timer has been left running', norate:'A project has hours but no rate', noproject:'Entries without a project', notarget:'No monthly target is set', best:'Your strongest weekday' };
+  const uniScreenName = ()=> ((document.querySelector('.tt-menu-screen:not([hidden])') || {}).id || '').replace('tt-menu-screen-', '');
+
+  function uniOnScreen(name){
+    if(!uniOn()) return;
+    if(name === 'money') renderMoneyScreen(true);
+    else if(name === 'alerts') renderAlertRules();
+    else if(name === 'user') $('tt-uni-tz').textContent = browserTimeZone() || '—';
+    else if(name === 'projects') uniSyncProjects();
+    uniSyncSettingsNav();
+  }
+  function uniSyncSettingsNav(){
+    const cur = uniScreenName();
+    $('tt-uni-snav').querySelectorAll('button[data-sec]').forEach(b=>{
+      const on = b.dataset.sec === cur || (cur === 'root' && b.dataset.sec === 'user');
+      b.classList.toggle('active', on); if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+  }
+  $('tt-uni-snav').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-sec]'); if(b) go({ view:'account', screen:b.dataset.sec }); });
+  $('tt-uni-acct-signout').addEventListener('click', ()=> $('tt-menu-signout').click());
+  // the top-bar Appearance button opens the Appearance section instead of a popover
+  document.addEventListener('click', (e)=>{
+    if(uniOn() && e.target.closest('#tt-bg-btn')){ e.stopImmediatePropagation(); e.preventDefault(); go({ view:'account', screen:'appearance' }); }
+  }, true);
+
+  // projects: three tabs, one section each
+  function uniSyncProjects(){
+    const scr = $('tt-menu-screen-projects');
+    scr.querySelectorAll(':scope > .tt-menu-section').forEach((sec, i)=>{ sec.dataset.ptab = ['projects', 'tax', 'rates'][i]; });
+    $('tt-uni-ptabs').querySelectorAll('button[data-ptab]').forEach(b=>{ const on = b.dataset.ptab === scr.dataset.ptab; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
+    $('tt-ptab-n-projects').textContent = String(presets.length); $('tt-ptab-n-tax').textContent = String(taxTemplates.length);
+  }
+  $('tt-uni-ptabs').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-ptab]'); if(!b) return; $('tt-menu-screen-projects').dataset.ptab = b.dataset.ptab; uniSyncProjects(); });
+
+  // money: the monthly target, and what the dashboard shows money in
+  function renderMoneyScreen(fill){
+    const t = bgPref.target;
+    if(fill){ $('tt-money-amount').value = t ? String(t.amount) : ''; $('tt-money-currency').value = t ? t.currency : displayCurrency; setActiveTab('tt-money-mode', t ? t.mode : earningsMode); $('tt-money-msg').textContent = ''; }
+    $('tt-money-current').textContent = t ? `Current target: ${t.amount} ${t.currency} · ${t.mode}` : 'No target set yet.';
+    if($('tt-money-display-currency').value !== displayCurrency) $('tt-money-display-currency').value = displayCurrency;
+    setActiveTab('tt-money-display-mode', earningsMode);
+  }
+  $('tt-money-mode').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(b) setActiveTab('tt-money-mode', b.dataset.val); });
+  $('tt-money-save').addEventListener('click', ()=>{
+    const amount = Number($('tt-money-amount').value), msg = $('tt-money-msg');
+    if(!Number.isFinite(amount) || amount <= 0){ msg.textContent = 'Enter an amount above zero.'; msg.className = 'tt-menu-msg err'; return; }
+    setBgPref({ target:{ amount, currency:$('tt-money-currency').value, mode:document.querySelector('#tt-money-mode button.active').dataset.val } });
+    msg.textContent = 'Target saved.'; msg.className = 'tt-menu-msg ok'; renderMoneyScreen(false);
+  });
+  $('tt-money-clear').addEventListener('click', ()=>{ setBgPref({ target:null }); $('tt-money-amount').value = ''; $('tt-money-msg').textContent = 'Target cleared.'; $('tt-money-msg').className = 'tt-menu-msg ok'; renderMoneyScreen(false); });
+  $('tt-money-display-currency').addEventListener('change', (e)=>{ const sel = $('tt-earnings-currency'); sel.value = e.target.value; sel.dispatchEvent(new Event('change', { bubbles:true })); });
+  $('tt-money-display-mode').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(!b) return; const o = document.querySelector(`#tt-earnings-mode button[data-val="${b.dataset.val}"]`); if(o) o.click(); renderMoneyScreen(false); });
+
+  // alerts: choose what the bell watches
+  function renderAlertRules(){
+    $('tt-alert-rules').innerHTML = ALERT_KEYS.map(k=> `<div class="tt-uni-switchrow"><span>${escapeHtml(ALERT_LABELS[k])}</span><button type="button" class="tt-uni-sw${bgPref.alerts[k] ? ' on' : ''}" role="switch" aria-checked="${bgPref.alerts[k]}" data-rule="${k}" aria-label="${escapeHtml(ALERT_LABELS[k])}"></button></div>`).join('');
+  }
+  $('tt-alert-rules').addEventListener('click', (e)=>{
+    const b = e.target.closest('[data-rule]'); if(!b) return;
+    setBgPref({ alerts:{ ...bgPref.alerts, [b.dataset.rule]: !bgPref.alerts[b.dataset.rule] } });
+    renderAlertRules(); renderEnhancedPanels(true); renderUnified();
+    const again = $('tt-alert-rules').querySelector(`[data-rule="${b.dataset.rule}"]`); if(again) again.focus();
+  });
+
+  // the Appearance controls, the Export "Your file" card and the info buttons are arranged when Unified turns on, and put back when it turns off
+  function uniMountPages(on){
+    const pop = $('tt-bg-pop'), wrap = $('tt-bg-wrap'), host = $('tt-uni-appwrap');
+    if(on){ if(pop.parentNode !== host) host.appendChild(pop); pop.hidden = false; pop.dataset.inPage = '1'; }
+    else {
+      if(pop.parentNode !== wrap) wrap.appendChild(pop);
+      pop.hidden = true; delete pop.dataset.inPage;
+      if(currentRoute && currentRoute.view === 'account' && ['money', 'alerts', 'appearance'].includes(currentRoute.screen)) go({ view:'account', screen:'root' });
+    }
+    const prev = $('tt-export-preview'), last = $('tt-menu-screen-exports').querySelector(':scope > .tt-menu-section:last-child'), periodSec = $('tt-export-period').closest('.tt-menu-section');
+    const lab = last.querySelector('.tt-uni-filelabel');
+    if(on){
+      if(!lab){ const l = document.createElement('div'); l.className = 'tt-menu-label tt-uni-filelabel'; l.textContent = 'Your file'; last.insertBefore(l, last.firstChild); }
+      last.insertBefore(prev, $('tt-menu-export'));
+    } else { if(lab) lab.remove(); periodSec.appendChild(prev); }
+    document.querySelectorAll('#tt-menu-panel .tt-menu-section').forEach(sec=>{
+      const old = sec.querySelector(':scope > .tt-uni-secinfo'); if(old) old.remove();
+      sec.querySelectorAll(':scope > .tt-uni-descoff').forEach(d=> d.classList.remove('tt-uni-descoff', 'tt-uni-descon'));
+      if(!on || sec.querySelector('#tt-reset')) return;                      // the warning about deleting everything stays in plain sight
+      const d = sec.querySelector(':scope > .tt-menu-desc:not([id])'); if(!d) return;
+      d.classList.add('tt-uni-descoff');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tt-uni-secinfo'; b.textContent = 'i';
+      b.title = d.textContent.replace(/\s+/g, ' ').trim(); b.setAttribute('aria-label', 'More information'); b.setAttribute('aria-expanded', 'false');
+      b.addEventListener('click', ()=>{ const open = d.classList.toggle('tt-uni-descon'); b.setAttribute('aria-expanded', String(open)); });
+      sec.appendChild(b);
+    });
+  }
+
   function renderUnified(){
     if(!uniOn()) return;
     const user = auth.currentUser, name = user ? (user.displayName || user.email || '') : '';
@@ -7090,6 +7345,8 @@ match /users/{userId}/meta/{docId} {
     $('tt-uni-role').textContent = isAdmin ? 'Admin' : '';
     $('tt-uni-av').textContent = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
     renderUniStats(); uniTickStats(); renderUniEntries(); uniSlideNewRows();
+    if(!$('tt-menu-screen-money').hidden) renderMoneyScreen(false);
+    if(!$('tt-menu-screen-projects').hidden) uniSyncProjects();
     const warn = uniUnread();
     $('tt-uni-badge').hidden = !warn; $('tt-uni-badge').textContent = String(warn);
     if(uniLastWarn !== null && warn !== uniLastWarn){ uniPulse($('tt-uni-badge'), 'tt-uni-pop'); if(warn > uniLastWarn) uniPulse($('tt-uni-bell'), 'tt-uni-ring'); }
@@ -7171,6 +7428,7 @@ match /users/{userId}/meta/{docId} {
       renderProjectSelect();
       renderPresetManager();
       renderEnhancedPanels();   // rates and tax templates feed the money panels
+      if(uniOn()) uniSyncProjects();   // the Projects tab shows how many there are
     }, (err)=> console.error('presets listener error', err));
 
     unsubPrefs = onSnapshot(prefsDoc(uid), (snap)=>{
