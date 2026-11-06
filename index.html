@@ -1101,6 +1101,21 @@
   }
   @media (max-width:900px){ .tt-uni-entlist{max-height:560px;} }
 
+  /* the "saving" point: red while an entry is being written, amber while it is waiting for a connection */
+  .tt-rec{display:inline-flex; align-items:center; gap:8px; padding:6px 13px 6px 11px; border-radius:999px; font-size:12px; font-weight:600; letter-spacing:.02em; color:var(--paper); background:var(--panel-2); border:1px solid rgba(214,69,65,.55); white-space:nowrap; animation:tt-rec-in .25s cubic-bezier(.2,.9,.3,1.2) both;}
+  .tt-rec[hidden]{display:none !important;}
+  .tt-rec-dot{width:9px; height:9px; border-radius:50%; background:var(--stop); box-shadow:0 0 0 0 rgba(214,69,65,.65); animation:tt-rec-pulse 1.1s ease-out infinite;}
+  .tt-rec.wait{border-color:var(--amber-dim);}
+  .tt-rec.wait .tt-rec-dot{background:var(--amber); box-shadow:0 0 0 0 rgba(232,163,61,.6); animation-duration:1.8s;}
+  @keyframes tt-rec-pulse{0%{box-shadow:0 0 0 0 rgba(214,69,65,.65);}100%{box-shadow:0 0 0 9px rgba(214,69,65,0);}}
+  @keyframes tt-rec-in{from{opacity:0; transform:scale(.85);}to{opacity:1; transform:none;}}
+  #tt-rec{display:none;}
+  .tt-rec-float{position:fixed; top:10px; left:50%; transform:translateX(-50%); z-index:3200; pointer-events:none; box-shadow:0 8px 24px rgba(var(--shadow-rgb),.4);}
+  @media (min-width:901px){
+    html.tt-uni #tt-rec:not([hidden]){display:inline-flex;}
+    html.tt-uni #tt-rec-float{display:none !important;}
+  }
+  @media (prefers-reduced-motion:reduce){ .tt-rec, .tt-rec-dot{animation:none;} }
   /* Personal <-> Company: a curtain sweeps the page area, the switch happens behind it, then it lifts on the new view */
   .tt-uni-curtain{display:none;}
   @media (min-width:901px){
@@ -1661,6 +1676,7 @@
     <div style="flex:1"></div>
     <button type="button" class="tt-uni-settings" data-uni="settings" data-l="Settings" aria-label="Settings and account"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   </aside>
+  <div class="tt-rec tt-rec-float" id="tt-rec-float" role="status" aria-live="polite" hidden><i class="tt-rec-dot" aria-hidden="true"></i><span class="tt-rec-text">Saving…</span></div>
   <div class="tt-uni-curtain" id="tt-uni-curtain" aria-hidden="true" hidden></div>
   <nav class="tt-bottomnav" id="tt-bottomnav" aria-label="Main">
     <button type="button" data-tab="today" class="active" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Today</span></button>
@@ -1675,6 +1691,7 @@
       </div>
       <select id="tt-uni-cosel" class="tt-uni-cosel" aria-label="Company" hidden></select>
       <span class="tt-uni-spacer"></span>
+      <div class="tt-rec" id="tt-rec" role="status" aria-live="polite" hidden><i class="tt-rec-dot" aria-hidden="true"></i><span class="tt-rec-text">Saving…</span></div>
       <span id="tt-uni-bgslot"></span>
       <button type="button" class="tt-uni-iconbtn" id="tt-uni-theme" aria-label="Toggle theme"><svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
       <div class="tt-uni-bellwrap">
@@ -2502,7 +2519,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.087</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.088</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -3921,7 +3938,7 @@
         const newDurationSec = Math.round((newStopDT - startDT)/1000);
         try{
           const updated = editedEntryFields(entry, newStopDT.toISOString(), newDurationSec, newNote);
-          await setDoc(entry.ref, updated);
+          await trackSave(setDoc(entry.ref, updated));
           Object.assign(entry, updated);
           adminEditingRefId = null;
           adminMgRenderCurrentView();
@@ -3946,7 +3963,7 @@
           confirmLabel: 'Delete entry',
           onConfirm: async ()=>{
             try{
-              await deleteDoc(entry.ref);
+              await trackSave(deleteDoc(entry.ref));
               adminEntries = adminEntries.filter(en=>en!==entry);
               adminAllEntriesCache = (adminAllEntriesCache||[]).filter(en=>en!==entry);
               adminMgRenderCurrentView();
@@ -4088,7 +4105,7 @@
           batch.delete(doc(db, 'users', uid, 'meta', 'prefs'));
           batch.delete(doc(db, 'users', uid, 'meta', 'active'));
           batch.delete(doc(db, 'directory', uid));
-          await batch.commit();
+          await trackSave(batch.commit());
           adminAllEntriesCache = (adminAllEntriesCache||[]).filter(e=>e.uid!==uid);
           adminDirectoryCache = null; // their directory record is gone too
           adminEntries = [];
@@ -6533,6 +6550,31 @@ match /users/{userId}/meta/{docId} {
     if(btn) setBgPref({ panels: btn.dataset.val });
   });
 
+  // ---------------- "saving" indicator: a red point while an entry is being written ----------------
+  // Every write of an entry (start, stop, manual add, import, edit, delete) goes through trackSave. A save only counts as
+  // finished when the server has confirmed it, so offline it stays on (amber, "Waiting to sync") until you reconnect.
+  let savingCount = 0, savingSince = 0, savingHideTimer = 0;
+  function trackSave(promise){
+    savingCount++; renderSaving();
+    return Promise.resolve(promise).finally(()=>{ savingCount = Math.max(0, savingCount - 1); renderSaving(); });
+  }
+  function setRec(on){
+    const offline = navigator.onLine === false;
+    ['tt-rec', 'tt-rec-float'].forEach(id=>{
+      const el = $(id); if(!el) return;
+      el.hidden = !on; el.classList.toggle('wait', on && offline);
+      el.querySelector('.tt-rec-text').textContent = offline ? 'Waiting to sync' : 'Saving…';
+    });
+  }
+  function renderSaving(){
+    clearTimeout(savingHideTimer);
+    if(savingCount > 0){ if(!savingSince) savingSince = Date.now(); setRec(true); return; }
+    if(!savingSince) return;
+    // stay up for at least ~0.9 s so a quick save is still noticed
+    savingHideTimer = setTimeout(()=>{ if(savingCount === 0){ savingSince = 0; setRec(false); } }, Math.max(0, 900 - (Date.now() - savingSince)));
+  }
+  window.addEventListener('online', renderSaving); window.addEventListener('offline', renderSaving);
+
   // ---------------- footer: connection + shortcuts ----------------
   function renderFootStatus(){
     const on = navigator.onLine !== false;
@@ -7550,7 +7592,7 @@ match /users/{userId}/meta/{docId} {
         if(withTz && tz) entry.tz = tz;
         batch.set(newEntryRef, entry);
         batch.delete(activeDoc(currentUid));
-        await batch.commit();
+        await trackSave(batch.commit());
       };
       try{
         try{ await commit(true); }
@@ -7564,7 +7606,7 @@ match /users/{userId}/meta/{docId} {
         const data = { startISO: new Date().toISOString(), note: $('tt-note').value.trim() };
         const tz = browserTimeZone();
         if(withTz && tz) data.tz = tz;
-        await setDoc(activeDoc(currentUid), data);
+        await trackSave(setDoc(activeDoc(currentUid), data));
       };
       try{
         try{ await begin(true); }
@@ -7923,8 +7965,8 @@ match /users/{userId}/meta/{docId} {
       });
       const batch = writeBatch(db);
       snap.docs.forEach(d=> batch.delete(d.ref));
-      await batch.commit();
-      await deleteDoc(activeDoc(currentUid));
+      await trackSave(batch.commit());
+      await trackSave(deleteDoc(activeDoc(currentUid)));
     }catch(err){ console.error('Could not clear data', err); }
   }
 
@@ -8506,7 +8548,7 @@ match /users/{userId}/meta/{docId} {
             };
             const importTz = browserTimeZone(); // the file's times were read in this browser's timezone
             if(importTz) importedEntry.tz = importTz;
-            await addDoc(entriesCol(currentUid), importedEntry);
+            await trackSave(addDoc(entriesCol(currentUid), importedEntry));
             imported++;
           }catch(err){
             errors.push(`Row ${rowNum}: could not save (${err.message||'unknown error'})`);
