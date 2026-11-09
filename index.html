@@ -1143,6 +1143,13 @@
   }
   @media (max-width:900px){ .tt-uni-entlist{max-height:560px;} }
 
+  /* assigning entries that have no project, from the alert */
+  .tt-assign{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;}
+  .tt-assign-sel{flex:1 1 150px; min-width:0; min-height:40px; padding:0 10px; border-radius:12px; border:1px solid var(--line); background:var(--panel-2); color:var(--paper); font:inherit; font-size:13px;}
+  .tt-assign-btn{min-height:40px; padding:0 14px; white-space:nowrap;}
+  .tt-assign-btn:disabled{opacity:.45; cursor:not-allowed;}
+  .tt-assign-note{margin-top:12px; font-size:12.5px; font-weight:600;}
+  .tt-assign-note.ok{color:var(--ok, #8FD9B6);} .tt-assign-note.err{color:var(--stop-text, #F08A82);}
   /* the red point: shown only while a timer is running (you are recording an entry) */
   .tt-rec{display:inline-grid; place-items:center; width:24px; height:24px; flex-shrink:0; animation:tt-rec-in .25s cubic-bezier(.2,.9,.3,1.2) both;}
   .tt-rec[hidden]{display:none !important;}
@@ -2711,7 +2718,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.092</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.093</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -2754,6 +2761,7 @@
 
   let entries = [];
   let active = null; // { startISO, note, tz }
+  let assignNote = null, assignTimer = 0;   // the little confirmation after assigning entries to a project
   let anchorDate = new Date(); // representative date for whatever range is being browsed
   let granularity = 'month'; // 'day' | 'week' | 'month' | 'custom'
   let customFromDate = null; // Date — set when the user picks a custom range
@@ -6459,7 +6467,7 @@ match /users/{userId}/meta/{docId} {
     const t = P.target, f = (v)=> `${enhFmt(v)} ${P.cur}`;
     $('tt-pace-target-label').textContent = t ? `${Math.round(t.amount)} ${t.currency} · ${t.mode}` : 'not set';
     $('tt-enh-title-pace').textContent = `${P.monthLabel} pace · ${P.mode}`;
-    const plural = (n, w)=> `${n} ${w}${n === 1 ? '' : 's'}`;
+    const plural = (n, w)=> `${n} ${n === 1 ? w : (/[^aeiou]y$/.test(w) ? w.slice(0, -1) + 'ies' : w + 's')}`;
     let pill = '', pillCls = 'plain', headline = '', sub = '', tiles = '', bar = '';
     const earnedTile = enhTile('Earned so far', f(P.earned), `${plural(P.worked, 'worked day')} · ${enhHM(P.hours)} h`);
     if(!t){
@@ -6546,7 +6554,7 @@ match /users/{userId}/meta/{docId} {
 
   function enhAttentionItems(P, H){
     const items = [];
-    const plural = (n, w)=> `${n} ${w}${n === 1 ? '' : 's'}`;
+    const plural = (n, w)=> `${n} ${n === 1 ? w : (/[^aeiou]y$/.test(w) ? w.slice(0, -1) + 'ies' : w + 's')}`;
     if(P.target && P.projected != null && P.remaining > 0 && P.earned < P.target.amount){
       const gap = P.target.amount - P.projected;
       if(gap > 0){
@@ -6573,7 +6581,7 @@ match /users/{userId}/meta/{docId} {
     const noRateNames = Object.keys(noRate);
     if(noRateNames.length) items.push({ kind:'warn', rule:'norate', key:`norate:${noRateNames.join(',')}`, title:`${plural(noRateNames.length, 'project')} with hours but no rate`, body:`${noRateNames.slice(0, 3).join(', ')}${noRateNames.length > 3 ? '…' : ''} — their time counts as hours only. Set a rate in Menu → Projects.` });
     const noProject = monthEntries.filter(e=> !e.note).length;
-    if(noProject) items.push({ kind:'info', rule:'noproject', key:`noproject:${monthPrefix}`, title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
+    if(noProject) items.push({ kind:'info', rule:'noproject', month:monthPrefix, count:noProject, key:`noproject:${monthPrefix}`, title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
     if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', rule:'best', key:`best:${H.best}`, title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
     for(let i = items.length - 1; i >= 0; i--) if(items[i].rule && bgPref.alerts && bgPref.alerts[items[i].rule] === false) items.splice(i, 1);
     if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', key:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
@@ -6582,7 +6590,7 @@ match /users/{userId}/meta/{docId} {
 
   function enhRenderAttention(P, H){
     const items = enhAttentionItems(P, H);
-    enhSet('attention', `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}${i.action ? ` <button type="button" class="tt-enh-link" data-enh="${i.action}">Set a target</button>` : ''}</span></div></div>`).join('')}</div>`);
+    enhSet('attention', `<div class="tt-attn">${items.map(i=> `<div class="tt-attn-item ${i.kind}">${ENH_STATE[i.kind]}<div><b>${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}${i.action ? ` <button type="button" class="tt-enh-link" data-enh="${i.action}">Set a target</button>` : ''}</span>${assignControl(i)}</div></div>`).join('')}</div>${assignNoteHtml()}`);
   }
 
   // earned each day: what happened (solid), what your pace adds on the days still to come (hatched), today in white
@@ -7023,9 +7031,9 @@ match /users/{userId}/meta/{docId} {
   const uniUnread = ()=> uniAlerts().filter(i=> i.kind !== 'ok' && !i.read).length;
   function renderUniBell(){
     const items = uniAlerts(), unread = items.filter(i=> i.kind !== 'ok' && !i.read).length;
-    const row = (i)=> `<div class="tt-attn-item ${i.kind}${i.read ? ' read' : ''}">${ENH_STATE[i.kind]}<div><b>${i.read ? '' : '<i class="tt-uni-unreaddot" aria-label="Unread"></i>'}${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span>${(!i.read && i.kind !== 'ok') ? `<button type="button" class="tt-enh-link tt-uni-markread" data-read="${escapeHtml(i.key)}" aria-label="Mark as read: ${escapeHtml(i.title)}">Mark as read</button>` : ''}</div></div>`;
+    const row = (i)=> `<div class="tt-attn-item ${i.kind}${i.read ? ' read' : ''}">${ENH_STATE[i.kind]}<div><b>${i.read ? '' : '<i class="tt-uni-unreaddot" aria-label="Unread"></i>'}${escapeHtml(i.title)}</b><span>${escapeHtml(i.body)}</span>${(!i.read && i.kind !== 'ok') ? `<button type="button" class="tt-enh-link tt-uni-markread" data-read="${escapeHtml(i.key)}" aria-label="Mark as read: ${escapeHtml(i.title)}">Mark as read</button>` : ''}${assignControl(i)}</div></div>`;
     uniSet('tt-uni-bellpop', `<div class="tt-enh-head" style="margin-bottom:8px"><span class="tt-enh-disc">${ENH_ICON.attention}</span><span class="tt-enh-title">Needs attention${unread ? ` · ${unread} unread` : ''}</span></div>`
-      + `<div class="tt-attn">${items.map(row).join('') || '<div class="tt-enh-empty">Nothing needs your attention.</div>'}</div>`
+      + `<div class="tt-attn">${items.map(row).join('') || '<div class="tt-enh-empty">Nothing needs your attention.</div>'}</div>` + assignNoteHtml()
       + `<button type="button" class="tt-btn tt-uni-readall" data-readall="1"${unread ? '' : ' disabled'}>${unread ? 'Mark all as read' : 'All read'}</button>`);
   }
   $('tt-uni-bellpop').addEventListener('click', (e)=>{
@@ -7039,6 +7047,45 @@ match /users/{userId}/meta/{docId} {
     // the button you pressed is gone: keep keyboard focus inside the panel
     const next = $('tt-uni-bellpop').querySelector('[data-read]') || $('tt-uni-bellpop').querySelector('[data-readall]');
     if(next) next.focus();
+  });
+
+  // ---------------- give the entries that have no project a project, straight from the alert ----------------
+  // Anyone can do this for their own entries. The project is simply the entry's "note", and earnings follow from it.
+  function assignControl(i){
+    if(i.rule !== 'noproject') return '';
+    const names = presets.map(presetName).filter(Boolean);
+    if(!names.length) return `<div class="tt-assign"><button type="button" class="tt-enh-link" data-assign-go="1">Add a project first</button></div>`;
+    return `<div class="tt-assign" data-month="${escapeHtml(i.month)}"><select class="tt-assign-sel" aria-label="Project for ${i.count === 1 ? 'this entry' : 'these entries'}"><option value="">Choose a project…</option>${names.map(n=> `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')}</select><button type="button" class="tt-btn primary tt-assign-btn" data-assign="1" disabled>${i.count === 1 ? 'Assign it' : `Assign all ${i.count}`}</button></div>`;
+  }
+  const assignNoteHtml = ()=> assignNote ? `<div class="tt-assign-note ${assignNote.ok ? 'ok' : 'err'}" role="status">${escapeHtml(assignNote.text)}</div>` : '';
+  function refreshAssign(){ renderEnhancedPanels(true); renderUnified(); }
+  async function assignNoProject(month, name){
+    if(!currentUid || !name || !month) return;
+    const targets = entries.filter(e=> e.date && e.date.startsWith(month) && !e.note);
+    if(!targets.length) return;
+    try{
+      for(let i = 0; i < targets.length; i += 400){
+        const batch = writeBatch(db);
+        targets.slice(i, i + 400).forEach(e=> batch.update(doc(entriesCol(currentUid), e.id), { note:name }));
+        await batch.commit();
+      }
+      assignNote = { ok:true, text:`${targets.length} ${targets.length === 1 ? 'entry' : 'entries'} assigned to ${name}.` };
+    }catch(err){
+      console.error('assign entries', err);
+      assignNote = { ok:false, text:'Could not assign the entries. Check your connection and try again.' };
+    }
+    refreshAssign();
+    clearTimeout(assignTimer); assignTimer = setTimeout(()=>{ assignNote = null; refreshAssign(); }, 5000);
+  }
+  document.addEventListener('change', (e)=>{
+    const sel = e.target.closest && e.target.closest('.tt-assign-sel'); if(!sel) return;
+    const btn = sel.parentNode.querySelector('.tt-assign-btn'); if(btn) btn.disabled = !sel.value;
+  });
+  document.addEventListener('click', (e)=>{
+    if(e.target.closest('[data-assign-go]')){ uniCloseBell(); go({ view:'account', screen:'projects' }); return; }
+    const b = e.target.closest('[data-assign]'); if(!b || b.disabled) return;
+    const box = b.closest('.tt-assign'), sel = box.querySelector('.tt-assign-sel');
+    assignNoProject(box.dataset.month, sel.value);
   });
 
   // the account button opens a small card (who you are, your time zone, sign out), not the whole Settings page
