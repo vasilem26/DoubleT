@@ -1149,6 +1149,70 @@
   .tt-enh-info:hover, .tt-enh-info[aria-expanded="true"]{color:var(--amber); border-color:var(--amber-dim);}
   .tt-enh-info:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
   .tt-enh-explain{margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); font-size:12.5px; line-height:1.55; color:var(--paper-dim);}
+  /* ---- TiMo, the assistant in the corner ---- */
+  .tt-timo[hidden]{display:none;}
+  .tt-timo-launch{position:fixed; right:28px; bottom:26px; z-index:3090; width:64px; height:64px; padding:0; border:0; border-radius:50%; background:transparent; cursor:pointer; transition:transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;}
+  .tt-timo-launch:hover{transform:translateY(-3px) scale(1.07);}
+  .tt-timo-launch:focus-visible{outline:2px solid var(--paper); outline-offset:4px;}
+  .tt-timo.open .tt-timo-launch{opacity:0; pointer-events:none;}
+  .tt-timo-logo{display:inline-block; position:relative; width:var(--s); height:var(--s); flex-shrink:0; border-radius:50%; background:radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.55), rgba(255,255,255,0) 62%), #E8A33D; box-shadow:inset 0 1px 1px rgba(255,255,255,.6), 0 10px 26px rgba(232,163,61,.38); animation:tt-timo-breathe 3.2s ease-in-out infinite;}
+  .tt-timo-logo svg{width:100%; height:100%; display:block;}
+  .tt-timo-logo .orbit, .tt-timo-logo .lap{transform-box:view-box; transform-origin:50% 50%;}
+  .tt-timo-logo .orbit{animation:tt-timo-orbit 12s linear infinite;}
+  .tt-timo-logo.lapping .lap{animation:tt-timo-lap .8s cubic-bezier(.45,0,.15,1) 1;}
+  .tt-timo-logo.still{animation:none; box-shadow:inset 0 1px 1px rgba(255,255,255,.6);} .tt-timo-logo.still .orbit{animation:none;}
+  .tt-timo-logo.think{animation:none; box-shadow:inset 0 1px 1px rgba(255,255,255,.6);} .tt-timo-logo.think .orbit{animation-duration:.9s;}
+  .tt-timo-ready{position:absolute; top:-1px; right:-1px; width:17px; height:17px; border-radius:50%; background:#5BD6A0; border:3px solid #1B2733; box-sizing:content-box; animation:tt-timo-ready 1.8s ease-out infinite;}
+  .tt-timo-ready[hidden]{display:none;}
+  @keyframes tt-timo-orbit{to{transform:rotate(360deg);}}
+  @keyframes tt-timo-lap{to{transform:rotate(360deg);}}
+  @keyframes tt-timo-breathe{0%,100%{box-shadow:inset 0 1px 1px rgba(255,255,255,.6), 0 10px 26px rgba(232,163,61,.38), 0 0 0 0 rgba(232,163,61,.35);}50%{box-shadow:inset 0 1px 1px rgba(255,255,255,.6), 0 10px 26px rgba(232,163,61,.38), 0 0 0 14px rgba(232,163,61,0);}}
+  @keyframes tt-timo-ready{0%{box-shadow:0 0 0 0 rgba(91,214,160,.65);}100%{box-shadow:0 0 0 10px rgba(91,214,160,0);}}
+  @keyframes tt-timo-pop{from{opacity:0; transform:scale(.88) translateY(14px);}to{opacity:1; transform:none;}}
+  @keyframes tt-timo-rise{from{opacity:0; transform:translateY(10px);}to{opacity:1; transform:none;}}
+  @keyframes tt-timo-bounce{0%,60%,100%{transform:translateY(0); opacity:.5;}30%{transform:translateY(-5px); opacity:1;}}
+  .tt-timo-panel{position:fixed; right:24px; bottom:24px; z-index:3095; width:420px; height:min(660px, calc(100vh - 48px)); display:flex; flex-direction:column; overflow:hidden; border-radius:26px; background:var(--panel); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); border:1px solid var(--line); box-shadow:0 30px 80px rgba(var(--shadow-rgb),.55); color:var(--paper); transform-origin:100% 100%; animation:tt-timo-pop .35s cubic-bezier(.2,.9,.3,1.15) both;}
+  .tt-timo-panel[hidden]{display:none;}
+  .tt-timo-head{display:flex; align-items:center; gap:12px; padding:16px 18px;}
+  .tt-timo-title{flex:1; min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:0 8px;}
+  .tt-timo-title b{font-size:16px; font-weight:700;} .tt-timo-title small{flex-basis:100%; font-size:12px; color:var(--paper-dim);}
+  .tt-timo-beta{font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); border:1px solid var(--amber-dim); border-radius:999px; padding:2px 8px;}
+  .tt-timo-iconbtn{width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--paper); display:grid; place-items:center; padding:0; cursor:pointer;}
+  .tt-timo-iconbtn:hover{border-color:var(--amber-dim);}
+  .tt-timo-body{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:4px 18px 8px; display:flex; flex-direction:column; gap:14px;}
+  .tt-timo-msg{display:flex; gap:10px; animation:tt-timo-rise .3s cubic-bezier(.2,.8,.2,1) both;} .tt-timo-msg.user{justify-content:flex-end;}
+  .tt-timo-ubub{max-width:80%; padding:10px 14px; border-radius:18px 18px 4px 18px; background:var(--amber-soft); border:1px solid var(--amber-dim); font-size:14px; line-height:1.45; overflow-wrap:anywhere;}
+  .tt-timo-card{flex:1; min-width:0; display:flex; flex-direction:column; gap:12px; padding:14px 16px; border-radius:4px 18px 18px 18px; background:var(--panel-2); border:1px solid var(--line);}
+  .tt-timo-card p{margin:0; font-size:14px; line-height:1.5; overflow-wrap:anywhere;}
+  .tt-timo-stats{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px;}
+  .tt-timo-stat{padding:9px 10px; border-radius:12px; background:var(--panel); border:1px solid var(--line); min-width:0;}
+  .tt-timo-stat .k{font-size:11px; color:var(--paper-dim); line-height:1.25;} .tt-timo-stat .v{font-family:'Space Mono',monospace; font-size:12.5px; font-weight:700; margin-top:3px; overflow-wrap:anywhere;}
+  .tt-timo-bars{display:flex; flex-direction:column; gap:8px;}
+  .tt-timo-bar{display:grid; grid-template-columns:96px minmax(0,1fr) 78px; gap:8px; align-items:center; font-size:12px;}
+  .tt-timo-bar .trk{height:10px; border-radius:6px; background:var(--panel); position:relative; overflow:hidden; border:1px solid var(--line);}
+  .tt-timo-bar .fill{display:block; height:100%; background:var(--amber);} .tt-timo-bar .fill.c{opacity:.55;} .tt-timo-bar .fill.s{filter:brightness(1.12);}
+  .tt-timo-bar .tgt{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--paper);}
+  .tt-timo-bar b{font-family:'Space Mono',monospace; font-size:11.5px; text-align:right;}
+  .tt-timo-foot{font-size:12px; color:var(--paper-dim); display:flex; align-items:center; gap:6px;} .tt-timo-foot .tgtkey{display:inline-block; width:2px; height:12px; background:var(--paper);}
+  .tt-timo-assume{display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:9px 10px; border-radius:12px; border:1px dashed var(--line); font-size:12.5px;}
+  .tt-timo-assume > span{flex:1 1 100%;}
+  .tt-timo-hchip{display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 12px; border-radius:999px; border:1px solid var(--amber-dim); background:var(--amber-soft); color:var(--paper); font:inherit; font-size:12px; cursor:pointer;}
+  .tt-timo-hchip b{font-family:'Space Mono',monospace;} .tt-timo-hchip.off{opacity:.5; border-color:var(--line); background:transparent; text-decoration:line-through;}
+  .tt-timo-how{align-self:flex-start; background:transparent; border:0; color:var(--amber); font:inherit; font-size:12.5px; font-weight:600; padding:6px 0; cursor:pointer;} .tt-timo-how:hover{text-decoration:underline;}
+  .tt-timo-steps{font-family:'Space Mono',monospace; font-size:11.5px; line-height:1.6; white-space:pre-line; padding:10px 12px; border-radius:12px; background:rgba(var(--shadow-rgb),.18); color:var(--paper-dim); overflow-wrap:anywhere;}
+  .tt-timo-dots{display:inline-flex; gap:5px; padding:6px 2px;} .tt-timo-dots i{width:7px; height:7px; border-radius:50%; background:var(--paper-dim); animation:tt-timo-bounce 1s infinite;} .tt-timo-dots i:nth-child(2){animation-delay:.15s;} .tt-timo-dots i:nth-child(3){animation-delay:.3s;}
+  .tt-timo-chips{display:flex; gap:8px; overflow-x:auto; padding:6px 18px 10px; scrollbar-width:none; flex-shrink:0;}
+  .tt-timo-chip{white-space:nowrap; min-height:38px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--paper); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;} .tt-timo-chip:hover{border-color:var(--amber-dim); background:var(--amber-soft);}
+  .tt-timo-form{display:flex; gap:8px; align-items:center; padding:4px 14px 14px; margin:0;}
+  .tt-timo-form input{flex:1; min-width:0; min-height:46px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); color:var(--paper); padding:0 18px; font:inherit; font-size:14px; outline:none;} .tt-timo-form input:focus{border-color:var(--amber);}
+  .tt-timo-send{width:46px; height:46px; flex-shrink:0; padding:0; border:0; border-radius:50%; color:var(--on-accent); display:grid; place-items:center; cursor:pointer; background:radial-gradient(130% 90% at 50% -15%, rgba(255,255,255,.55), rgba(255,255,255,0) 62%), var(--amber);}
+  @media (max-width:900px){
+    .tt-timo-launch{right:16px; bottom:calc(86px + 14px + env(safe-area-inset-bottom, 0px));}
+    .tt-timo-panel{inset:0; width:auto; height:auto; border-radius:0; border:0;}
+    .tt-timo-head{padding-top:calc(16px + env(safe-area-inset-top, 0px));}
+    .tt-timo-form{padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px));}
+  }
+  @media (prefers-reduced-motion:reduce){ .tt-timo *, .tt-timo-logo, .tt-timo-ready{animation:none !important; transition:none !important;} }
   /* assigning entries that have no project, from the alert */
   .tt-assign{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;}
   .tt-assign-sel{flex:1 1 150px; min-width:0; min-height:40px; padding:0 10px; border-radius:12px; border:1px solid var(--line); background:var(--panel-2); color:var(--paper); font:inherit; font-size:13px;}
@@ -1651,7 +1715,7 @@
   .tt-modal-actions{display:flex; gap:10px;}
   .tt-modal-actions .tt-btn{margin:0;}
 
-  .tt-foot{margin-top:24px; padding:12px 0 8px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 24px; font-size:12.5px; color:var(--paper-dim);}
+  .tt-foot{margin-top:24px; padding:12px 96px 8px 0; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 24px; font-size:12.5px; color:var(--paper-dim);}
   .tt-foot-left{display:flex; align-items:center; gap:10px;}
   .tt-foot-logo{display:inline-flex; border-radius:7px; overflow:hidden; box-shadow:0 0 0 1px rgba(232,163,61,.35);}
   .tt-foot-logo svg{display:block;}
@@ -1664,6 +1728,7 @@
   .tt-foot-links button{min-height:44px; padding:0 12px; border:0; background:transparent; color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer; border-radius:10px; transition:color .2s, background .2s;}
   .tt-foot-links button:hover{color:var(--amber); background:var(--panel-2);}
   .tt-foot-links button[hidden]{display:none;}
+  @media (max-width:900px){ .tt-foot{padding-right:76px;} }
   @media (max-width:600px){ .tt-foot{justify-content:center; text-align:center;} .tt-foot-links{justify-content:center;} }
   @media (prefers-reduced-motion:reduce){ .tt-foot-dot{animation:none;} }
   .tt-csv-columns{
@@ -1810,6 +1875,20 @@
     <button type="button" class="tt-uni-settings" data-uni="settings" data-l="Settings" aria-label="Settings and account"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   </aside>
   <div class="tt-rec tt-rec-float" id="tt-rec-float" role="img" aria-label="Recording: a timer is running" title="Recording an entry" hidden><i class="tt-rec-dot" aria-hidden="true"></i></div>
+  <div class="tt-timo" id="tt-timo" hidden>
+    <button type="button" class="tt-timo-launch" id="tt-timo-launch" aria-label="Open TiMo, your time and money assistant" aria-haspopup="dialog" aria-expanded="false" title="TiMo"><i class="tt-timo-ready" id="tt-timo-ready" hidden></i></button>
+    <section class="tt-timo-panel" id="tt-timo-panel" role="dialog" aria-label="TiMo" hidden>
+      <header class="tt-timo-head">
+        <span id="tt-timo-headlogo"></span>
+        <div class="tt-timo-title"><b>TiMo</b><span class="tt-timo-beta">Beta</span><small>Your time &amp; money assistant</small></div>
+        <button type="button" class="tt-timo-iconbtn" id="tt-timo-new" aria-label="New chat" title="New chat"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button type="button" class="tt-timo-iconbtn" id="tt-timo-close" aria-label="Close TiMo"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </header>
+      <div class="tt-timo-body" id="tt-timo-body" aria-live="polite"></div>
+      <div class="tt-timo-chips" id="tt-timo-chips" role="group" aria-label="Suggestions"></div>
+      <form class="tt-timo-form" id="tt-timo-form" autocomplete="off"><input type="text" id="tt-timo-input" placeholder="Ask about your hours, pay or forecast…" aria-label="Ask TiMo" maxlength="300"><button type="submit" class="tt-timo-send" aria-label="Send"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
+    </section>
+  </div>
   <div class="tt-uni-curtain" id="tt-uni-curtain" aria-hidden="true" hidden></div>
   <nav class="tt-bottomnav" id="tt-bottomnav" aria-label="Main">
     <button type="button" data-tab="today" class="active" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Today</span></button>
@@ -2022,6 +2101,12 @@
               <select id="tt-money-display-currency" class="tt-menu-input" aria-label="Display currency"><option>RON</option><option>EUR</option><option>USD</option><option>GBP</option></select>
               <div class="tt-segment" id="tt-money-display-mode" role="group" aria-label="Show net or gross"><button type="button" data-val="net">Net</button><button type="button" data-val="gross">Gross</button></div>
             </div>
+          </div>
+          <div class="tt-menu-section">
+            <div class="tt-menu-label">Public holidays</div>
+            <div class="tt-uni-switchrows"><div class="tt-uni-switchrow"><span>Don’t count public holidays as working days</span><button type="button" class="tt-uni-sw on" role="switch" aria-checked="true" id="tt-hol-on" aria-label="Don’t count public holidays as working days"></button></div></div>
+            <div class="tt-uni-fieldrow" style="margin-top:12px;"><select id="tt-hol-country" class="tt-menu-input" aria-label="Country for public holidays"></select></div>
+            <div class="tt-menu-static-value" id="tt-hol-note" role="status"></div>
           </div>
         </div>
 
@@ -2724,7 +2809,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.095</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.097</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -2768,7 +2853,9 @@
   let entries = [];
   let active = null; // { startISO, note, tz }
   let assignNote = null, assignTimer = 0;
-  let usualExplainOpen = false;            // the 'how is your usual day worked out' text under the Today card   // the little confirmation after assigning entries to a project
+  let usualExplainOpen = false;
+  let timoOpen = false, timoReady = false, timoLap = false, timoTyping = false, timoSeq = 0, timoTimer = 0, timoLapTimer = 0;   // TiMo, the assistant in the corner
+  const timoMsgs = [];            // the 'how is your usual day worked out' text under the Today card   // the little confirmation after assigning entries to a project
   let anchorDate = new Date(); // representative date for whatever range is being browsed
   let granularity = 'month'; // 'day' | 'week' | 'month' | 'custom'
   let customFromDate = null; // Date — set when the user picks a custom range
@@ -3689,6 +3776,56 @@
   // Returns what was earned so far, the worked / remaining day counts, and the
   // projected month (earned scaled by the day ratio), or null when there is
   // nothing to project from (no worked days, or no rates).
+  // ---------------- public holidays, by the country of your time zone ----------------
+  // Romania's calendar is built in (it works offline). Any other country is read from the date-holidays library, which is
+  // fetched only when needed. A public holiday that falls on a weekday is not a working day; weekends never were.
+  const HOL_LIB_URL = 'https://cdn.jsdelivr.net/npm/date-holidays@3.38.0/dist/umd.min.js';
+  const HOL_COUNTRIES = { AL:'Albania', AT:'Austria', AU:'Australia', BA:'Bosnia and Herzegovina', BE:'Belgium', BG:'Bulgaria', CA:'Canada', CH:'Switzerland', CZ:'Czechia', DE:'Germany', DK:'Denmark', EE:'Estonia', ES:'Spain', FI:'Finland', FR:'France', GB:'United Kingdom', GR:'Greece', HR:'Croatia', HU:'Hungary', IE:'Ireland', IN:'India', IT:'Italy', LT:'Lithuania', LU:'Luxembourg', LV:'Latvia', MD:'Moldova', ME:'Montenegro', MK:'North Macedonia', NL:'Netherlands', NO:'Norway', PL:'Poland', PT:'Portugal', RO:'Romania', RS:'Serbia', SE:'Sweden', SI:'Slovenia', SK:'Slovakia', TR:'Türkiye', UA:'Ukraine', US:'United States' };
+  const HOL_TZ = { 'Europe/Bucharest':'RO', 'Europe/Chisinau':'MD', 'Europe/Amsterdam':'NL', 'Europe/Athens':'GR', 'Europe/Belgrade':'RS', 'Europe/Berlin':'DE', 'Europe/Bratislava':'SK', 'Europe/Brussels':'BE', 'Europe/Budapest':'HU', 'Europe/Copenhagen':'DK', 'Europe/Dublin':'IE', 'Europe/Helsinki':'FI', 'Europe/Istanbul':'TR', 'Europe/Kiev':'UA', 'Europe/Kyiv':'UA', 'Europe/Lisbon':'PT', 'Europe/Ljubljana':'SI', 'Europe/London':'GB', 'Europe/Luxembourg':'LU', 'Europe/Madrid':'ES', 'Europe/Oslo':'NO', 'Europe/Paris':'FR', 'Europe/Podgorica':'ME', 'Europe/Prague':'CZ', 'Europe/Riga':'LV', 'Europe/Rome':'IT', 'Europe/Sarajevo':'BA', 'Europe/Skopje':'MK', 'Europe/Sofia':'BG', 'Europe/Stockholm':'SE', 'Europe/Tallinn':'EE', 'Europe/Tirane':'AL', 'Europe/Vienna':'AT', 'Europe/Vilnius':'LT', 'Europe/Warsaw':'PL', 'Europe/Zagreb':'HR', 'Europe/Zurich':'CH', 'America/New_York':'US', 'America/Chicago':'US', 'America/Denver':'US', 'America/Los_Angeles':'US', 'America/Phoenix':'US', 'America/Toronto':'CA', 'America/Vancouver':'CA', 'Australia/Sydney':'AU', 'Australia/Melbourne':'AU', 'Asia/Kolkata':'IN' };
+  let holLibState = 0, holLib = null;          // 0 not asked for, 1 loading, 2 ready, 3 failed
+  const holCache = {};
+  function holCountry(){ const c = bgPref.holidays && bgPref.holidays.country; return c || HOL_TZ[browserTimeZone()] || ''; }
+  function orthodoxEaster(y){                    // Julian computus, shifted to the Gregorian calendar (valid 1900–2099)
+    const a = y % 4, b = y % 7, c = y % 19, d = (19 * c + 15) % 30, e = (2 * a + 4 * b - d + 34) % 7;
+    const m = Math.floor((d + e + 114) / 31), day = (d + e + 114) % 31 + 1;
+    return new Date(y, m - 1, day + 13);
+  }
+  function roHolidays(y){
+    const map = {}, add = (d, n)=>{ map[dateKey(d)] = n; };
+    [[1,1,'New Year’s Day'],[1,2,'New Year (second day)'],[1,24,'Unification Day'],[5,1,'Labour Day'],[6,1,'Children’s Day'],[8,15,'Assumption'],[11,30,'St Andrew’s Day'],[12,1,'National Day'],[12,25,'Christmas Day'],[12,26,'Christmas (second day)']]
+      .forEach(([m, d, n])=> add(new Date(y, m - 1, d), n));
+    if(y >= 2024){ add(new Date(y, 0, 6), 'Epiphany'); add(new Date(y, 0, 7), 'St John the Baptist'); }      // non-working days since 2024
+    const e = orthodoxEaster(y), off = (n)=> new Date(e.getFullYear(), e.getMonth(), e.getDate() + n);
+    add(off(-2), 'Good Friday'); add(off(0), 'Easter'); add(off(1), 'Easter Monday'); add(off(49), 'Pentecost'); add(off(50), 'Whit Monday');
+    return map;
+  }
+  function holRefresh(){ Object.keys(holCache).forEach(k=> delete holCache[k]); try{ renderEnhancedPanels(true); render(); renderUnified(); if(typeof renderHolidaySettings === 'function') renderHolidaySettings(); }catch(e){} }
+  function holLoadLib(){
+    if(holLibState) return; holLibState = 1;
+    const sc = document.createElement('script'); sc.src = HOL_LIB_URL; sc.async = true;
+    sc.onload = ()=>{ holLib = window.Holidays && (window.Holidays.default || window.Holidays); holLibState = holLib ? 2 : 3; holRefresh(); };
+    sc.onerror = ()=>{ holLibState = 3; holRefresh(); };
+    document.head.appendChild(sc);
+  }
+  function holMap(y){
+    const c = holCountry(); if(!c) return {};
+    const key = c + '-' + y; if(holCache[key]) return holCache[key];
+    if(c === 'RO') return holCache[key] = roHolidays(y);
+    if(holLibState === 2){
+      const m = {}; try{ new holLib(c).getHolidays(y, 'en').forEach(h=>{ if(h.type === 'public') m[h.date.slice(0, 10)] = h.name; }); }catch(e){}
+      return holCache[key] = m;
+    }
+    holLoadLib(); return {};
+  }
+  function holidayName(d){ return (bgPref.holidays && bgPref.holidays.on) ? (holMap(d.getFullYear())[dateKey(d)] || '') : ''; }
+  const isHoliday = (d)=> !!holidayName(d);
+  // the public holidays that fall on a weekday in a month: [{ date, key, name }]
+  function holidaysInMonth(y, m){
+    const out = [], n = new Date(y, m + 1, 0).getDate();
+    for(let d = 1; d <= n; d++){ const dt = new Date(y, m, d), wd = dt.getDay(); if(wd === 0 || wd === 6) continue; const name = holidayName(dt); if(name) out.push({ date: dt, key: dateKey(dt), name }); }
+    return out;
+  }
+
   function computeMonthProjection(src, secondsFor, ref){
     const y = ref.getFullYear(), m = ref.getMonth();
     const monthDates = [];
@@ -3701,7 +3838,7 @@
     let remaining = 0;
     monthDates.forEach(d=>{
       const wd = d.getDay();
-      if(wd===0 || wd===6) return;
+      if(wd===0 || wd===6 || isHoliday(d)) return;          // weekends and public holidays are not working days
       if(d > todayMid || (d.getTime()===todayMid.getTime() && !todayLogged)) remaining++;
     });
     const earn = computeEarningsFor(src, elapsed);
@@ -3719,8 +3856,8 @@
   // month, what does the month come to?"
   //   projected = earned so far + (earned so far ÷ worked days) × working days left
   // Working days left = Mon–Fri after today, plus today itself if it's a
-  // weekday and nothing is logged on it yet. Public holidays aren't known, so
-  // they count as working days. A finished month simply shows what it earned;
+  // weekday and nothing is logged on it yet, minus public holidays (the country
+  // of your time zone; Settings → Money can switch this off). A finished month simply shows what it earned;
   // a month with nothing logged has no average to project from.
   function renderProjectionPanel(){
     if(!$('tt-proj')) return;
@@ -5792,7 +5929,7 @@ match /users/{userId}/meta/{docId} {
     { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
   ];
   const ALERT_KEYS = ['forecast', 'timer', 'norate', 'noproject', 'notarget', 'best'];
-  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas', alerts:{ forecast:true, timer:true, norate:true, noproject:true, notarget:true, best:true } };
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas', alerts:{ forecast:true, timer:true, norate:true, noproject:true, notarget:true, best:true }, holidays:{ on:true, country:'' } };
   const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let bgPref = { ...BG_DEFAULT };
   let bgImage = '';          // data URL of the custom image (this user's)
@@ -5815,6 +5952,7 @@ match /users/{userId}/meta/{docId} {
     p.panels = raw.panels === 'enhanced' ? 'enhanced' : 'classic';
     p.layout = raw.layout === 'unified' ? 'unified' : 'canvas';
     p.alerts = {}; ALERT_KEYS.forEach(k=>{ p.alerts[k] = !(raw.alerts && raw.alerts[k] === false); });
+    p.holidays = { on: !(raw.holidays && raw.holidays.on === false), country: (raw.holidays && /^[A-Z]{2}$/.test(raw.holidays.country || '')) ? raw.holidays.country : '' };
     const t = raw.target, amt = t && Number(t.amount);
     if(t && typeof t === 'object' && Number.isFinite(amt) && amt > 0 && amt < 1e9
        && ['RON','EUR','USD','GBP'].includes(t.currency) && (t.mode === 'gross' || t.mode === 'net')){
@@ -6725,7 +6863,7 @@ match /users/{userId}/meta/{docId} {
     const on = (id)=>{ const el = panelEl(id); return !!el && !el.classList.contains('tt-panel-hidden'); };
     const sig = [entries.length, entries.length ? entries[entries.length - 1].id : '', entries.reduce((a, e)=> a + (e.durationSec || 0) + (e.note || '').length, 0), active ? active.startISO : '', Math.floor(Date.now() / 60000),
       earningsMode, displayCurrency, granularity, anchorDate.getTime(), customFromDate ? customFromDate.getTime() : '', customToDate ? customToDate.getTime() : '',
-      JSON.stringify(bgPref.target), JSON.stringify(rates), JSON.stringify(presets), taxTemplates.length].join('|');
+      JSON.stringify(bgPref.target), JSON.stringify(bgPref.holidays), holLibState, JSON.stringify(rates), JSON.stringify(presets), taxTemplates.length].join('|');
     if(force || sig !== enhSigLast || !enhData){
       enhSigLast = sig;
       const P = enhPace(), H = enhHistory();
@@ -6937,6 +7075,7 @@ match /users/{userId}/meta/{docId} {
     root.classList.toggle('tt-uni-pg', !$('tt-menu-overlay').hidden || root.classList.contains('tt-admin-open'));
     root.classList.toggle('tt-uni-co', co);
     root.classList.toggle('tt-uni-codash', co && coTab === 'dashboard');
+    timoSync();
     if(uniOn()){
       setActiveTab('tt-uni-view', co ? 'company' : 'personal');          // locked on Company while you are in it
       if(co && adminSelectedCompanyId){ try{ localStorage.setItem('tt-last-company', adminSelectedCompanyId); }catch(e){} }
@@ -7385,6 +7524,7 @@ match /users/{userId}/meta/{docId} {
 
   // money: the monthly target, and what the dashboard shows money in
   function renderMoneyScreen(fill){
+    renderHolidaySettings();
     const t = bgPref.target;
     if(fill){ $('tt-money-amount').value = t ? String(t.amount) : ''; $('tt-money-currency').value = t ? t.currency : displayCurrency; setActiveTab('tt-money-mode', t ? t.mode : earningsMode); $('tt-money-msg').textContent = ''; }
     $('tt-money-current').textContent = t ? `Current target: ${t.amount} ${t.currency} · ${t.mode}` : 'No target set yet.';
@@ -7401,6 +7541,310 @@ match /users/{userId}/meta/{docId} {
   $('tt-money-clear').addEventListener('click', ()=>{ setBgPref({ target:null }); $('tt-money-amount').value = ''; $('tt-money-msg').textContent = 'Target cleared.'; $('tt-money-msg').className = 'tt-menu-msg ok'; renderMoneyScreen(false); });
   $('tt-money-display-currency').addEventListener('change', (e)=>{ const sel = $('tt-earnings-currency'); sel.value = e.target.value; sel.dispatchEvent(new Event('change', { bubbles:true })); });
   $('tt-money-display-mode').addEventListener('click', (e)=>{ const b = e.target.closest('button[data-val]'); if(!b) return; const o = document.querySelector(`#tt-earnings-mode button[data-val="${b.dataset.val}"]`); if(o) o.click(); renderMoneyScreen(false); });
+
+  // public holidays: on or off, and which country (blank = the country of your time zone)
+  function renderHolidaySettings(){
+    const sel = $('tt-hol-country'); if(!sel) return;
+    const auto = HOL_TZ[browserTimeZone()], h = bgPref.holidays;
+    if(!sel.options.length){
+      sel.innerHTML = `<option value="">Automatic, from your time zone</option>` + Object.entries(HOL_COUNTRIES).sort((a, b)=> a[1].localeCompare(b[1])).map(([c, n])=> `<option value="${c}">${escapeHtml(n)}</option>`).join('');
+    }
+    sel.options[0].textContent = `Automatic, from your time zone${auto ? ' (' + HOL_COUNTRIES[auto] + ')' : ''}`;
+    sel.value = h.country; sel.disabled = !h.on;
+    const sw = $('tt-hol-on'); sw.classList.toggle('on', h.on); sw.setAttribute('aria-checked', String(h.on));
+    const c = holCountry(), name = HOL_COUNTRIES[c] || c;
+    $('tt-hol-note').textContent = !h.on ? 'Public holidays count as ordinary working days.'
+      : !c ? `No holiday calendar for your time zone (${browserTimeZone() || 'unknown'}). Pick a country.`
+      : (c !== 'RO' && holLibState === 1) ? 'Loading the holiday calendar…'
+      : (c !== 'RO' && holLibState === 3) ? 'The holiday calendar could not be loaded, so holidays are not counted for now.'
+      : `Using ${name}${h.country ? '' : ' (from your time zone, ' + browserTimeZone() + ')'}.`;
+    if(c && c !== 'RO') holMap(new Date().getFullYear());      // starts loading the calendar if it is needed
+  }
+  $('tt-hol-on').addEventListener('click', ()=>{ setBgPref({ holidays:{ ...bgPref.holidays, on: !bgPref.holidays.on } }); renderEnhancedPanels(true); render(); renderUnified(); renderHolidaySettings(); });
+  $('tt-hol-country').addEventListener('change', (e)=>{ setBgPref({ holidays:{ ...bgPref.holidays, country: e.target.value } }); renderEnhancedPanels(true); render(); renderUnified(); renderHolidaySettings(); });
+
+  // ---------------- TiMo: the assistant in the corner ----------------
+  // TiMo answers from your own entries with the same functions the cards use (enhPace, computeEarningsFor, the holiday calendar),
+  // and every answer can show how each number was worked out. It never changes anything.
+  const TM_CHIPS_PERSONAL = ['How is my month going?', 'What will next month look like?', 'What if I work 6 h a day?', 'Hours a day to hit my target?', 'Which weekday is my best?', 'Compare with last month'];
+  const TM_CHIPS_TEAM = ['How is the team doing?', 'Who has logged time today?', 'Who worked the most?'];
+  const tmLogo = (size, cls)=> `<span class="tt-timo-logo ${cls || ''}" style="--s:${size}px" aria-hidden="true"><svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="26" fill="none" stroke="#1B2733" stroke-opacity=".3" stroke-width="2" stroke-dasharray="1.6 6.16" stroke-linecap="round"/><g class="orbit"><g class="lap"><circle cx="32" cy="6" r="3.6" fill="#1B2733"/></g></g><path d="M21 24h22M32 24v21" fill="none" stroke="#1B2733" stroke-width="5.6" stroke-linecap="round"/></svg></span>`;
+  const tmMins = (h)=> Math.floor(Math.round(h * 3600) / 60);                       // minutes are truncated, like on the cards
+  const tmDiffHM = (a, b)=> enhHM((tmMins(a) - tmMins(b)) / 60);                      // differences are taken from the shown values
+  const tmInCo = ()=> uniIsCo() && coTab === 'dashboard';
+  const tmFirstName = ()=> ((auth.currentUser && auth.currentUser.displayName) || '').trim().split(/\s+/)[0] || '';
+  const tmDay = (d)=> `${WD_SHORT[(d.getDay() + 6) % 7]} ${d.getDate()} ${MON_SHORT[d.getMonth()]}`;
+  const tmToday = ()=> { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+  function tmDates(y, m, upTo){ const out = [], n = new Date(y, m + 1, 0).getDate(); for(let d = 1; d <= n; d++){ const dt = new Date(y, m, d); if(upTo && dt > upTo) break; out.push(dt); } return out; }
+  function tmWeekdaysIn(y, m){ return tmDates(y, m).filter(d=> d.getDay() !== 0 && d.getDay() !== 6).length; }
+  function tmStats(P, dates){
+    let secs = 0, worked = 0; dates.forEach(d=>{ const x = secondsForDate(d); secs += x; if(x > 0) worked++; });
+    const earn = computeEarningsFor({ entries, active, presets, taxTemplates }, dates);
+    return { secs, hours: secs / 3600, worked, earn, value: P ? P.val(earn) : 0 };
+  }
+  function tmHolNote(y, m, hs){
+    const h = bgPref.holidays, c = holCountry(), name = HOL_COUNTRIES[c] || c;
+    if(!h.on) return 'Public holidays are not counted (Settings → Money).';
+    if(!c) return 'No holiday calendar for your time zone, so only weekends are skipped (Settings → Money).';
+    if(c !== 'RO' && holLibState === 1) return `Loading the ${name} holiday calendar… ask again in a moment.`;
+    if(c !== 'RO' && holLibState === 3) return `The ${name} holiday calendar could not be loaded, so only weekends are skipped.`;
+    return hs.length ? `Public holidays · ${name}` : `${name}: no public holiday on a weekday in ${monthNames[m]}.`;
+  }
+
+  // ---- answers: each returns { text, stats?, bars?, tgt?, hols?, holNote?, foot?, steps? } ----
+  function tmSummary(){
+    const P = enhPace(), M = (v)=> `${v.toFixed(2)} ${P.cur}`, t = P.target, today = tmToday();
+    if(P.worked === 0) return { text: `You haven’t logged any time in ${P.monthLabel} yet.`, foot: t ? `Your target is ${M(t.amount)} (${t.mode}).` : '' };
+    const hoursLine = `${enhHM(P.hours)} h over ${P.worked} worked day${P.worked === 1 ? '' : 's'}`;
+    if(!(P.rate > 0)) return { text: `So far in ${P.monthLabel}: ${hoursLine}. Set an hourly rate on a project to see earnings and a forecast.`, stats: [['Hours so far', enhHM(P.hours) + ' h'], ['Worked days', String(P.worked)], ['Average per day', enhHM(P.avgH) + ' h']] };
+    const fin = P.remaining === 0, proj = P.projected != null ? P.projected : P.earned;
+    const left = holidaysInMonth(P.y, P.m).filter(h=> h.date > today).map(h=> `${tmDay(h.date)} ${h.name}`);
+    const needH = (t && !fin) ? (t.amount - P.earned) / P.remaining / P.rate : null;
+    let text;
+    if(t && P.earned >= t.amount) text = `You’ve already reached your ${M(t.amount)} target in ${P.monthLabel}: ${M(P.earned)} (${P.mode}), ${M(P.earned - t.amount)} over.`;
+    else if(fin) text = `${P.monthLabel} is over: you earned ${M(P.earned)} (${P.mode})${t ? `, ${M(Math.abs(t.amount - P.earned))} ${t.amount > P.earned ? 'under' : 'over'} your ${M(t.amount)} target` : ''}.`;
+    else if(t) { const gap = t.amount - proj; text = gap > 0 ? `You’re behind pace. At your current pace ${P.monthLabel} ends around ${M(proj)}, which is ${M(gap)} under your ${M(t.amount)} target.` : `You’re on track. At your current pace ${P.monthLabel} ends around ${M(proj)}, ${M(-gap)} over your ${M(t.amount)} target.`; }
+    else text = `So far in ${P.monthLabel} you’ve earned ${M(P.earned)} (${P.mode}) from ${hoursLine}. At this pace the month ends around ${M(proj)}.`;
+    const steps = [`Your rate = earned ÷ hours = ${M(P.earned)} ÷ ${enhHM(P.hours)} h = ${P.rate.toFixed(2)} ${P.cur}/h`,
+      `Working days left = ${P.remaining} (weekdays after today, plus today if nothing is logged yet, minus public holidays${left.length ? ': ' + left.join(', ') : ': none left'})`,
+      `Forecast = earned × (worked days + days left) ÷ worked days = ${M(P.earned)} × (${P.worked} + ${P.remaining}) ÷ ${P.worked} = ${M(proj)}`];
+    if(needH != null) steps.push(`Needed per day = (target − earned) ÷ days left ÷ your rate = (${t.amount.toFixed(2)} − ${P.earned.toFixed(2)}) ÷ ${P.remaining} ÷ ${P.rate.toFixed(2)} = ${enhHM(Math.max(0, needH))} h`);
+    return { text, stats: [['Earned so far', M(P.earned)], ['Month-end forecast', (fin ? '' : '≈ ') + M(proj)], needH != null ? ['Needed per day', enhHM(Math.max(0, needH)) + ' h'] : ['Average per day', enhHM(P.avgH) + ' h']], foot: `Gross or net follows ${t ? 'your target' : 'the Net/Gross control'}: ${P.mode}.`, steps: steps.join('\n') };
+  }
+  function tmNeeded(){
+    const P = enhPace(), M = (v)=> `${v.toFixed(2)} ${P.cur}`, t = P.target;
+    if(!t) return { text: 'You haven’t set a monthly target yet. Set one in Settings → Money and I can tell you how many hours a day it takes.' };
+    if(P.worked === 0 || !(P.rate > 0)) return { text: `I need some logged time and a project rate in ${P.monthLabel} to work out what your target takes.` };
+    if(P.earned >= t.amount) return { text: `You’ve already reached your ${M(t.amount)} target (${M(P.earned)} so far).` };
+    if(P.remaining === 0) return { text: `${P.monthLabel} has no working days left. You ended ${M(t.amount - P.earned)} under your ${M(t.amount)} target.` };
+    const need = (t.amount - P.earned) / P.remaining / P.rate;
+    return { text: `To reach ${M(t.amount)} (${t.mode}) in ${P.monthLabel} you need ${enhHM(need)} h a day on each of the ${P.remaining} working days left. You average ${enhHM(P.avgH)} h, so that is ${tmDiffHM(need, P.avgH)} h more every day.`,
+      stats: [['Needed per day', enhHM(need) + ' h'], ['Your average', enhHM(P.avgH) + ' h'], ['Difference', '+' + tmDiffHM(need, P.avgH) + ' h']],
+      steps: `(target − earned) ÷ days left ÷ rate = (${t.amount.toFixed(2)} − ${P.earned.toFixed(2)}) ÷ ${P.remaining} ÷ ${P.rate.toFixed(2)} = ${enhHM(need)} h\nYour average = ${enhHM(P.hours)} h ÷ ${P.worked} worked days = ${enhHM(P.avgH)} h` };
+  }
+  function tmWhatIf(spec){
+    const P = enhPace(), M = (v)=> `${v.toFixed(2)} ${P.cur}`, t = P.target;
+    if(P.worked === 0 || !(P.rate > 0)) return { text: `I need some logged time and a project rate in ${P.monthLabel} to work out a “what if”.` };
+    const days = Math.max(0, P.remaining - (spec.off || 0)), h = spec.hours != null ? spec.hours : P.avgH;
+    const end = P.earned + days * h * P.rate, diff = t ? end - t.amount : null;
+    const how = `${spec.hours != null ? `Working ${enhHM(h)} h` : `Working your average of ${enhHM(h)} h`} on each of ${spec.off ? `the ${days} working days left after taking ${spec.off} off` : `the ${days} working days left`}`;
+    return { text: `${how}, ${P.monthLabel} would end at ${M(end)}${t ? `, ${M(Math.abs(diff))} ${diff >= 0 ? 'over' : 'under'} your ${M(t.amount)} target` : ''}.`,
+      stats: [['Hours a day', enhHM(h) + ' h'], ['Working days left', String(days)], t ? [diff >= 0 ? 'Over target' : 'Under target', M(Math.abs(diff))] : ['Month end', M(end)]],
+      steps: `Month end = earned + days left × hours a day × your rate\n= ${P.earned.toFixed(2)} + ${days} × ${enhHM(h)} h × ${P.rate.toFixed(2)}\n= ${end.toFixed(2)} ${P.cur} (${P.mode})` };
+  }
+  function tmForecast(spec, off){
+    const P = enhPace(), H = enhHistory(), t = P.target, M = (v)=> `${v.toFixed(2)} ${P.cur}`, { y, m } = spec, label = `${monthNames[m]} ${y}`;
+    let rate = P.rate, rateWhy = `this month’s rate: ${M(P.earned)} ÷ ${enhHM(P.hours)} h`;
+    if(!(rate > 0)){ const lm = tmStats(P, tmDates(P.y, P.m - 1)); if(lm.hours > 0 && lm.value > 0){ rate = lm.value / lm.hours; rateWhy = `last month’s rate: ${M(lm.value)} ÷ ${enhHM(lm.hours)} h`; } }
+    if(!(rate > 0)) return { text: 'To forecast earnings I need a project with an hourly rate and some logged time.', foot: 'Set a rate in Projects, then ask again.' };
+    // three honest scenarios, each named for what it assumes about a working day
+    const basis = [];
+    if(P.avgH > 0) basis.push({ k: 'pace', l: 'This month’s pace', h: P.avgH, why: 'this month’s average day (hours ÷ worked days)' });
+    if(H.usual) basis.push({ k: 'usual', l: 'Your usual day', h: H.usual.secs / 3600, why: 'your average day over the last 8 weeks' });
+    if(H.best >= 0 && H.avg[H.best] > 0) basis.push({ k: 'best', l: 'Your best weekday', h: H.avg[H.best], why: `your average ${WD_LONG[H.best]} over the last 16 weeks` });
+    if(!basis.length) return { text: 'I need a few logged days first to know your usual pace.' };
+    const hs = holidaysInMonth(y, m), counted = hs.filter(h=> !off[h.key]), wk = tmWeekdaysIn(y, m), days = wk - counted.length;
+    const rows = basis.map(b=> ({ ...b, v: days * b.h * rate })).sort((a, b)=> a.v - b.v);
+    const main = basis[0], lo = rows[0], hi = rows[rows.length - 1], max = Math.max(t ? t.amount : 0, hi.v, 1) * 1.05;
+    const needD = t ? t.amount / days / rate : null;
+    return { text: `${label} has ${days} working day${days === 1 ? '' : 's'}${counted.length ? ` after ${counted.length} public holiday${counted.length === 1 ? '' : 's'}` : ''}. ${main.k === 'pace' ? 'At the pace you’ve kept this month' : 'Based on your usual day'}, expect about ${M(days * main.h * rate)} (${P.mode})${rows.length > 1 ? `. Depending on which kind of day you assume, it ranges from ${M(lo.v)} to ${M(hi.v)}.` : '.'}`,
+      bars: rows.map((r, i)=> ({ l: `${r.l} · ${enhHM(r.h)} h`, v: r.v.toFixed(2), w: (r.v / max * 100).toFixed(1), c: i === 0 && rows.length > 1 ? 'c' : (i === rows.length - 1 && rows.length > 2 ? 's' : '') })), tgt: t ? +(t.amount / max * 100).toFixed(1) : null,
+      hols: hs.map(h=> ({ key: h.key, d: tmDay(h.date), n: h.name, on: !off[h.key] })), holNote: tmHolNote(y, m, hs),
+      foot: t ? `To reach your ${M(t.amount)} target in ${monthNames[m]} you would need ${enhHM(needD)} h a day.` : '',
+      steps: [`Working days = ${wk} weekdays − ${counted.length} public holiday${counted.length === 1 ? '' : 's'}${counted.length ? ' (' + counted.map(h=> tmDay(h.date)).join(', ') + ')' : ''} = ${days}`,
+        `Your rate = ${rateWhy} = ${rate.toFixed(2)} ${P.cur}/h`]
+        .concat(rows.map(r=> `${r.l} = ${days} × ${enhHM(r.h)} h (${r.why}) × ${rate.toFixed(2)} = ${r.v.toFixed(2)}`)).concat([`${P.mode}, in ${P.cur}.`]).join('\n') };
+  }
+  function tmWeekday(){
+    const P = enhPace(), H = enhHistory(), M = (v)=> `${v.toFixed(2)} ${P.cur}`;
+    const wd = H.avg.slice(0, 5).map((a, i)=> ({ i, a })).filter(x=> x.a > 0);
+    if(wd.length < 2) return { text: 'I need a few more weeks of logged time to compare your weekdays.' };
+    const best = wd.reduce((a, b)=> b.a > a.a ? b : a), low = wd.reduce((a, b)=> b.a < a.a ? b : a);
+    return { text: `${WD_LONG[best.i]} is your strongest weekday: ${enhHM(best.a)} h on average over the last 16 weeks${P.rate > 0 ? `, about ${M(best.a * P.rate)} a day` : ''}. ${WD_LONG[low.i]} is your lightest at ${enhHM(low.a)} h.`,
+      stats: [['Best · ' + WD_SHORT[best.i], enhHM(best.a) + ' h'], ['Lightest · ' + WD_SHORT[low.i], enhHM(low.a) + ' h'], P.rate > 0 ? ['Best day is worth', M(best.a * P.rate)] : ['Weeks counted', String(H.weeks)]],
+      steps: `Average hours for each weekday over the last 16 weeks (the same data as your Weekly rhythm card).${P.rate > 0 ? `\nValue = hours × your rate ${P.rate.toFixed(2)} ${P.cur}/h` : ''}` };
+  }
+  function tmCompare(){
+    const P = enhPace(), M = (v)=> `${v.toFixed(2)} ${P.cur}`, today = tmToday(), dd = (P.y === today.getFullYear() && P.m === today.getMonth()) ? today.getDate() : new Date(P.y, P.m + 1, 0).getDate();
+    const lm = new Date(P.y, P.m - 1, 1), ly = lm.getFullYear(), mm = lm.getMonth(), upto = Math.min(dd, new Date(ly, mm + 1, 0).getDate());
+    const cur = tmStats(P, tmDates(P.y, P.m).filter(d=> d.getDate() <= dd)), last = tmStats(P, tmDates(ly, mm).filter(d=> d.getDate() <= upto)), lastAll = tmStats(P, tmDates(ly, mm));
+    if(lastAll.hours === 0) return { text: `You have no logged time in ${monthNames[mm]} to compare with.` };
+    const pct = (a, b)=> b > 0 ? Math.round((a - b) / b * 100) : null, dh = pct(cur.hours, last.hours);
+    return { text: `By the ${dd}${['th','st','nd','rd'][(dd % 100 > 10 && dd % 100 < 14) ? 0 : (dd % 10 < 4 ? dd % 10 : 0)]} you have ${enhHM(cur.hours)} h in ${monthNames[P.m]}, against ${enhHM(last.hours)} h at the same point in ${monthNames[mm]}${dh != null ? ` (${dh >= 0 ? '+' : ''}${dh}%)` : ''}. ${monthNames[mm]} ended at ${enhHM(lastAll.hours)} h.`,
+      stats: [[`${monthNames[P.m]} so far`, enhHM(cur.hours) + ' h'], [`${monthNames[mm]} same point`, enhHM(last.hours) + ' h'], [`${monthNames[mm]} full month`, enhHM(lastAll.hours) + ' h']],
+      foot: P.rate > 0 || last.value > 0 ? `Earned (${P.mode}): ${M(cur.value)} now, ${M(last.value)} at the same point, ${M(lastAll.value)} for all of ${monthNames[mm]}.` : '',
+      steps: `Hours in days 1–${dd} of ${monthNames[P.m]} vs days 1–${upto} of ${monthNames[mm]}.\nChange = (${enhHM(cur.hours)} − ${enhHM(last.hours)}) ÷ ${enhHM(last.hours)}${dh != null ? ' = ' + (dh >= 0 ? '+' : '') + dh + '%' : ''}` };
+  }
+  function tmPeriod(kind, extra){
+    const today = tmToday(), idx = (today.getDay() + 6) % 7, mon = new Date(today.getFullYear(), today.getMonth(), today.getDate() - idx);
+    const range = (a, n)=> Array.from({ length: n }, (_, i)=> new Date(a.getFullYear(), a.getMonth(), a.getDate() + i));
+    if(kind === 'today') return { label: 'today', dates: [today] };
+    if(kind === 'yesterday') return { label: 'yesterday', dates: [new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)] };
+    if(kind === 'week') return { label: 'this week', dates: range(mon, idx + 1) };
+    if(kind === 'lastweek') return { label: 'last week', dates: range(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() - 7), 7) };
+    if(kind === 'lastmonth'){ const lm = new Date(today.getFullYear(), today.getMonth() - 1, 1); return { label: monthNames[lm.getMonth()] + ' ' + lm.getFullYear(), dates: tmDates(lm.getFullYear(), lm.getMonth()) }; }
+    if(kind === 'named') return { label: monthNames[extra.m] + ' ' + extra.y, dates: tmDates(extra.y, extra.m, today) };
+    return { label: `${monthNames[today.getMonth()]} so far`, dates: tmDates(today.getFullYear(), today.getMonth(), today) };
+  }
+  function tmTotals(spec){
+    const P = enhPace(), per = tmPeriod(spec.period, spec.named), st = tmStats(P, per.dates), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`, val = st.earn.convertedTotal;
+    if(st.secs === 0) return { text: `You have no logged time ${per.label === 'today' || per.label === 'yesterday' || /^this/.test(per.label) ? per.label : 'in ' + per.label}.` };
+    const hasPay = Object.keys(st.earn.netByCurrency).length > 0, wantE = spec.earn !== false && hasPay, wantH = spec.hours !== false;
+    const parts = []; if(wantH) parts.push(`${enhHM(st.hours)} h over ${st.worked} day${st.worked === 1 ? '' : 's'}`); if(wantE) parts.push(`${M(val)} (${earningsMode})`);
+    return { text: `${per.label.charAt(0).toUpperCase() + per.label.slice(1)}: ${parts.join(', ')}.`,
+      stats: [['Hours', enhHM(st.hours) + ' h'], ['Worked days', String(st.worked)], wantE ? [`Earned · ${earningsMode}`, M(val)] : ['Average per day', enhHM(st.hours / st.worked) + ' h']],
+      steps: `Hours = the sum of your entries between ${tmDay(per.dates[0])} and ${tmDay(per.dates[per.dates.length - 1])}.\n${wantE ? `Earnings use each project’s rate and tax template, converted to ${cur} at your rates (${earningsMode}).` : 'No earnings: no project with a rate has time in this period.'}` };
+  }
+  function tmProjects(spec){
+    const P = enhPace(), per = tmPeriod(spec.period || 'month', spec.named), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`;
+    const rows = computeEarningsFor({ entries, active, presets, taxTemplates }, per.dates).rows.filter(r=> r.hours > 0).map(r=>{ const v = r.hasRate ? fxConvert(earningsMode === 'gross' ? r.gross : r.net, r.currency, displayCurrency) : null; return { name: r.note || 'No project', hours: r.hours, v, perH: (v != null && r.hours > 0) ? v / r.hours : null }; });
+    if(!rows.length) return { text: `You have no logged time ${/^this|today|yesterday/.test(per.label) ? per.label : 'in ' + per.label}.` };
+    const paid = rows.filter(r=> r.v != null), byPay = paid.slice().sort((a, b)=> b.v - a.v), byRate = paid.slice().sort((a, b)=> b.perH - a.perH);
+    const top = rows.slice().sort((a, b)=> b.hours - a.hours).slice(0, 3);
+    const lead = spec.perHour && byRate.length ? `${byRate[0].name} pays you the most per hour: ${M(byRate[0].perH)} (${earningsMode}).` : byPay.length ? `${byPay[0].name} earns the most in ${per.label}: ${M(byPay[0].v)} (${earningsMode}) from ${enhHM(byPay[0].hours)} h.` : `Most of your time in ${per.label} went to ${top[0].name} (${enhHM(top[0].hours)} h), but none of it has a rate yet.`;
+    return { text: lead, stats: top.map(r=> [r.name, `${enhHM(r.hours)} h${r.v != null ? ' · ' + M(r.v) : ''}`]).concat([['', ''], ['', '']]).slice(0, 3).filter(x=> x[0]),
+      steps: `Per project: hours from your entries in ${per.label}; earnings = hours × the project’s rate, after its tax template if you chose net, converted to ${cur}.\nPer hour = earnings ÷ hours (${earningsMode}).` };
+  }
+  function tmTeam(spec){
+    const company = getCompany(adminSelectedCompanyId);
+    if(!company) return { text: 'Open a company dashboard first, then ask me about the team.' };
+    const st = coComputeStats(company), mem = st.members, name = (m)=> m.user.displayName || m.user.email || 'Someone', today = dateKey(new Date());
+    if(!mem.length) return { text: `${company.name} has no members yet.` };
+    if(spec.team === 'today'){
+      const rows = mem.map(m=>{ const secs = getEntriesForUid(m.uid).filter(e=> e.date === today).reduce((a, e)=> a + (e.durationSec || 0), 0); return { n: name(m), secs }; });
+      const yes = rows.filter(r=> r.secs > 0).sort((a, b)=> b.secs - a.secs), no = rows.filter(r=> !r.secs);
+      return { text: yes.length ? `${yes.length} of ${mem.length} have logged time today: ${yes.map(r=> `${r.n} (${enhHM(r.secs / 3600)} h)`).join(', ')}.${no.length ? ` Nothing yet from ${no.map(r=> r.n).join(', ')}.` : ''}` : `Nobody has logged time today yet (${mem.length} member${mem.length === 1 ? '' : 's'}).`,
+        stats: [['Logged today', `${yes.length} of ${mem.length}`], ['Hours today', enhHM(rows.reduce((a, r)=> a + r.secs, 0) / 3600) + ' h'], ['Nothing yet', String(no.length)]], steps: 'Each member’s entries dated today, summed. A running timer counts once it is saved.' };
+    }
+    if(spec.team === 'top'){
+      const tot = st.totals.seconds, rank = mem.slice().sort((a, b)=> b.seconds - a.seconds);
+      if(!tot) return { text: `Nobody has logged time in ${coLabel(st.dates)} yet.` };
+      return { text: `${name(rank[0])} worked the most in ${coLabel(st.dates)}: ${enhHM(rank[0].seconds / 3600)} h, ${Math.round(rank[0].seconds / tot * 100)}% of the team’s ${enhHM(tot / 3600)} h.`,
+        stats: rank.slice(0, 3).map(m=> [name(m), `${enhHM(m.seconds / 3600)} h · ${Math.round(m.seconds / tot * 100)}%`]), steps: `Hours per member in ${coLabel(st.dates)}; share = member hours ÷ team hours (${enhHM(tot / 3600)} h).` };
+    }
+    const T = st.totals, inc = coPick(T.gross, T.net), proj = coPick(T.projGross, T.projNet);
+    return { text: `${company.name} · ${coLabel(st.dates)}: ${enhHM(T.seconds / 3600)} h across ${T.active} of ${mem.length} members, income ${coMoney(inc)} (${earningsMode})${proj ? `, heading for about ${coMoney(proj)} by month end` : ''}.`,
+      stats: [['Team hours', enhHM(T.seconds / 3600) + ' h'], [`Income · ${earningsMode}`, coMoney(inc)], ['Month end', proj ? '≈ ' + coMoney(proj) : '—']],
+      steps: 'Sums of every member: hours, income from each member’s own rates and tax templates, converted to ' + displayCurrency + '.\nMonth end = each member’s earnings × (worked days + working days left) ÷ worked days, added up (public holidays not counted as working days).' };
+  }
+
+  // ---- understanding the question ----
+  const TM_MONTH_RE = /\b(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sept|sep|october|oct|november|nov|december|dec)\b/;
+  const TM_MONTH_IDX = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, sept:8, oct:9, nov:10, dec:11 };
+  function tmParse(raw){
+    const t = String(raw).toLowerCase().replace(/[“”"]/g, ' ').replace(/\s+/g, ' ').trim();
+    const num = (()=>{ let m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:h|hr|hrs|hours?|ore|ora)\b/); if(m) return parseFloat(m[1].replace(',', '.')); m = t.match(/\b(\d{1,2}):(\d{2})\b/); return m ? +m[1] + +m[2] / 60 : null; })();
+    const off = (()=>{ const m = t.match(/(\d+)\s*(?:days?|zile)\s*(?:off|leave|vacation|holiday|libere|concediu)|(?:take|taking|have)\s*(\d+)\s*days?\b/); return m ? +(m[1] || m[2]) : null; })();
+    if(tmInCo()){
+      if(/who|logged|worked today|nobody|haven.t|not yet|missing/.test(t) && /today|now|so far|logged|yet/.test(t)) return { kind: 'team', team: 'today' };
+      if(/most|top|best|rank|highest|leader|biggest/.test(t)) return { kind: 'team', team: 'top' };
+      if(/team|company|everyone|members|doing|going|month|income|total|hours/.test(t)) return { kind: 'team', team: 'summary' };
+      return { kind: 'fallback' };
+    }
+    const mon = (t.match(TM_MONTH_RE) || [])[1], cur = enhPace();
+    const named = mon != null ? (()=>{ const mi = TM_MONTH_IDX[mon.slice(0, 3)]; let y = cur.y; if(mi < cur.m - 6) y++; else if(mi > cur.m + 6) y--; return { y, m: mi }; })() : null;
+    const wantE = /earn|pay|income|made|money|paid|câștig|castig|bani/.test(t), wantH = /hours|worked|time|ore|lucrat|logged/.test(t);
+    if((num != null || off != null) && /what if|if i|suppose|imagine|work|take|taking|each day|a day|per day/.test(t)) return { kind: 'whatif', hours: (num != null && num <= 16) ? num : null, off: off || 0 };
+    if(/next month|luna viitoare|luna urm|following month/.test(t)) return { kind: 'forecast', y: new Date(cur.y, cur.m + 1, 1).getFullYear(), m: new Date(cur.y, cur.m + 1, 1).getMonth() };
+    if(named && (named.y > cur.y || (named.y === cur.y && named.m > cur.m)) && !/last|previous|ago/.test(t)) return { kind: 'forecast', ...named };
+    if(/compar|versus|\bvs\b|than last|same point|ahead of last|behind last|vs\.|față de/.test(t)) return { kind: 'compare' };
+    if(/project|client|proiect/.test(t)) return { kind: 'projects', perHour: /per hour|an hour|hourly|rate|pe oră/.test(t), period: /last month|luna trecut/.test(t) ? 'lastmonth' : /this week/.test(t) ? 'week' : 'month' };
+    if(/forecast|expect|predict|look like|will .*(earn|make)|estimate/.test(t) && !/month so far/.test(t)) return { kind: 'forecast', y: new Date(cur.y, cur.m + 1, 1).getFullYear(), m: new Date(cur.y, cur.m + 1, 1).getMonth() };
+    if(/target|goal|need to|reach|hit |obiectiv|how many hours a day/.test(t)) return { kind: 'needed' };
+    if(/weekday|best day|strongest|which day|day of the week|worst day|lightest|zi a săptămânii/.test(t)) return { kind: 'weekday' };
+    if(/going|pace|how am i|on track|behind|ahead|status|summary|cum merge/.test(t)) return { kind: 'summary' };
+    const period = /yesterday|ieri/.test(t) ? 'yesterday' : /today|astăzi|astazi|azi/.test(t) ? 'today' : /last week|săptămâna trecut|saptamana trecut/.test(t) ? 'lastweek' : /this week|săptămâna aceasta|saptamana asta/.test(t) ? 'week' : /last month|previous month|luna trecut/.test(t) ? 'lastmonth' : named ? 'named' : null;
+    if(period || ((wantE || wantH) && /how (many|much)|total|did i|have i|cât|cate|câte/.test(t))) return { kind: 'totals', period: period || 'month', named, earn: wantE || !wantH ? true : false, hours: wantH || !wantE ? true : false };
+    if(/month|luna|so far/.test(t)) return { kind: 'summary' };
+    return { kind: 'fallback' };
+  }
+  function tmBuild(spec, off){
+    switch(spec.kind){
+      case 'summary': return tmSummary(); case 'needed': return tmNeeded(); case 'whatif': return tmWhatIf(spec);
+      case 'forecast': return tmForecast(spec, off || {}); case 'weekday': return tmWeekday(); case 'compare': return tmCompare();
+      case 'totals': return tmTotals(spec); case 'projects': return tmProjects(spec); case 'team': return tmTeam(spec);
+      default: return { text: tmInCo() ? 'I can’t answer that one yet. In the company view I can tell you how the team is doing, who has logged time today and who worked the most.' : 'I can’t answer that one yet. I’m best with your hours, earnings, pace and forecasts. Try one of the suggestions below, or ask something like “what if I work 7 h a day?”.' };
+    }
+  }
+
+  // ---- the panel ----
+  const tmEl = (id)=> $(id);
+  function tmCardHtml(m){
+    const a = m.a; let h = `<p>${escapeHtml(a.text)}</p>`;
+    if(a.stats && a.stats.length) h += `<div class="tt-timo-stats">${a.stats.map(([k, v])=> `<div class="tt-timo-stat"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`).join('')}</div>`;
+    if(a.bars) h += `<div class="tt-timo-bars">${a.bars.map(b=> `<div class="tt-timo-bar"><span>${escapeHtml(b.l)}</span><span class="trk"><i class="fill ${b.c || ''}" style="width:${b.w}%"></i>${a.tgt != null ? `<i class="tgt" style="left:${a.tgt}%"></i>` : ''}</span><b>${escapeHtml(b.v)}</b></div>`).join('')}${a.tgt != null ? '<div class="tt-timo-foot"><i class="tgtkey"></i>your target</div>' : ''}</div>`;
+    if(a.holNote) h += `<div class="tt-timo-assume"><span>${escapeHtml(a.holNote)}</span>${(a.hols || []).map(x=> `<button type="button" class="tt-timo-hchip ${x.on ? 'on' : 'off'}" data-hol="${escapeHtml(x.key)}" aria-pressed="${x.on}"><b>${escapeHtml(x.d)}</b> ${escapeHtml(x.n)}</button>`).join('')}${(a.hols || []).length ? '<span class="tt-timo-foot">Tap one if you work it anyway.</span>' : ''}</div>`;
+    if(a.foot) h += `<div class="tt-timo-foot">${escapeHtml(a.foot)}</div>`;
+    if(a.steps) h += `<button type="button" class="tt-timo-how" data-how aria-expanded="${!!m.open}">${m.open ? 'Hide' : 'How I calculated this'}</button>${m.open ? `<div class="tt-timo-steps">${escapeHtml(a.steps)}</div>` : ''}`;
+    return h;
+  }
+  function timoRender(){
+    const body = tmEl('tt-timo-body'); if(!body) return;
+    body.innerHTML = timoMsgs.map(m=> m.who === 'user' ? `<div class="tt-timo-msg user"><div class="tt-timo-ubub">${escapeHtml(m.text)}</div></div>` : `<div class="tt-timo-msg" data-mid="${m.id}">${tmLogo(30, 'still')}<div class="tt-timo-card">${tmCardHtml(m)}</div></div>`).join('')
+      + (timoTyping ? `<div class="tt-timo-msg">${tmLogo(30, 'think')}<div class="tt-timo-card" style="flex:0 0 auto;padding:8px 14px"><span class="tt-timo-dots" role="status" aria-label="TiMo is working it out"><i></i><i></i><i></i></span></div></div>` : '');
+    body.scrollTop = body.scrollHeight;
+  }
+  function timoRenderChips(){
+    const box = tmEl('tt-timo-chips'); if(!box) return;
+    const list = tmInCo() ? TM_CHIPS_TEAM : TM_CHIPS_PERSONAL, sig = list.join('|');
+    if(box.dataset.sig === sig) return; box.dataset.sig = sig;
+    box.innerHTML = list.map(c=> `<button type="button" class="tt-timo-chip">${escapeHtml(c)}</button>`).join('');
+  }
+  function timoGreeting(){
+    const n = tmFirstName();
+    return { id: ++timoSeq, who: 'timo', a: { text: tmInCo() ? `Hi${n ? ' ' + n : ''}, I’m TiMo. In the company view I can tell you how the team is doing, who has logged time today and who worked the most.` : `Hi${n ? ' ' + n : ''}, I’m TiMo. Ask me about your hours, your earnings and what the coming weeks will bring. I work it out from your own entries, so you can also type your own “what if”, for example “what if I work 7 h a day?”.` } };
+  }
+  function timoSync(){
+    const box = tmEl('tt-timo'); if(!box) return;
+    const root = document.documentElement, adminOpen = root.classList.contains('tt-admin-open'), co = tmInCo();
+    const show = !!currentUid && $('tt-menu-overlay').hidden && (!adminOpen || co);
+    box.hidden = !show;
+    if(!show && timoOpen){ timoClose(false); }
+    const launch = tmEl('tt-timo-launch'), dot = tmEl('tt-timo-ready');
+    if(!launch.firstElementChild || !launch.querySelector('.tt-timo-logo')) launch.insertAdjacentHTML('afterbegin', tmLogo(64));
+    if(!tmEl('tt-timo-headlogo').firstElementChild) tmEl('tt-timo-headlogo').innerHTML = tmLogo(40, 'still');
+    launch.querySelector('.tt-timo-logo').classList.toggle('lapping', timoLap);
+    dot.hidden = !timoReady; launch.setAttribute('aria-label', timoReady ? 'Open TiMo, your answer is ready' : 'Open TiMo, your time and money assistant');
+    launch.setAttribute('aria-expanded', String(timoOpen)); box.classList.toggle('open', timoOpen);
+    timoRenderChips();
+  }
+  function timoOpenPanel(){
+    timoOpen = true; timoReady = false;
+    if(!timoMsgs.length) timoMsgs.push(timoGreeting());
+    tmEl('tt-timo-panel').hidden = false; timoSync(); timoRender();
+    setTimeout(()=>{ const i = tmEl('tt-timo-input'); if(i) i.focus(); }, 30);
+  }
+  function timoClose(focusBack){
+    timoOpen = false; tmEl('tt-timo-panel').hidden = true; timoSync();
+    if(focusBack !== false){ const l = tmEl('tt-timo-launch'); if(l) l.focus(); }
+  }
+  function timoReset(){ clearTimeout(timoTimer); timoTyping = false; timoReady = false; timoMsgs.length = 0; if(timoOpen){ timoOpen = false; tmEl('tt-timo-panel').hidden = true; } timoSync(); }
+  function timoAsk(text){
+    text = String(text || '').trim().slice(0, 300); if(!text || timoTyping) return;
+    timoMsgs.push({ id: ++timoSeq, who: 'user', text }); timoTyping = true; timoRender();
+    clearTimeout(timoTimer);
+    timoTimer = setTimeout(()=>{
+      let spec, a;
+      try{ spec = tmParse(text); a = tmBuild(spec, {}); }
+      catch(err){ console.error('TiMo', err); spec = { kind: 'fallback' }; a = { text: 'Sorry, I couldn’t work that out. Please try again.' }; }
+      timoMsgs.push({ id: ++timoSeq, who: 'timo', a, spec, off: {}, open: false });
+      timoTyping = false; if(!timoOpen) timoReady = true;
+      timoSync(); timoRender();
+    }, 600);
+  }
+  tmEl('tt-timo-launch').addEventListener('click', ()=> timoOpenPanel());
+  tmEl('tt-timo-launch').addEventListener('mouseenter', ()=>{ if(timoLap) return; timoLap = true; timoSync(); clearTimeout(timoLapTimer); timoLapTimer = setTimeout(()=>{ timoLap = false; timoSync(); }, 820); });
+  tmEl('tt-timo-close').addEventListener('click', ()=> timoClose(true));
+  tmEl('tt-timo-new').addEventListener('click', ()=>{ clearTimeout(timoTimer); timoTyping = false; timoMsgs.length = 0; timoMsgs.push(timoGreeting()); timoRender(); const i = tmEl('tt-timo-input'); if(i) i.focus(); });
+  tmEl('tt-timo-form').addEventListener('submit', (e)=>{ e.preventDefault(); const i = tmEl('tt-timo-input'); const t = i.value; i.value = ''; timoAsk(t); });
+  tmEl('tt-timo-chips').addEventListener('click', (e)=>{ const b = e.target.closest('.tt-timo-chip'); if(b) timoAsk(b.textContent); });
+  tmEl('tt-timo-body').addEventListener('click', (e)=>{
+    const msgEl = e.target.closest('[data-mid]'), m = msgEl && timoMsgs.find(x=> x.id === +msgEl.dataset.mid); if(!m) return;
+    if(e.target.closest('[data-how]')){ m.open = !m.open; timoRender(); const again = tmEl('tt-timo-body').querySelector(`[data-mid="${m.id}"] [data-how]`); if(again) again.focus(); return; }
+    const hb = e.target.closest('[data-hol]');
+    if(hb){ m.off[hb.dataset.hol] = !m.off[hb.dataset.hol]; m.a = tmBuild(m.spec, m.off); const scroll = tmEl('tt-timo-body').scrollTop; timoRender(); tmEl('tt-timo-body').scrollTop = scroll; const again = tmEl('tt-timo-body').querySelector(`[data-mid="${m.id}"] [data-hol="${hb.dataset.hol}"]`); if(again) again.focus(); }
+  });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && timoOpen && !e.defaultPrevented){ timoClose(true); } });
 
   // alerts: choose what the bell watches
   function renderAlertRules(){
@@ -7619,7 +8063,7 @@ match /users/{userId}/meta/{docId} {
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
-    renderRec();
+    renderRec(); timoReset();
     presets = [];
     taxTemplates = [];
     editingTaxTemplateId = null;
@@ -7649,7 +8093,7 @@ match /users/{userId}/meta/{docId} {
   }
 
   function render(){
-    renderRec();
+    renderRec(); timoSync();
     $('tt-today-date').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
 
     const running = !!active;
