@@ -1173,6 +1173,9 @@
   @keyframes tt-timo-bounce{0%,60%,100%{transform:translateY(0); opacity:.5;}30%{transform:translateY(-5px); opacity:1;}}
   .tt-timo-panel{position:fixed; right:24px; bottom:24px; z-index:3095; width:420px; height:min(660px, calc(100vh - 48px)); display:flex; flex-direction:column; overflow:hidden; border-radius:26px; background:var(--panel); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); border:1px solid var(--line); box-shadow:0 30px 80px rgba(var(--shadow-rgb),.55); color:var(--paper); transform-origin:100% 100%; animation:tt-timo-pop .35s cubic-bezier(.2,.9,.3,1.15) both;}
   .tt-timo-panel[hidden]{display:none;}
+  .tt-segment.tt-solo button[data-val="company"]{display:none;}
+  .tt-segment.tt-solo button{pointer-events:none; cursor:default;}
+  #tt-uni-view[hidden], #tt-view-toggle[hidden], #tt-uni-admin[hidden], #tt-foot-admin[hidden]{display:none !important;}
   .tt-timo-head{display:flex; align-items:center; gap:12px; padding:16px 18px;}
   .tt-timo-title{flex:1; min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:0 8px;}
   .tt-timo-title b{font-size:16px; font-weight:700;} .tt-timo-title small{flex-basis:100%; font-size:12px; color:var(--paper-dim);}
@@ -1187,6 +1190,7 @@
   .tt-timo-stats{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px;}
   .tt-timo-stat{padding:9px 10px; border-radius:12px; background:var(--panel); border:1px solid var(--line); min-width:0;}
   .tt-timo-stat .k{font-size:11px; color:var(--paper-dim); line-height:1.25;} .tt-timo-stat .v{font-family:'Space Mono',monospace; font-size:12.5px; font-weight:700; margin-top:3px; overflow-wrap:anywhere;}
+  .tt-timo-spark{width:100%; height:44px; color:var(--amber); display:block;}
   .tt-timo-bars{display:flex; flex-direction:column; gap:8px;}
   .tt-timo-bar{display:grid; grid-template-columns:96px minmax(0,1fr) 78px; gap:8px; align-items:center; font-size:12px;}
   .tt-timo-bar .trk{height:10px; border-radius:6px; background:var(--panel); position:relative; overflow:hidden; border:1px solid var(--line);}
@@ -2809,7 +2813,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.097</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.100</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -2854,7 +2858,7 @@
   let active = null; // { startISO, note, tz }
   let assignNote = null, assignTimer = 0;
   let usualExplainOpen = false;
-  let timoOpen = false, timoReady = false, timoLap = false, timoTyping = false, timoSeq = 0, timoTimer = 0, timoLapTimer = 0;   // TiMo, the assistant in the corner
+  let timoAskId = 0, timoLast = null, timoOpen = false, timoReady = false, timoLap = false, timoTyping = false, timoSeq = 0, timoTimer = 0, timoLapTimer = 0;   // TiMo, the assistant in the corner
   const timoMsgs = [];            // the 'how is your usual day worked out' text under the Today card   // the little confirmation after assigning entries to a project
   let anchorDate = new Date(); // representative date for whatever range is being browsed
   let granularity = 'month'; // 'day' | 'week' | 'month' | 'custom'
@@ -3174,6 +3178,16 @@
     $('tt-auth-backdrop').style.display = 'none';
     $('tt-app-root').style.display = 'block';
   }
+  // Personal | Company is for admins. Everyone else sees only “Personal”, in the same place, with no toggle.
+  function applyViewToggleRole(){
+    ['tt-uni-view', 'tt-view-toggle'].forEach(id=>{
+      const el = $(id); if(!el) return;
+      el.hidden = false; el.classList.toggle('tt-solo', !isAdmin);
+      const co = el.querySelector('button[data-val="company"]'), pe = el.querySelector('button[data-val="personal"]');
+      if(co){ co.disabled = !isAdmin; co.tabIndex = isAdmin ? 0 : -1; }
+      if(pe){ pe.tabIndex = isAdmin ? 0 : -1; if(isAdmin) pe.removeAttribute('aria-disabled'); else pe.setAttribute('aria-disabled', 'true'); }
+    });
+  }
   function showApp(user){
     showAppShell();
     $('tt-account-name').textContent = user.displayName || user.email;
@@ -3181,8 +3195,7 @@
     isAdmin = (user.email === ADMIN_EMAIL);
     $('tt-admin-navrow').hidden = !isAdmin;
     $('tt-company-navrow').hidden = !isAdmin;
-    $('tt-view-toggle').hidden = !isAdmin;
-    $('tt-uni-view').hidden = !isAdmin;
+    applyViewToggleRole();
     $('tt-uni-admin').hidden = !isAdmin;
     $('tt-foot-admin').hidden = !isAdmin;
     setDoc(doc(db, 'directory', user.uid), {
@@ -6955,7 +6968,7 @@ match /users/{userId}/meta/{docId} {
   // ---------------- Personal | Company toggle (admin) ----------------
   $('tt-view-toggle').addEventListener('click', (e)=>{
     const btn = e.target.closest('button[data-val]');
-    if(btn && btn.dataset.val === 'company') $('tt-company-navrow').click();
+    if(btn && isAdmin && btn.dataset.val === 'company') $('tt-company-navrow').click();
   });
   $('tt-co-viewtoggle').addEventListener('click', (e)=>{
     const btn = e.target.closest('button[data-val]');
@@ -7142,7 +7155,7 @@ match /users/{userId}/meta/{docId} {
     finally{ c.getAnimations().forEach(a=> a.cancel()); c.hidden = true; uniBusy = false; }
   }
   $('tt-uni-view').addEventListener('click', (e)=>{
-    const b = e.target.closest('button[data-val]'); if(!b) return;
+    const b = e.target.closest('button[data-val]'); if(!b || !isAdmin) return;
     if(b.dataset.val === 'company') uniSwitchView(true);
     else if(uniIsCo()) uniSwitchView(false);
     else if(document.documentElement.classList.contains('tt-admin-open')) go({ view:'dashboard' });
@@ -7566,7 +7579,7 @@ match /users/{userId}/meta/{docId} {
   // ---------------- TiMo: the assistant in the corner ----------------
   // TiMo answers from your own entries with the same functions the cards use (enhPace, computeEarningsFor, the holiday calendar),
   // and every answer can show how each number was worked out. It never changes anything.
-  const TM_CHIPS_PERSONAL = ['How is my month going?', 'What will next month look like?', 'What if I work 6 h a day?', 'Hours a day to hit my target?', 'Which weekday is my best?', 'Compare with last month'];
+  const TM_CHIPS_PERSONAL = ['How is my month going?', 'This week vs last week', 'What will next month look like?', 'What if I work 6 h a day?', 'Hours a day to hit my target?', 'Which weekday is my best?', 'Working days left', 'Next public holiday', 'EUR vs RON this month'];
   const TM_CHIPS_TEAM = ['How is the team doing?', 'Who has logged time today?', 'Who worked the most?'];
   const tmLogo = (size, cls)=> `<span class="tt-timo-logo ${cls || ''}" style="--s:${size}px" aria-hidden="true"><svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="26" fill="none" stroke="#1B2733" stroke-opacity=".3" stroke-width="2" stroke-dasharray="1.6 6.16" stroke-linecap="round"/><g class="orbit"><g class="lap"><circle cx="32" cy="6" r="3.6" fill="#1B2733"/></g></g><path d="M21 24h22M32 24v21" fill="none" stroke="#1B2733" stroke-width="5.6" stroke-linecap="round"/></svg></span>`;
   const tmMins = (h)=> Math.floor(Math.round(h * 3600) / 60);                       // minutes are truncated, like on the cards
@@ -7664,46 +7677,165 @@ match /users/{userId}/meta/{docId} {
       stats: [['Best · ' + WD_SHORT[best.i], enhHM(best.a) + ' h'], ['Lightest · ' + WD_SHORT[low.i], enhHM(low.a) + ' h'], P.rate > 0 ? ['Best day is worth', M(best.a * P.rate)] : ['Weeks counted', String(H.weeks)]],
       steps: `Average hours for each weekday over the last 16 weeks (the same data as your Weekly rhythm card).${P.rate > 0 ? `\nValue = hours × your rate ${P.rate.toFixed(2)} ${P.cur}/h` : ''}` };
   }
-  function tmCompare(){
-    const P = enhPace(), M = (v)=> `${v.toFixed(2)} ${P.cur}`, today = tmToday(), dd = (P.y === today.getFullYear() && P.m === today.getMonth()) ? today.getDate() : new Date(P.y, P.m + 1, 0).getDate();
-    const lm = new Date(P.y, P.m - 1, 1), ly = lm.getFullYear(), mm = lm.getMonth(), upto = Math.min(dd, new Date(ly, mm + 1, 0).getDate());
-    const cur = tmStats(P, tmDates(P.y, P.m).filter(d=> d.getDate() <= dd)), last = tmStats(P, tmDates(ly, mm).filter(d=> d.getDate() <= upto)), lastAll = tmStats(P, tmDates(ly, mm));
-    if(lastAll.hours === 0) return { text: `You have no logged time in ${monthNames[mm]} to compare with.` };
-    const pct = (a, b)=> b > 0 ? Math.round((a - b) / b * 100) : null, dh = pct(cur.hours, last.hours);
-    return { text: `By the ${dd}${['th','st','nd','rd'][(dd % 100 > 10 && dd % 100 < 14) ? 0 : (dd % 10 < 4 ? dd % 10 : 0)]} you have ${enhHM(cur.hours)} h in ${monthNames[P.m]}, against ${enhHM(last.hours)} h at the same point in ${monthNames[mm]}${dh != null ? ` (${dh >= 0 ? '+' : ''}${dh}%)` : ''}. ${monthNames[mm]} ended at ${enhHM(lastAll.hours)} h.`,
-      stats: [[`${monthNames[P.m]} so far`, enhHM(cur.hours) + ' h'], [`${monthNames[mm]} same point`, enhHM(last.hours) + ' h'], [`${monthNames[mm]} full month`, enhHM(lastAll.hours) + ' h']],
-      foot: P.rate > 0 || last.value > 0 ? `Earned (${P.mode}): ${M(cur.value)} now, ${M(last.value)} at the same point, ${M(lastAll.value)} for all of ${monthNames[mm]}.` : '',
-      steps: `Hours in days 1–${dd} of ${monthNames[P.m]} vs days 1–${upto} of ${monthNames[mm]}.\nChange = (${enhHM(cur.hours)} − ${enhHM(last.hours)}) ÷ ${enhHM(last.hours)}${dh != null ? ' = ' + (dh >= 0 ? '+' : '') + dh + '%' : ''}` };
-  }
+  // ---- periods: any of these can be compared, totalled or averaged ----
+  const tmRange = (a, n)=> Array.from({ length: n }, (_, i)=> new Date(a.getFullYear(), a.getMonth(), a.getDate() + i));
+  const tmCap = (x)=> x.charAt(0).toUpperCase() + x.slice(1);
   function tmPeriod(kind, extra){
-    const today = tmToday(), idx = (today.getDay() + 6) % 7, mon = new Date(today.getFullYear(), today.getMonth(), today.getDate() - idx);
-    const range = (a, n)=> Array.from({ length: n }, (_, i)=> new Date(a.getFullYear(), a.getMonth(), a.getDate() + i));
-    if(kind === 'today') return { label: 'today', dates: [today] };
-    if(kind === 'yesterday') return { label: 'yesterday', dates: [new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)] };
-    if(kind === 'week') return { label: 'this week', dates: range(mon, idx + 1) };
-    if(kind === 'lastweek') return { label: 'last week', dates: range(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() - 7), 7) };
-    if(kind === 'lastmonth'){ const lm = new Date(today.getFullYear(), today.getMonth() - 1, 1); return { label: monthNames[lm.getMonth()] + ' ' + lm.getFullYear(), dates: tmDates(lm.getFullYear(), lm.getMonth()) }; }
-    if(kind === 'named') return { label: monthNames[extra.m] + ' ' + extra.y, dates: tmDates(extra.y, extra.m, today) };
-    return { label: `${monthNames[today.getMonth()]} so far`, dates: tmDates(today.getFullYear(), today.getMonth(), today) };
+    const today = tmToday(), idx = (today.getDay() + 6) % 7, ago = (n)=> new Date(today.getFullYear(), today.getMonth(), today.getDate() - n);
+    const mk = (name, at, dates)=> ({ kind, name, at, dates, inProgress: dates.some(d=> d.getTime() === today.getTime()) });
+    const mo = (y, m, name, at)=> mk(name || `${monthNames[m]} ${y}`, at || `in ${monthNames[m]} ${y}`, tmDates(y, m).filter(d=> d <= today));
+    switch(kind){
+      case 'today': return mk('Today', 'today', [today]);
+      case 'yesterday': return mk('Yesterday', 'yesterday', [ago(1)]);
+      case 'daybefore': return mk('The day before', 'the day before yesterday', [ago(2)]);
+      case 'week': return mk('This week', 'this week', tmRange(ago(idx), idx + 1));
+      case 'lastweek': return mk('Last week', 'last week', tmRange(ago(idx + 7), 7));
+      case 'prevweek': return mk('The week before', 'the week before last', tmRange(ago(idx + 14), 7));
+      case 'last7': return mk('The last 7 days', 'in the last 7 days', tmRange(ago(6), 7));
+      case 'prev7': return mk('The 7 days before', 'in the 7 days before that', tmRange(ago(13), 7));
+      case 'last30': return mk('The last 30 days', 'in the last 30 days', tmRange(ago(29), 30));
+      case 'prev30': return mk('The 30 days before', 'in the 30 days before that', tmRange(ago(59), 30));
+      case 'month': return mo(today.getFullYear(), today.getMonth(), 'This month', 'this month');
+      case 'lastmonth': { const d = new Date(today.getFullYear(), today.getMonth() - 1, 1); return mo(d.getFullYear(), d.getMonth(), 'Last month', 'last month'); }
+      case 'prevmonth': { const d = new Date(today.getFullYear(), today.getMonth() - 2, 1); return mo(d.getFullYear(), d.getMonth(), 'The month before', 'the month before last'); }
+      case 'named': return mo(extra.y, extra.m);
+      case 'year': { const n = Math.round((today - new Date(today.getFullYear(), 0, 1)) / 864e5) + 1; return mk(`${today.getFullYear()} so far`, 'this year', tmRange(new Date(today.getFullYear(), 0, 1), n)); }
+      case 'lastyear': { const y = today.getFullYear() - 1, n = Math.round((new Date(y + 1, 0, 1) - new Date(y, 0, 1)) / 864e5); return mk(String(y), 'last year', tmRange(new Date(y, 0, 1), n)); }
+      case 'all': { const keys = Array.from(new Set(entries.map(e=> e.date).filter(Boolean))).sort(); return mk('All time', 'across all your entries', keys.map(k=> { const q = k.split('-').map(Number); return new Date(q[0], q[1] - 1, q[2]); })); }
+      default: return tmPeriod('month');
+    }
+  }
+  const TM_PREV = { today: 'yesterday', yesterday: 'daybefore', week: 'lastweek', lastweek: 'prevweek', month: 'lastmonth', lastmonth: 'prevmonth', last7: 'prev7', last30: 'prev30', year: 'lastyear' };
+  const TM_CURRENT_OF = { yesterday: 'today', lastweek: 'week', prevweek: 'lastweek', lastmonth: 'month', prevmonth: 'lastmonth', lastyear: 'year', prev7: 'last7', prev30: 'last30', daybefore: 'yesterday' };
+  function tmPrevOf(p){ if(p.kind === 'named'){ const d = new Date(p.extra.y, p.extra.m - 1, 1); return { kind: 'named', extra: { y: d.getFullYear(), m: d.getMonth() } }; } return { kind: TM_PREV[p.kind] || 'lastmonth' }; }
+  function tmFindPeriods(t){
+    const found = [], cur = tmToday();
+    const add = (re, kind, ex)=>{ const g = new RegExp(re.source, 'g'); let m; while((m = g.exec(t))) found.push({ at: m.index, end: m.index + m[0].length, kind, extra: ex ? ex(m) : null }); };
+    add(/\bday before yesterday\b/, 'daybefore'); add(/\byesterday\b|\bieri\b/, 'yesterday'); add(/\btoday\b|\bastăzi\b|\bastazi\b|\bazi\b/, 'today');
+    add(/\bweek before last\b|\bthe week before( that)?\b|\btwo weeks ago\b|\b2 weeks ago\b/, 'prevweek'); add(/\bmonth before last\b|\bthe month before( that)?\b/, 'prevmonth'); add(/\blast week\b|\bprevious week\b|\bsăptămâna trecut|\bsaptamana trecut/, 'lastweek'); add(/\bthis week\b|\bcurrent week\b|\bsăptămâna aceasta\b|\bsaptamana asta\b/, 'week');
+    add(/\blast 7 days\b|\bpast 7 days\b|\bpast week\b/, 'last7'); add(/\blast 30 days\b|\bpast 30 days\b/, 'last30');
+    add(/\bthis month\b|\bcurrent month\b|\bluna aceasta\b|\bluna asta\b/, 'month'); add(/\blast month\b|\bprevious month\b|\bluna trecut/, 'lastmonth');
+    add(/\bthis year\b/, 'year'); add(/\blast year\b/, 'lastyear');
+    add(new RegExp(TM_MONTH_RE.source), 'named', (m)=> { const mi = TM_MONTH_IDX[m[1].slice(0, 3)]; return { y: mi > cur.getMonth() ? cur.getFullYear() - 1 : cur.getFullYear(), m: mi }; });
+    return found.filter(f=> !found.some(o=> o !== f && o.at <= f.at && o.end >= f.end && (o.end - o.at) > (f.end - f.at))).sort((x, y)=> x.at - y.at).map(f=> ({ kind: f.kind, extra: f.extra }));
+  }
+  const tmSign = (n)=> (n >= 0 ? '+' : '−') + Math.abs(n);
+  const tmPct = (a, b)=> b > 0 ? Math.round((a - b) / b * 100) : null;
+  function tmCompare(spec){
+    const P = enhPace(), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`;
+    let a = spec.a, b = spec.b;
+    if(a && !b){ if(TM_CURRENT_OF[a.kind]){ b = a; a = { kind: TM_CURRENT_OF[a.kind] }; } else if(a.kind === 'named'){ b = a; a = { kind: 'month' }; } else b = tmPrevOf(a); }
+    if(!a) a = { kind: 'month' }; if(!b) b = tmPrevOf(a);
+    const A = tmPeriod(a.kind, a.extra), B = tmPeriod(b.kind, b.extra);
+    if(!A.dates.length || !B.dates.length) return { text: 'I can only compare periods that have already started.' };
+    const sa = tmStats(P, A.dates), sB = tmStats(P, B.dates);
+    if(sB.secs === 0) return { text: `You have no logged time ${B.at} to compare with.` };
+    const n = A.inProgress ? Math.min(A.dates.length, B.dates.length) : B.dates.length, part = n < B.dates.length, sbS = part ? tmStats(P, B.dates.slice(0, n)) : sB;
+    const dh = tmPct(sa.hours, sbS.hours), pay = Object.keys(sa.earn.netByCurrency).length + Object.keys(sB.earn.netByCurrency).length > 0;
+    const dpay = tmPct(sa.earn.convertedTotal, sbS.earn.convertedTotal);
+    return { text: `${tmCap(A.at)}${A.inProgress && ['week', 'month', 'year'].includes(A.kind) ? ' so far' : ''} you ${A.inProgress ? 'have' : 'logged'} ${enhHM(sa.hours)} h over ${sa.worked} day${sa.worked === 1 ? '' : 's'}, against ${enhHM(sbS.hours)} h${part ? ` at the same point ${B.at.startsWith('in ') ? B.at : B.at}` : ` ${B.at}`}${dh != null ? ` (${dh >= 0 ? '+' : '−'}${Math.abs(dh)}%)` : ''}.${part ? ` ${tmCap(B.at)} ended at ${enhHM(sB.hours)} h.` : ''}`,
+      stats: [[`${A.name}${A.inProgress ? ' so far' : ''}`, enhHM(sa.hours) + ' h'], [`${B.name}${part ? ' · same point' : ''}`, enhHM(sbS.hours) + ' h'], part ? [`${B.name} · in full`, enhHM(sB.hours) + ' h'] : ['Difference', `${sa.hours >= sbS.hours ? '+' : '−'}${tmDiffHM(Math.max(sa.hours, sbS.hours), Math.min(sa.hours, sbS.hours))} h`]],
+      foot: pay ? `Earned (${earningsMode}): ${M(sa.earn.convertedTotal)} against ${M(sbS.earn.convertedTotal)}${dpay != null ? ` (${dpay >= 0 ? '+' : '−'}${Math.abs(dpay)}%)` : ''}${part ? `; ${M(sB.earn.convertedTotal)} for all of ${B.at}` : ''}.` : '',
+      steps: `${A.name}: ${tmDay(A.dates[0])} to ${tmDay(A.dates[A.dates.length - 1])} (${A.dates.length} day${A.dates.length === 1 ? '' : 's'}).\n${B.name}${part ? ` (same ${n} day${n === 1 ? '' : 's'}: ${tmDay(B.dates[0])} to ${tmDay(B.dates[n - 1])})` : `: ${tmDay(B.dates[0])} to ${tmDay(B.dates[B.dates.length - 1])}`}.\nChange = (${enhHM(sa.hours)} − ${enhHM(sbS.hours)}) ÷ ${enhHM(sbS.hours)}${dh != null ? ' = ' + (dh >= 0 ? '+' : '−') + Math.abs(dh) + '%' : ''}` };
   }
   function tmTotals(spec){
-    const P = enhPace(), per = tmPeriod(spec.period, spec.named), st = tmStats(P, per.dates), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`, val = st.earn.convertedTotal;
-    if(st.secs === 0) return { text: `You have no logged time ${per.label === 'today' || per.label === 'yesterday' || /^this/.test(per.label) ? per.label : 'in ' + per.label}.` };
+    const P = enhPace(), per = tmPeriod(spec.p.kind, spec.p.extra), cur = spec.cur || displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`;
+    if(!per.dates.length) return { text: `${tmCap(per.at)} hasn’t started yet.` };
+    const st = tmStats(P, per.dates), val = cur === displayCurrency ? st.earn.convertedTotal : (fxConvert(st.earn.convertedTotal, displayCurrency, cur) || 0);
+    if(st.secs === 0) return { text: `You have no logged time ${per.at}.` };
     const hasPay = Object.keys(st.earn.netByCurrency).length > 0, wantE = spec.earn !== false && hasPay, wantH = spec.hours !== false;
     const parts = []; if(wantH) parts.push(`${enhHM(st.hours)} h over ${st.worked} day${st.worked === 1 ? '' : 's'}`); if(wantE) parts.push(`${M(val)} (${earningsMode})`);
-    return { text: `${per.label.charAt(0).toUpperCase() + per.label.slice(1)}: ${parts.join(', ')}.`,
+    return { text: `${tmCap(per.at)}${['week', 'month', 'year'].includes(per.kind) ? ' so far' : ''}: ${parts.join(', ')}.`,
       stats: [['Hours', enhHM(st.hours) + ' h'], ['Worked days', String(st.worked)], wantE ? [`Earned · ${earningsMode}`, M(val)] : ['Average per day', enhHM(st.hours / st.worked) + ' h']],
       steps: `Hours = the sum of your entries between ${tmDay(per.dates[0])} and ${tmDay(per.dates[per.dates.length - 1])}.\n${wantE ? `Earnings use each project’s rate and tax template, converted to ${cur} at your rates (${earningsMode}).` : 'No earnings: no project with a rate has time in this period.'}` };
   }
   function tmProjects(spec){
-    const P = enhPace(), per = tmPeriod(spec.period || 'month', spec.named), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`;
+    const per = tmPeriod(spec.p.kind, spec.p.extra), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`;
     const rows = computeEarningsFor({ entries, active, presets, taxTemplates }, per.dates).rows.filter(r=> r.hours > 0).map(r=>{ const v = r.hasRate ? fxConvert(earningsMode === 'gross' ? r.gross : r.net, r.currency, displayCurrency) : null; return { name: r.note || 'No project', hours: r.hours, v, perH: (v != null && r.hours > 0) ? v / r.hours : null }; });
-    if(!rows.length) return { text: `You have no logged time ${/^this|today|yesterday/.test(per.label) ? per.label : 'in ' + per.label}.` };
+    if(!rows.length) return { text: `You have no logged time ${per.at}.` };
     const paid = rows.filter(r=> r.v != null), byPay = paid.slice().sort((a, b)=> b.v - a.v), byRate = paid.slice().sort((a, b)=> b.perH - a.perH);
     const top = rows.slice().sort((a, b)=> b.hours - a.hours).slice(0, 3);
-    const lead = spec.perHour && byRate.length ? `${byRate[0].name} pays you the most per hour: ${M(byRate[0].perH)} (${earningsMode}).` : byPay.length ? `${byPay[0].name} earns the most in ${per.label}: ${M(byPay[0].v)} (${earningsMode}) from ${enhHM(byPay[0].hours)} h.` : `Most of your time in ${per.label} went to ${top[0].name} (${enhHM(top[0].hours)} h), but none of it has a rate yet.`;
-    return { text: lead, stats: top.map(r=> [r.name, `${enhHM(r.hours)} h${r.v != null ? ' · ' + M(r.v) : ''}`]).concat([['', ''], ['', '']]).slice(0, 3).filter(x=> x[0]),
-      steps: `Per project: hours from your entries in ${per.label}; earnings = hours × the project’s rate, after its tax template if you chose net, converted to ${cur}.\nPer hour = earnings ÷ hours (${earningsMode}).` };
+    const lead = spec.perHour && byRate.length ? `${byRate[0].name} pays you the most per hour: ${M(byRate[0].perH)} (${earningsMode}).` : byPay.length ? `${byPay[0].name} earns the most ${per.at}: ${M(byPay[0].v)} (${earningsMode}) from ${enhHM(byPay[0].hours)} h.` : `Most of your time ${per.at} went to ${top[0].name} (${enhHM(top[0].hours)} h), but none of it has a rate yet.`;
+    return { text: lead, stats: top.map(r=> [r.name, `${enhHM(r.hours)} h${r.v != null ? ' · ' + M(r.v) : ''}`]),
+      steps: `Per project: hours from your entries ${per.at}; earnings = hours × the project’s rate, after its tax template if you chose net, converted to ${cur}.\nPer hour = earnings ÷ hours (${earningsMode}).` };
+  }
+  function tmProjectHours(spec){
+    const per = tmPeriod(spec.p.kind, spec.p.extra), cur = displayCurrency, M = (v)=> `${v.toFixed(2)} ${cur}`;
+    if(!per.dates.length) return { text: `${tmCap(per.at)} hasn’t started yet.` };
+    const row = computeEarningsFor({ entries, active, presets, taxTemplates }, per.dates).rows.find(r=> (r.note || '').toLowerCase() === spec.project.toLowerCase());
+    if(!row || !(row.hours > 0)) return { text: `You have no logged time on ${spec.project} ${per.at}.` };
+    const v = row.hasRate ? fxConvert(earningsMode === 'gross' ? row.gross : row.net, row.currency, displayCurrency) : null;
+    return { text: `${tmCap(per.at)} you logged ${enhHM(row.hours)} h on ${spec.project}${v != null ? `, worth ${M(v)} (${earningsMode})` : ' (no rate set, so no earnings)'}.`,
+      stats: [['Hours', enhHM(row.hours) + ' h'], v != null ? [`Earned · ${earningsMode}`, M(v)] : ['Rate', 'not set'], row.hasRate ? ['Per hour', `${(v / row.hours).toFixed(2)} ${cur}`] : ['Per hour', '—']],
+      steps: `Hours = your ${spec.project} entries between ${tmDay(per.dates[0])} and ${tmDay(per.dates[per.dates.length - 1])}.\nEarnings = hours × the project’s rate, after its tax template if you chose net, converted to ${cur}.` };
+  }
+  const tmClock = (h)=> `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round((h % 1) * 60) % 60).padStart(2, '0')}`;
+  function tmDaysLeft(){
+    const P = enhPace(), today = tmToday(), left = holidaysInMonth(P.y, P.m).filter(h=> h.date > today);
+    if(P.remaining === 0) return { text: `${P.monthLabel} has no working days left.` };
+    return { text: `There ${P.remaining === 1 ? 'is 1 working day' : `are ${P.remaining} working days`} left in ${P.monthLabel}${left.length ? `, not counting ${left.map(h=> `${tmDay(h.date)} (${h.name})`).join(' and ')}` : ''}.`,
+      stats: [['Working days left', String(P.remaining)], ['Worked so far', String(P.worked)], ['Public holidays left', String(left.length)]],
+      steps: 'Working days left = the weekdays after today (plus today if nothing is logged on it yet), minus public holidays in your country.' };
+  }
+  function tmHolidays(){
+    const h = bgPref.holidays, c = holCountry(), name = HOL_COUNTRIES[c] || c, today = tmToday();
+    if(!h.on) return { text: 'Public holidays are switched off (Settings → Money), so I have no list to show.' };
+    if(!c) return { text: `I have no holiday calendar for your time zone (${browserTimeZone() || 'unknown'}). Pick a country in Settings → Money.` };
+    if(c !== 'RO' && holLibState !== 2){ holMap(today.getFullYear()); return { text: holLibState === 3 ? `The ${name} holiday calendar could not be loaded.` : `Loading the ${name} holiday calendar… ask again in a moment.` }; }
+    const list = []; for(let i = 0; i < 400 && list.length < 4; i++){ const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i), n = holidayName(d); if(n) list.push({ d, n, i }); }
+    if(!list.length) return { text: `I can’t find an upcoming public holiday for ${name}.` };
+    const f = list[0], when = f.i === 0 ? 'today' : f.i === 1 ? 'tomorrow' : `in ${f.i} days`, wk = f.d.getDay() === 0 || f.d.getDay() === 6;
+    return { text: `The next public holiday in ${name} is ${f.n}, ${tmDay(f.d)} (${when})${wk ? ', a weekend day, so no working day is lost' : ''}.`,
+      stats: list.slice(0, 3).map(x=> [tmDay(x.d), x.n]), foot: `Country: ${name}${h.country ? '' : ', from your time zone'}.`, steps: 'The calendar of the country of your time zone (change it in Settings → Money). Weekend holidays are listed but don’t reduce your working days.' };
+  }
+  function tmUsualDay(){
+    const H = enhHistory(); if(!H.usual) return { text: 'I need at least 3 days with logged time in the last 8 weeks to know your usual day.' };
+    const u = H.usual;
+    return { text: `You usually start around ${tmClock(u.start)} and finish around ${tmClock(u.end)}, logging about ${enhHM(u.secs / 3600)} h a day.`,
+      stats: [['Usual start', tmClock(u.start)], ['Usual finish', tmClock(u.end)], ['Usual length', enhHM(u.secs / 3600) + ' h']],
+      steps: `The average first start, last stop and length over the last 8 weeks, today not counted, using the ${u.n} days you logged time. It is the same “usual day” as on your Today card.` };
+  }
+  function tmStreak(){
+    const H = enhHistory();
+    return { text: H.streak > 0 ? `You’re on a ${H.streak}-day streak: ${H.streak === 1 ? 'a weekday' : 'weekdays'} with time logged in a row. Your longest in the last 16 weeks is ${H.longest} day${H.longest === 1 ? '' : 's'}.` : `You have no streak right now. Your longest in the last 16 weeks is ${H.longest} day${H.longest === 1 ? '' : 's'}.`,
+      stats: [['Current streak', `${H.streak} day${H.streak === 1 ? '' : 's'}`], ['Longest (16 weeks)', `${H.longest} day${H.longest === 1 ? '' : 's'}`]], steps: 'Weekdays in a row with any logged time, counting back from today (today only counts once you have logged something). Weekends are skipped.' };
+  }
+  function tmBestDay(spec){
+    const per = tmPeriod(spec.p.kind, spec.p.extra), cur = displayCurrency;
+    const rows = per.dates.map(d=> ({ d, s: secondsForDate(d) })).filter(r=> r.s > 0).sort((a, b)=> b.s - a.s);
+    if(!rows.length) return { text: `You have no logged time ${per.at}.` };
+    return { text: `Your longest day ${per.at} was ${tmDay(rows[0].d)}${rows[0].d.getFullYear() !== tmToday().getFullYear() ? ' ' + rows[0].d.getFullYear() : ''}: ${enhHM(rows[0].s / 3600)} h.`,
+      stats: rows.slice(0, 3).map(r=> [tmDay(r.d), enhHM(r.s / 3600) + ' h']), steps: `Hours per day, summed from your entries ${per.at}, longest first.` };
+  }
+  function tmAverage(spec){
+    const P = enhPace(), per = tmPeriod(spec.p.kind, spec.p.extra), st = tmStats(P, per.dates);
+    if(st.worked === 0) return { text: `You have no logged time ${per.at}.` };
+    const t = tmToday(), wk = tmStats(P, tmRange(new Date(t.getFullYear(), t.getMonth(), t.getDate() - 55), 56)).hours / 8;
+    return { text: `${tmCap(per.at)} you averaged ${enhHM(st.hours / st.worked)} h on each day you worked (${enhHM(st.hours)} h over ${st.worked} day${st.worked === 1 ? '' : 's'}). Over the last 8 weeks you average ${enhHM(wk)} h a week.`,
+      stats: [['Per worked day', enhHM(st.hours / st.worked) + ' h'], ['Per week (8 weeks)', enhHM(wk) + ' h'], ['Worked days', String(st.worked)]],
+      steps: `Per worked day = hours ÷ days with time logged = ${enhHM(st.hours)} h ÷ ${st.worked}.\nPer week = hours in the last 56 days ÷ 8.` };
+  }
+  function tmDaysWorked(spec){
+    const P = enhPace(), per = tmPeriod(spec.p.kind, spec.p.extra); if(!per.dates.length) return { text: `${tmCap(per.at)} hasn’t started yet.` };
+    const st = tmStats(P, per.dates), wd = per.dates.filter(d=> d.getDay() !== 0 && d.getDay() !== 6 && !isHoliday(d)).length;
+    return { text: `${tmCap(per.at)} you worked ${st.worked} day${st.worked === 1 ? '' : 's'}, out of ${wd} working day${wd === 1 ? '' : 's'}.`, stats: [['Days worked', String(st.worked)], ['Working days', String(wd)], ['Hours', enhHM(st.hours) + ' h']],
+      steps: 'Days worked = days with any logged time. Working days = weekdays in the period minus public holidays.' };
+  }
+  function tmTargetInfo(){
+    const P = enhPace(), t = P.target, M = (v)=> `${v.toFixed(2)} ${P.cur}`;
+    if(!t) return { text: 'You haven’t set a monthly target yet. Set one in Settings → Money.' };
+    const pct = t.amount > 0 ? Math.round(P.earned / t.amount * 100) : 0;
+    return { text: `Your target for ${P.monthLabel} is ${M(t.amount)} (${t.mode}). You’re at ${M(P.earned)} so far, which is ${pct}% of it${P.earned < t.amount ? `, with ${M(t.amount - P.earned)} to go` : ''}.`,
+      stats: [['Target', M(t.amount)], ['Earned so far', M(P.earned)], ['Reached', pct + '%']], steps: `Reached = earned ÷ target = ${P.earned.toFixed(2)} ÷ ${t.amount.toFixed(2)}.\nThe target is shown in ${P.cur} at your rates${t.orig && t.orig.currency !== t.currency ? ` (set as ${t.orig.amount} ${t.orig.currency})` : ''}.` };
+  }
+  function tmWeekdayOne(i){
+    const P = enhPace(), H = enhHistory(), a = H.avg[i];
+    if(!(a > 0)) return { text: `You haven’t logged any time on ${WD_LONG[i]}s in the last 16 weeks.` };
+    return { text: `On ${WD_LONG[i]}s you log ${enhHM(a)} h on average over the last 16 weeks${P.rate > 0 ? `, about ${(a * P.rate).toFixed(2)} ${P.cur} a day` : ''}.`, stats: [[`${WD_LONG[i]} average`, enhHM(a) + ' h']], steps: 'The same weekday averages as your Weekly rhythm card.' };
+  }
+  function tmHelp(){
+    return { text: 'I can tell you about your hours and earnings (today, this week, a month, a year), compare any two periods (“this week vs last week”), work out “what if” plans, forecast next month with public holidays, and show your pace, your target, working days left, your best weekday and longest day, your usual start and finish time, and the next public holiday.',
+      foot: 'Try: “hours on FINRELAY this month”, “yesterday vs today”, “what is my average day?”.' };
   }
   function tmTeam(spec){
     const company = getCompany(adminSelectedCompanyId);
@@ -7728,11 +7860,97 @@ match /users/{userId}/meta/{docId} {
       steps: 'Sums of every member: hours, income from each member’s own rates and tax templates, converted to ' + displayCurrency + '.\nMonth end = each member’s earnings × (worked days + working days left) ÷ worked days, added up (public holidays not counted as working days).' };
   }
 
+  // ---- currencies: today's rates, a conversion, and how a pair moved over a period ----
+  const TM_CUR = { ron:'RON', lei:'RON', leu:'RON', eur:'EUR', euro:'EUR', euros:'EUR', usd:'USD', dollar:'USD', dollars:'USD', gbp:'GBP', pound:'GBP', pounds:'GBP', sterling:'GBP' };
+  const TM_CUR_NAME = { RON:'leu', EUR:'euro', USD:'dollar', GBP:'pound' };
+  const TM_CUR_RE = /\b(ron|lei|leu|eur|euros?|usd|dollars?|gbp|pounds?|sterling)\b/g;
+  const tmCurrencies = (t)=> { const out = []; (t.match(TM_CUR_RE) || []).forEach(w=>{ const c = TM_CUR[w.replace(/s$/, '')] || TM_CUR[w]; if(c && !out.includes(c)) out.push(c); }); return out; };
+  const FX_ORDER = ['EUR', 'GBP', 'USD', 'RON'];
+  const FX_HIST_TTL = 6 * 3600 * 1000;
+  async function fxHistory(start, end){
+    const key = `tt-fxhist:${start}..${end}`;
+    try{ const c = JSON.parse(localStorage.getItem(key) || 'null'); if(c && Date.now() - c.at < FX_HIST_TTL) return c.rows; }catch(e){}
+    const ctl = new AbortController(), timer = setTimeout(()=> ctl.abort(), 8000);
+    try{
+      const res = await fetch(`https://api.frankfurter.dev/v1/${start}..${end}?from=EUR&to=RON,USD,GBP`, { signal: ctl.signal });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json(), rows = [];
+      const push = (date, r)=>{ if(r && +r.RON > 0 && +r.USD > 0 && +r.GBP > 0) rows.push({ date, r: { EUR: 1, RON: +r.RON, USD: +r.USD, GBP: +r.GBP } }); };
+      if(data && data.rates && Object.values(data.rates).every(v=> typeof v === 'number')) push(data.date || end, data.rates);        // a single day comes back flat
+      else if(data && data.rates) Object.keys(data.rates).sort().forEach(d=> push(d, data.rates[d]));
+      if(!rows.length) throw new Error('No rates in the response');
+      try{ localStorage.setItem(key, JSON.stringify({ at: Date.now(), rows })); }catch(e){}
+      return rows;
+    }catch(err){ console.warn('Exchange rate history unavailable', err); return null; }
+    finally{ clearTimeout(timer); }
+  }
+  const fxPair = (a, b)=> { const i = FX_ORDER.indexOf(a), j = FX_ORDER.indexOf(b); return i <= j ? [a, b] : [b, a]; };     // [base, quote]: "1 base = x quote"
+  const fxRate = (base, quote)=> rates[base] / rates[quote];
+  const fxFmt = (v)=> v >= 10 ? v.toFixed(2) : v.toFixed(4);
+  function tmFxNow(){
+    const upd = fxMeta.fetchedAt ? new Date(fxMeta.fetchedAt) : null, when = upd ? `${upd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} ${upd.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}` : '';
+    const others = ['EUR', 'USD', 'GBP', 'RON'].filter(c=> c !== displayCurrency).slice(0, 3), q = displayCurrency;
+    return { text: `You’re viewing amounts in ${displayCurrency} (${earningsMode}). Today’s rates: ${others.map(c=> `1 ${c} = ${fxFmt(fxRate(c, q))} ${q}`).join(', ')}.`,
+      stats: others.map(c=> [`1 ${c} in ${q}`, fxFmt(fxRate(c, q))]),
+      foot: `${fxMeta.source || 'Approximate rates'}${when ? ', updated ' + when : ''}${fxMeta.error ? ' (' + fxMeta.error + ')' : ''}. Change the currency with the control at the top.`,
+      steps: `The rates are the ones the whole app uses: ${q} per 1 unit of each currency, refreshed hourly from the European Central Bank reference rates (Frankfurter).\nA missing or failed refresh falls back to the last known rates, or to approximate ones.` };
+  }
+  function tmFxConvert(spec){
+    const { amount, from, to } = spec;
+    if(from === to) return { text: `${amount.toFixed(2)} ${from} is ${amount.toFixed(2)} ${to}: same currency.` };
+    const out = fxConvert(amount, from, to);
+    if(out == null) return { text: `I don’t have a rate for ${from} to ${to}.` };
+    const [b, q] = fxPair(from, to);
+    return { text: `${amount.toFixed(2)} ${from} is ${out.toFixed(2)} ${to} at today’s rate (1 ${b} = ${fxFmt(fxRate(b, q))} ${q}).`, stats: [['You give', `${amount.toFixed(2)} ${from}`], ['You get', `${out.toFixed(2)} ${to}`], [`1 ${b}`, `${fxFmt(fxRate(b, q))} ${q}`]],
+      steps: `${amount.toFixed(2)} × ${rates[from]} (${'RON'} per ${from}) ÷ ${rates[to]} (${'RON'} per ${to}) = ${out.toFixed(2)} ${to}\nToday’s app rates, from the European Central Bank reference rates.` };
+  }
+  async function tmFxTrend(spec){
+    const cs = spec.cur.length >= 2 ? spec.cur.slice(0, 2) : [spec.cur[0] || 'EUR', (spec.cur[0] === 'RON' || !spec.cur[0]) ? (spec.cur[0] === 'RON' ? 'EUR' : 'RON') : (displayCurrency !== spec.cur[0] ? displayCurrency : 'RON')];
+    const [base, quote] = fxPair(cs[0], cs[1]), pers = (spec.ps && spec.ps.length ? spec.ps : [{ kind: 'month' }]).slice(0, 2).map(p=> tmPeriod(p.kind, p.extra)).filter(p=> p.dates.length);
+    const now = `1 ${base} = ${fxFmt(fxRate(base, quote))} ${quote}`;
+    if(!pers.length) return { text: `That period hasn’t started yet. Right now ${now}.` };
+    const ds = (d)=> dateKey(d), start = ds(pers.reduce((m, p)=> p.dates[0] < m ? p.dates[0] : m, pers[0].dates[0])), end = ds(pers.reduce((m, p)=> p.dates[p.dates.length - 1] > m ? p.dates[p.dates.length - 1] : m, pers[0].dates[pers[0].dates.length - 1]));
+    const rows = await fxHistory(start, end);
+    if(!rows) return { text: `I couldn’t load the exchange-rate history just now. Right now ${now}.`, foot: 'The history comes from the European Central Bank reference rates via Frankfurter; it needs an internet connection. Try again in a moment.' };
+    const val = (r)=> r.r[quote] / r.r[base], name = (c)=> TM_CUR_NAME[c];
+    const per = pers.map(p=>{ const a = ds(p.dates[0]), z = ds(p.dates[p.dates.length - 1]), pts = rows.filter(r=> r.date >= a && r.date <= z); return { p, pts }; });
+    const sum = per.map(({ p, pts })=>{
+      if(!pts.length) return { p, none: true };
+      const v = pts.map(val), first = v[0], last = v[v.length - 1], chg = (last / first - 1) * 100, hi = Math.max(...v), lo = Math.min(...v);
+      return { p, pts, v, first, last, chg, hi, lo, hiD: pts[v.indexOf(hi)].date, loD: pts[v.indexOf(lo)].date };
+    });
+    const d2 = (d)=> { const q = d.split('-').map(Number); return tmDay(new Date(q[0], q[1] - 1, q[2])); };
+    const move = (x)=> Math.abs(x.chg) < 0.05 ? `hardly moved (${x.chg >= 0 ? '+' : '−'}${Math.abs(x.chg).toFixed(2)}%)` : `${x.chg > 0 ? 'rose' : 'fell'} ${Math.abs(x.chg).toFixed(2)}%`;
+    const line = (x)=> x.none ? `${tmCap(x.p.at)} there is no published rate yet (the ECB publishes on business days).` : x.pts.length === 1 ? `${tmCap(x.p.at)} there is only one reference rate so far: ${fxFmt(x.first)} on ${d2(x.pts[0].date)}.` : `${tmCap(x.p.at)} 1 ${base} ${move(x)} against the ${name(quote)}, from ${fxFmt(x.first)} on ${d2(x.pts[0].date)} to ${fxFmt(x.last)} on ${d2(x.pts[x.pts.length - 1].date)}.`;
+    const lead = sum.find(x=> x.pts && x.pts.length > 1) || sum[0];
+    const verdict = (lead.pts && lead.pts.length > 1 && Math.abs(lead.chg) >= 0.05) ? ` So the ${name(base)} ${lead.chg > 0 ? 'strengthened' : 'weakened'} against the ${name(quote)}.` : '';
+    return { text: `${base}/${quote}: ${sum.map(line).join(' ')}${verdict}`, spark: lead.v && lead.v.length > 1 ? lead.v : null,
+      stats: sum.length > 1 ? sum.map(x=> [tmCap(x.p.at), x.none ? '—' : x.pts.length < 2 ? fxFmt(x.first) : `${x.chg >= 0 ? '+' : '−'}${Math.abs(x.chg).toFixed(2)}%`]).concat([['Now', fxFmt(fxRate(base, quote))]]).slice(0, 3)
+        : [['Change', lead.pts && lead.pts.length > 1 ? `${lead.chg >= 0 ? '+' : '−'}${Math.abs(lead.chg).toFixed(2)}%` : '—'], ['High', lead.hi ? `${fxFmt(lead.hi)}` : '—'], ['Low', lead.lo ? `${fxFmt(lead.lo)}` : '—']],
+      foot: `Now: ${now}. European Central Bank reference rates.` + (lead.hiD && lead.pts.length > 1 ? ` High ${d2(lead.hiD)}, low ${d2(lead.loD)}.` : ''),
+      steps: `Rate = ${quote} per 1 ${base}, from the European Central Bank daily reference rates (business days only), fetched from Frankfurter when you asked.\nChange = last ÷ first − 1${lead.pts && lead.pts.length > 1 ? ` = ${fxFmt(lead.last)} ÷ ${fxFmt(lead.first)} − 1 = ${lead.chg >= 0 ? '+' : '−'}${Math.abs(lead.chg).toFixed(2)}%` : ''}.\nA rise means ${name(base)} got stronger and the ${name(quote)} weaker.` };
+  }
+
   // ---- understanding the question ----
   const TM_MONTH_RE = /\b(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sept|sep|october|oct|november|nov|december|dec)\b/;
   const TM_MONTH_IDX = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, sept:8, oct:9, nov:10, dec:11 };
+  const TM_WD_RE = /\b(mon|tue|tues|wed|thu|thur|thurs|fri)(?:day|sday|nesday|rsday)?s?\b/;
+  const TM_WD_IDX = { mon:0, tue:1, wed:2, thu:3, fri:4 };
   function tmParse(raw){
-    const t = String(raw).toLowerCase().replace(/[“”"]/g, ' ').replace(/\s+/g, ' ').trim();
+    const t = String(raw).toLowerCase().replace(/[“”"]/g, ' ').replace(/[?!.]+$/g, '').replace(/\s+/g, ' ').trim();
+    if(/^(hi|hello|hey|salut|bună|buna|good (morning|afternoon|evening))\b/.test(t) && t.split(' ').length <= 4) return { kind: 'chat', say: 'hello' };
+    if(/\b(thanks|thank you|thx|mulțumesc|multumesc)\b/.test(t)) return { kind: 'chat', say: 'thanks' };
+    if(/\b(what can you do|help|how do you work|what do you know|ce poți|ce stii|ce știi)\b/.test(t)) return { kind: 'help' };
+    // currencies: today's rates, a conversion, or how a pair moved
+    const curs = tmCurrencies(t), isEarn = /earn|pay\b|income|made|paid|salary|câștig|castig|bani/.test(t);
+    const conv = t.match(/(\d+(?:[.,]\d+)?)\s*(ron|lei|leu|eur|euros?|usd|dollars?|gbp|pounds?)\b\s*(?:to|in|into|=|->|→)\s*(ron|lei|leu|eur|euros?|usd|dollars?|gbp|pounds?)\b/);
+    if(conv){ const f = TM_CUR[conv[2].replace(/s$/, '')] || TM_CUR[conv[2]], to = TM_CUR[conv[3].replace(/s$/, '')] || TM_CUR[conv[3]]; if(f && to) return { kind: 'fxconvert', amount: parseFloat(conv[1].replace(',', '.')), from: f, to }; }
+    if(!isEarn && (/\b(currency|currencies|exchange rate|exchange|fx|forex|rates?)\b/.test(t) || (curs.length >= 2 && /vs\.?|versus|against|\bto\b|compared|how (is|are|was|did)/.test(t)) || (curs.length >= 1 && /how (is|are|was|did) (the )?(ron|lei|leu|eur|euros?|usd|dollars?|gbp|pounds?)\b|what.?s the (ron|lei|leu|eur|euro|usd|dollar|gbp|pound)\b|what is the (ron|lei|leu|eur|euro|usd|dollar|gbp|pound)\b/.test(t)))){
+      const ps = tmFindPeriods(t);
+      if(ps.length === 1 && ps[0].kind === 'today') return { kind: 'fxnow' };
+      const wantsTrend = ps.length > 0 || /how (is|are|was|did)|trend|moved|move|change|up or down|strong|weak/.test(t);
+      return wantsTrend && (curs.length || ps.length) ? { kind: 'fxtrend', cur: curs, ps } : { kind: 'fxnow' };
+    }
     const num = (()=>{ let m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:h|hr|hrs|hours?|ore|ora)\b/); if(m) return parseFloat(m[1].replace(',', '.')); m = t.match(/\b(\d{1,2}):(\d{2})\b/); return m ? +m[1] + +m[2] / 60 : null; })();
     const off = (()=>{ const m = t.match(/(\d+)\s*(?:days?|zile)\s*(?:off|leave|vacation|holiday|libere|concediu)|(?:take|taking|have)\s*(\d+)\s*days?\b/); return m ? +(m[1] || m[2]) : null; })();
     if(tmInCo()){
@@ -7741,29 +7959,51 @@ match /users/{userId}/meta/{docId} {
       if(/team|company|everyone|members|doing|going|month|income|total|hours/.test(t)) return { kind: 'team', team: 'summary' };
       return { kind: 'fallback' };
     }
-    const mon = (t.match(TM_MONTH_RE) || [])[1], cur = enhPace();
-    const named = mon != null ? (()=>{ const mi = TM_MONTH_IDX[mon.slice(0, 3)]; let y = cur.y; if(mi < cur.m - 6) y++; else if(mi > cur.m + 6) y--; return { y, m: mi }; })() : null;
+    const pers = tmFindPeriods(t), cur = enhPace(), mon = (t.match(TM_MONTH_RE) || [])[1];
+    const futureNamed = mon != null && (()=>{ const mi = TM_MONTH_IDX[mon.slice(0, 3)]; let y = cur.y; if(mi < cur.m - 6) y++; else if(mi > cur.m + 6) y--; return (y > cur.y || (y === cur.y && mi > cur.m)) ? { y, m: mi } : null; })();
     const wantE = /earn|pay|income|made|money|paid|câștig|castig|bani/.test(t), wantH = /hours|worked|time|ore|lucrat|logged/.test(t);
-    if((num != null || off != null) && /what if|if i|suppose|imagine|work|take|taking|each day|a day|per day/.test(t)) return { kind: 'whatif', hours: (num != null && num <= 16) ? num : null, off: off || 0 };
+    if((num != null || off != null) && /what if|if i|suppose|imagine|work|take|taking|each day|a day|per day/.test(t) && !/average|usually|typical/.test(t)) return { kind: 'whatif', hours: (num != null && num <= 16) ? num : null, off: off || 0 };
     if(/next month|luna viitoare|luna urm|following month/.test(t)) return { kind: 'forecast', y: new Date(cur.y, cur.m + 1, 1).getFullYear(), m: new Date(cur.y, cur.m + 1, 1).getMonth() };
-    if(named && (named.y > cur.y || (named.y === cur.y && named.m > cur.m)) && !/last|previous|ago/.test(t)) return { kind: 'forecast', ...named };
-    if(/compar|versus|\bvs\b|than last|same point|ahead of last|behind last|vs\.|față de/.test(t)) return { kind: 'compare' };
-    if(/project|client|proiect/.test(t)) return { kind: 'projects', perHour: /per hour|an hour|hourly|rate|pe oră/.test(t), period: /last month|luna trecut/.test(t) ? 'lastmonth' : /this week/.test(t) ? 'week' : 'month' };
+    if(futureNamed && !/last|previous|ago/.test(t)) return { kind: 'forecast', ...futureNamed };
+    // a short follow-up ("and last month?", "what about yesterday?") reuses the previous question with the new period
+    if(timoLast && pers.length && t.split(' ').length <= 6 && /^(and|what about|how about|and what about|și|dar|what of|&)\b/.test(t)){
+      if(timoLast.kind === 'compare') return { kind: 'compare', a: pers[0], b: pers[1] || null };
+      if(['totals', 'projects', 'average', 'bestday', 'daysworked', 'projecthours'].includes(timoLast.kind)) return { ...timoLast, p: pers[0] };
+    }
+    if(/compar|versus|\bvs\b|against|\bthan\b|difference between|față de|same point/.test(t) && !/more than \d|less than \d/.test(t)) return { kind: 'compare', a: pers[0] || null, b: pers[1] || null };
+    if(/holiday|zi liberă|zile libere|sărbătoare|sarbatoare/.test(t)) return { kind: 'holidays' };
+    if(/(days?|zile) (are |is )?(left|remaining|remain|rămase|ramase)|how many (working )?days (are )?(left|remain)|working days left/.test(t)) return { kind: 'daysleft' };
+    if(/what time.*(start|begin|finish|end|stop|leave)|when do i (usually )?(start|finish|stop|end)|usual (day|start|finish|window|hours|schedule)|typical (day|start|finish)|how long is my (usual|typical)/.test(t)) return { kind: 'usualday' };
+    if(/streak|in a row|consecutive/.test(t)) return { kind: 'streak' };
+    if(/(best|longest|biggest|most productive|busiest|record) day|most hours (in|on) a day/.test(t) && !/weekday|day of the week|which day/.test(t)) return { kind: 'bestday', p: pers[0] || (/ever|all time|record|overall/.test(t) ? { kind: 'all' } : { kind: 'month' }) };
+    if(/(what.?s|what is|show|tell me) (my )?(monthly )?(target|goal)|^my (monthly )?(target|goal)$|how far (am i|is)|progress|percent(age)? of (my )?(target|goal)|% of (my )?(target|goal)/.test(t)) return { kind: 'targetinfo' };
+    if(/how many days (did|have|do) i (work|log)|days (did i )?work|days worked|worked days|zile lucrate/.test(t)) return { kind: 'daysworked', p: pers[0] || { kind: 'month' } };
+    if(/\baverage\b|\bavg\b|\bmedie\b|on average/.test(t) && !/weekday/.test(t)) return { kind: 'average', p: pers[0] || { kind: 'month' } };
+    const names = Array.from(new Set(presets.map(presetName).concat(entries.map(e=> e.note || '')).filter(n=> n && n.length >= 3)));
+    const proj = names.find(n=> new RegExp('(^|[^a-z0-9])' + n.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').test(t));
+    if(proj && !/which project|what project/.test(t)) return { kind: 'projecthours', project: proj, p: pers[0] || { kind: 'month' } };
+    if(/project|client|proiect/.test(t)) return { kind: 'projects', perHour: /per hour|an hour|hourly|rate|pe oră/.test(t), p: pers[0] || { kind: 'month' } };
     if(/forecast|expect|predict|look like|will .*(earn|make)|estimate/.test(t) && !/month so far/.test(t)) return { kind: 'forecast', y: new Date(cur.y, cur.m + 1, 1).getFullYear(), m: new Date(cur.y, cur.m + 1, 1).getMonth() };
     if(/target|goal|need to|reach|hit |obiectiv|how many hours a day/.test(t)) return { kind: 'needed' };
+    const wdm = t.match(TM_WD_RE);
+    if(wdm && /usually|average|typically|how much|how long|on /.test(t) && !/which|best|worst/.test(t)) return { kind: 'weekdayone', i: TM_WD_IDX[wdm[1].slice(0, 3)] };
     if(/weekday|best day|strongest|which day|day of the week|worst day|lightest|zi a săptămânii/.test(t)) return { kind: 'weekday' };
     if(/going|pace|how am i|on track|behind|ahead|status|summary|cum merge/.test(t)) return { kind: 'summary' };
-    const period = /yesterday|ieri/.test(t) ? 'yesterday' : /today|astăzi|astazi|azi/.test(t) ? 'today' : /last week|săptămâna trecut|saptamana trecut/.test(t) ? 'lastweek' : /this week|săptămâna aceasta|saptamana asta/.test(t) ? 'week' : /last month|previous month|luna trecut/.test(t) ? 'lastmonth' : named ? 'named' : null;
-    if(period || ((wantE || wantH) && /how (many|much)|total|did i|have i|cât|cate|câte/.test(t))) return { kind: 'totals', period: period || 'month', named, earn: wantE || !wantH ? true : false, hours: wantH || !wantE ? true : false };
+    if(pers.length || ((wantE || wantH) && /how (many|much)|total|did i|have i|cât|cate|câte/.test(t))) return { kind: 'totals', cur: curs[0] || null, p: pers[0] || { kind: 'month' }, earn: wantE || !wantH ? true : false, hours: wantH || !wantE ? true : false };
     if(/month|luna|so far/.test(t)) return { kind: 'summary' };
     return { kind: 'fallback' };
   }
   function tmBuild(spec, off){
     switch(spec.kind){
       case 'summary': return tmSummary(); case 'needed': return tmNeeded(); case 'whatif': return tmWhatIf(spec);
-      case 'forecast': return tmForecast(spec, off || {}); case 'weekday': return tmWeekday(); case 'compare': return tmCompare();
-      case 'totals': return tmTotals(spec); case 'projects': return tmProjects(spec); case 'team': return tmTeam(spec);
-      default: return { text: tmInCo() ? 'I can’t answer that one yet. In the company view I can tell you how the team is doing, who has logged time today and who worked the most.' : 'I can’t answer that one yet. I’m best with your hours, earnings, pace and forecasts. Try one of the suggestions below, or ask something like “what if I work 7 h a day?”.' };
+      case 'forecast': return tmForecast(spec, off || {}); case 'weekday': return tmWeekday(); case 'weekdayone': return tmWeekdayOne(spec.i);
+      case 'compare': return tmCompare(spec); case 'totals': return tmTotals(spec); case 'projects': return tmProjects(spec); case 'projecthours': return tmProjectHours(spec);
+      case 'daysleft': return tmDaysLeft(); case 'holidays': return tmHolidays(); case 'usualday': return tmUsualDay(); case 'streak': return tmStreak();
+      case 'bestday': return tmBestDay(spec); case 'average': return tmAverage(spec); case 'daysworked': return tmDaysWorked(spec); case 'targetinfo': return tmTargetInfo();
+      case 'help': return tmHelp(); case 'team': return tmTeam(spec);
+      case 'fxnow': return tmFxNow(); case 'fxconvert': return tmFxConvert(spec); case 'fxtrend': return tmFxTrend(spec);
+      case 'chat': return { text: spec.say === 'thanks' ? 'You’re welcome. Ask me anything else about your time.' : `Hi${tmFirstName() ? ' ' + tmFirstName() : ''}! Ask me about your hours, pay or forecasts.` };
+      default: return { text: tmInCo() ? 'I can’t answer that one yet. In the company view I can tell you how the team is doing, who has logged time today and who worked the most.' : 'I can’t answer that one yet. Try “what can you do?” to see what I know, or ask something like “this week vs last week” or “what if I work 7 h a day?”.' };
     }
   }
 
@@ -7771,6 +8011,7 @@ match /users/{userId}/meta/{docId} {
   const tmEl = (id)=> $(id);
   function tmCardHtml(m){
     const a = m.a; let h = `<p>${escapeHtml(a.text)}</p>`;
+    if(a.spark){ const v = a.spark, lo = Math.min(...v), hi = Math.max(...v), r = (hi - lo) || 1, pts = v.map((x, i)=> `${(i / (v.length - 1) * 196 + 2).toFixed(1)},${(38 - (x - lo) / r * 34).toFixed(1)}`).join(' '); h += `<svg class="tt-timo-spark" viewBox="0 0 200 40" preserveAspectRatio="none" role="img" aria-label="Line of the rate over the period"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`; }
     if(a.stats && a.stats.length) h += `<div class="tt-timo-stats">${a.stats.map(([k, v])=> `<div class="tt-timo-stat"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`).join('')}</div>`;
     if(a.bars) h += `<div class="tt-timo-bars">${a.bars.map(b=> `<div class="tt-timo-bar"><span>${escapeHtml(b.l)}</span><span class="trk"><i class="fill ${b.c || ''}" style="width:${b.w}%"></i>${a.tgt != null ? `<i class="tgt" style="left:${a.tgt}%"></i>` : ''}</span><b>${escapeHtml(b.v)}</b></div>`).join('')}${a.tgt != null ? '<div class="tt-timo-foot"><i class="tgtkey"></i>your target</div>' : ''}</div>`;
     if(a.holNote) h += `<div class="tt-timo-assume"><span>${escapeHtml(a.holNote)}</span>${(a.hols || []).map(x=> `<button type="button" class="tt-timo-hchip ${x.on ? 'on' : 'off'}" data-hol="${escapeHtml(x.key)}" aria-pressed="${x.on}"><b>${escapeHtml(x.d)}</b> ${escapeHtml(x.n)}</button>`).join('')}${(a.hols || []).length ? '<span class="tt-timo-foot">Tap one if you work it anyway.</span>' : ''}</div>`;
@@ -7818,15 +8059,18 @@ match /users/{userId}/meta/{docId} {
     timoOpen = false; tmEl('tt-timo-panel').hidden = true; timoSync();
     if(focusBack !== false){ const l = tmEl('tt-timo-launch'); if(l) l.focus(); }
   }
-  function timoReset(){ clearTimeout(timoTimer); timoTyping = false; timoReady = false; timoMsgs.length = 0; if(timoOpen){ timoOpen = false; tmEl('tt-timo-panel').hidden = true; } timoSync(); }
+  function timoReset(){ timoAskId++; timoLast = null; clearTimeout(timoTimer); timoTyping = false; timoReady = false; timoMsgs.length = 0; if(timoOpen){ timoOpen = false; tmEl('tt-timo-panel').hidden = true; } timoSync(); }
   function timoAsk(text){
     text = String(text || '').trim().slice(0, 300); if(!text || timoTyping) return;
     timoMsgs.push({ id: ++timoSeq, who: 'user', text }); timoTyping = true; timoRender();
     clearTimeout(timoTimer);
-    timoTimer = setTimeout(()=>{
+    const my = ++timoAskId;
+    timoTimer = setTimeout(async ()=>{
       let spec, a;
-      try{ spec = tmParse(text); a = tmBuild(spec, {}); }
+      try{ spec = tmParse(text); a = await tmBuild(spec, {}); }
       catch(err){ console.error('TiMo', err); spec = { kind: 'fallback' }; a = { text: 'Sorry, I couldn’t work that out. Please try again.' }; }
+      if(my !== timoAskId) return;                       // a new chat was started while this was being worked out
+      if(!['fallback', 'chat', 'help'].includes(spec.kind)) timoLast = spec;
       timoMsgs.push({ id: ++timoSeq, who: 'timo', a, spec, off: {}, open: false });
       timoTyping = false; if(!timoOpen) timoReady = true;
       timoSync(); timoRender();
@@ -7835,7 +8079,7 @@ match /users/{userId}/meta/{docId} {
   tmEl('tt-timo-launch').addEventListener('click', ()=> timoOpenPanel());
   tmEl('tt-timo-launch').addEventListener('mouseenter', ()=>{ if(timoLap) return; timoLap = true; timoSync(); clearTimeout(timoLapTimer); timoLapTimer = setTimeout(()=>{ timoLap = false; timoSync(); }, 820); });
   tmEl('tt-timo-close').addEventListener('click', ()=> timoClose(true));
-  tmEl('tt-timo-new').addEventListener('click', ()=>{ clearTimeout(timoTimer); timoTyping = false; timoMsgs.length = 0; timoMsgs.push(timoGreeting()); timoRender(); const i = tmEl('tt-timo-input'); if(i) i.focus(); });
+  tmEl('tt-timo-new').addEventListener('click', ()=>{ timoAskId++; timoLast = null; clearTimeout(timoTimer); timoTyping = false; timoMsgs.length = 0; timoMsgs.push(timoGreeting()); timoRender(); const i = tmEl('tt-timo-input'); if(i) i.focus(); });
   tmEl('tt-timo-form').addEventListener('submit', (e)=>{ e.preventDefault(); const i = tmEl('tt-timo-input'); const t = i.value; i.value = ''; timoAsk(t); });
   tmEl('tt-timo-chips').addEventListener('click', (e)=>{ const b = e.target.closest('.tt-timo-chip'); if(b) timoAsk(b.textContent); });
   tmEl('tt-timo-body').addEventListener('click', (e)=>{
