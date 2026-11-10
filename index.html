@@ -2718,7 +2718,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.093</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.094</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -6371,8 +6371,14 @@ match /users/{userId}/meta/{docId} {
     const dates = getRangeDates();
     const ref = (granularity === 'custom' && dates[0]) ? dates[0] : anchorDate;
     const proj = computeMonthProjection({ entries, active, presets, taxTemplates }, secondsForDate, ref);
-    const t = bgPref.target;
-    const mode = t ? t.mode : earningsMode, cur = t ? t.currency : displayCurrency;
+    // the target is a goal set in its own currency; every card shows it in the currency chosen in the bar (converted at the
+    // current rates). Its mode (net or gross) stays the target's own, because that is what makes the comparison fair.
+    // If a rate is missing the card stays in the target's currency rather than show a wrong number.
+    const t0 = bgPref.target;
+    const mode = t0 ? t0.mode : earningsMode;
+    const conv = t0 ? fxConvert(t0.amount, t0.currency, displayCurrency) : null;
+    const cur = (t0 && conv == null) ? t0.currency : displayCurrency;
+    const t = t0 ? { amount: conv == null ? t0.amount : conv, currency: cur, mode: t0.mode, orig: t0 } : null;
     const val = (e)=>{
       if(!e) return 0;
       const x = fxConvert(mode === 'gross' ? e.grossConvertedTotal : e.netConvertedTotal, displayCurrency, cur);
@@ -6465,7 +6471,8 @@ match /users/{userId}/meta/{docId} {
 
   function enhRenderPace(P){
     const t = P.target, f = (v)=> `${enhFmt(v)} ${P.cur}`;
-    $('tt-pace-target-label').textContent = t ? `${Math.round(t.amount)} ${t.currency} · ${t.mode}` : 'not set';
+    $('tt-pace-target-label').textContent = t ? `${t.orig && t.orig.currency !== t.currency ? '≈ ' : ''}${Math.round(t.amount)} ${t.currency} · ${t.mode}` : 'not set';
+    $('tt-pace-target-label').title = (t && t.orig && t.orig.currency !== t.currency) ? `Set as ${t.orig.amount} ${t.orig.currency}` : '';
     $('tt-enh-title-pace').textContent = `${P.monthLabel} pace · ${P.mode}`;
     const plural = (n, w)=> `${n} ${n === 1 ? w : (/[^aeiou]y$/.test(w) ? w.slice(0, -1) + 'ies' : w + 's')}`;
     let pill = '', pillCls = 'plain', headline = '', sub = '', tiles = '', bar = '';
@@ -6559,7 +6566,7 @@ match /users/{userId}/meta/{docId} {
       const gap = P.target.amount - P.projected;
       if(gap > 0){
         const needH = P.rate > 0 ? ((P.target.amount - P.earned) / P.remaining) / P.rate : null;
-        items.push({ kind:'warn', rule:'forecast', key:`forecast:${P.y}-${P.m}:${Math.round(P.target.amount)}`, title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
+        items.push({ kind:'warn', rule:'forecast', key:`forecast:${P.y}-${P.m}:${Math.round(P.target.orig ? P.target.orig.amount : P.target.amount)}`, title:`Forecast is ${enhFmt(gap)} ${P.cur} under target`,
           body: needH != null ? `Add ${enhHM(Math.max(0, needH - P.avgH))} h on each of the ${plural(P.remaining, 'remaining weekday')} (${enhHM(needH)} h a day in total) to close the gap.` : 'Set a rate on the project you track to see what closing the gap takes.' });
       }
     } else if(!P.target){
@@ -6647,9 +6654,18 @@ match /users/{userId}/meta/{docId} {
     const curs = Object.keys(basis.netByCurrency || {});
     $('tt-enh-title-pocket').textContent = e ? 'From gross to pocket · projected' : 'From gross to pocket · so far';
     if(!curs.length){ enhSet('pocket', '<div class="tt-enh-empty">Set an hourly rate on a project and log time to see where the gross goes.</div>'); return; }
-    const groups = curs.map(c=>{
-      const gross = basis.grossByCurrency[c], net = basis.netByCurrency[c];
-      const taxes = Object.entries(basis.taxByCurrency[c] || {});
+    // one waterfall in the currency chosen in the bar; a currency with no rate stays in its own
+    const groupsData = [], merged = { cur:displayCurrency, gross:0, net:0, taxes:{} };
+    let mergedAny = false;
+    curs.forEach(c=>{
+      const f = fxConvert(1, c, displayCurrency), gross = basis.grossByCurrency[c], net = basis.netByCurrency[c], taxes = Object.entries(basis.taxByCurrency[c] || {});
+      if(f == null){ groupsData.push({ cur:c, gross, net, taxes }); return; }
+      mergedAny = true; merged.gross += gross * f; merged.net += net * f;
+      taxes.forEach(([n, info])=>{ const t = merged.taxes[n] || (merged.taxes[n] = { amount:0, pcts:new Set() }); t.amount += info.amount * f; for(const pc of info.pcts) t.pcts.add(pc); });
+    });
+    if(mergedAny) groupsData.unshift({ cur:displayCurrency, gross:merged.gross, net:merged.net, taxes:Object.entries(merged.taxes) });
+    const groups = groupsData.map(g=>{
+      const c = g.cur, gross = g.gross, net = g.net, taxes = g.taxes;
       let left = gross; const rows = [{ label:'Gross', value:`${enhFmt(gross)} ${c}`, l:0, w:100, fill:'var(--amber)' }];
       taxes.forEach(([name, info])=>{
         left -= info.amount;
@@ -7152,7 +7168,9 @@ match /users/{userId}/meta/{docId} {
     const now = new Date(), todayKey = dateKey(now), yKey = dateKey(enhAddDays(now, -1));
     const payOf = (src, day)=>{
       const r = computeEarningsFor({ presets, taxTemplates, entries:[], active:null, ...src }, [day]).rows[0];
-      return r && r.hasRate ? `${(earningsMode === 'gross' ? r.gross : r.net).toFixed(2)} ${r.currency}` : '';
+      if(!(r && r.hasRate)) return '';
+      const v = earningsMode === 'gross' ? r.gross : r.net, c = fxConvert(v, r.currency, displayCurrency);
+      return c == null ? `${v.toFixed(2)} ${r.currency}` : `${c.toFixed(2)} ${displayCurrency}`;
     };
     const folder = '<svg class="tt-uni-ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
     const row = (date, time, name, dur, pay, live)=> `<button type="button" class="tt-uni-row" data-date="${date}" data-key="${escapeHtml((live ? 'live' : date) + '|' + time + '|' + (name || ''))}"><span class="tt-uni-rowdisc">${folder}${live ? '<span class="tt-uni-livedot"></span>' : ''}</span><span class="tt-uni-rowmain"><i>${escapeHtml(time)}</i> <b>${escapeHtml(name || 'No project')}</b></span> <span class="tt-uni-rowend"><b>+${escapeHtml(dur)} h</b> <i>${escapeHtml(pay)}</i></span></button>`;
