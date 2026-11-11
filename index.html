@@ -1103,6 +1103,17 @@
   .tt-uni-coav{width:38px; height:38px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--on-accent); background:var(--c, var(--amber));}
   .tt-uni-coname{flex:1; min-width:0;}
   .tt-uni-coname b{display:block; font-weight:600; overflow-wrap:anywhere;}
+  .tt-uni-corec{display:inline-block; width:9px; height:9px; margin-left:8px; border-radius:50%; background:var(--stop); vertical-align:middle; box-shadow:0 0 0 0 rgba(214,69,65,.65); animation:tt-rec-pulse 1.6s ease-out infinite;}
+  #tt-uni-co-today .tt-enh-pill{white-space:nowrap; flex-shrink:0;}
+  .tt-co-taxrow{display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line);}
+  .tt-co-taxrow > span{flex:1; min-width:0; font-weight:600; overflow-wrap:anywhere;} .tt-co-taxrow small{display:block; font-weight:400; font-size:12px; color:var(--paper-dim);}
+  .tt-co-taxrow select{width:auto; max-width:min(300px, 60%);}
+  .tt-co-tpl{display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line);} .tt-co-tpl .meta{flex:1; min-width:0;} .tt-co-tpl .meta b{display:block; overflow-wrap:anywhere;} .tt-co-tpl .meta span{font-size:12px; color:var(--paper-dim);}
+  .tt-co-tpl .tt-btn{flex:0 0 auto; width:auto; min-width:84px; padding:0 18px;}
+  .tt-co-trow{display:grid; grid-template-columns:minmax(0,1fr) 92px auto; gap:8px; margin:8px 0;}
+  #tt-co-tpl-editor{margin-top:12px; padding-top:4px;}
+  @media (max-width:600px){ .tt-co-taxrow{flex-direction:column; align-items:stretch; gap:8px;} .tt-co-taxrow select{max-width:none; width:100%;} }
+  .tt-uni-corecnote{margin-top:10px; font-size:12px; color:var(--paper-dim); line-height:1.5;}
   .tt-uni-coname i{display:block; font-style:normal; font-size:12px; color:var(--paper-dim); overflow-wrap:anywhere;}
   .tt-uni-corow-end b{font-family:'Space Mono',monospace; font-size:14px; color:var(--amber); white-space:nowrap;}
   .tt-uni-scrollx{overflow-x:auto;}
@@ -1238,7 +1249,7 @@
     html.tt-uni #tt-uni-view{min-width:0; flex-shrink:1;}
     html.tt-uni #tt-uni-view button{padding:0 12px; font-size:12.5px;}
   }
-  @media (prefers-reduced-motion:reduce){ .tt-rec, .tt-rec-dot{animation:none;} }
+  @media (prefers-reduced-motion:reduce){ .tt-rec, .tt-rec-dot, .tt-uni-corec{animation:none;} }
   /* Appearance lives in Settings once Unified is on, so the top bar does not repeat it */
   html.tt-uni #tt-uni-bgslot{display:none;}
   /* Personal <-> Company: a curtain sweeps the page area, the switch happens behind it, then it lifts on the new view */
@@ -2373,7 +2384,7 @@
               <button type="button" data-val="personal">Personal</button><button type="button" data-val="company" class="active">Company</button>
             </div>
             <div class="tt-segment" id="tt-co-tabs">
-              <button data-val="dashboard" class="active">Dashboard</button><button data-val="members">Members</button>
+              <button data-val="dashboard" class="active">Dashboard</button><button data-val="members">Members</button><button data-val="settings">Settings</button>
             </div>
           </div>
           <div id="tt-co-notice"></div>
@@ -2420,6 +2431,28 @@
             <div class="tt-co-cards" id="tt-co-cards"></div>
           </div>
 
+          <div id="tt-co-settings" hidden>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Company tax templates</div>
+              <div class="tt-menu-desc">Taxes apply in order, each on what is left after the previous one.</div>
+              <div id="tt-co-tpl-list"></div>
+              <button class="tt-btn tt-menu-bigbtn" id="tt-co-tpl-new" type="button">+ New tax template</button>
+              <div id="tt-co-tpl-editor" hidden>
+                <input class="tt-menu-input" id="tt-co-tpl-name" type="text" maxlength="40" placeholder="Template name, e.g. Employee tax" aria-label="Template name" autocomplete="off" />
+                <div id="tt-co-tpl-rows"></div>
+                <div class="tt-menu-row"><button class="tt-btn tt-menu-btn-inline" id="tt-co-tpl-addrow" type="button">+ Add a tax</button></div>
+                <div class="tt-menu-row"><button class="tt-btn primary tt-menu-btn-inline" id="tt-co-tpl-save" type="button">Save template</button><button class="tt-btn tt-menu-btn-inline" id="tt-co-tpl-cancel" type="button">Cancel</button></div>
+                <div class="tt-menu-msg" id="tt-co-tpl-msg" role="status"></div>
+              </div>
+            </div>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Tax for member income</div>
+              <div class="tt-menu-desc">Applies to every project of that member, in this company’s income figures only. Members’ own accounts and dashboards do not change.</div>
+              <div class="tt-co-taxrow"><span>Default for all members</span><select class="tt-menu-input" id="tt-co-tax-default" aria-label="Default tax for all members"></select></div>
+              <div id="tt-co-tax-members"></div>
+              <div class="tt-menu-msg" id="tt-co-tax-msg" role="status"></div>
+            </div>
+          </div>
           <div id="tt-co-members" hidden>
             <div class="tt-menu-section">
               <div class="tt-menu-label">Add a member</div>
@@ -2813,7 +2846,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.100</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.102</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -2858,6 +2891,7 @@
   let active = null; // { startISO, note, tz }
   let assignNote = null, assignTimer = 0;
   let usualExplainOpen = false;
+  const coLive = {}, coLiveUnsubs = {}; let coLiveDenied = false, coLiveTimer = 0;   // who is recording right now (company dashboard)
   let timoAskId = 0, timoLast = null, timoOpen = false, timoReady = false, timoLap = false, timoTyping = false, timoSeq = 0, timoTimer = 0, timoLapTimer = 0;   // TiMo, the assistant in the corner
   const timoMsgs = [];            // the 'how is your usual day worked out' text under the Today card   // the little confirmation after assigning entries to a project
   let anchorDate = new Date(); // representative date for whatever range is being browsed
@@ -4983,7 +5017,7 @@
   let adminCompaniesCache = null;      // [{ id, name, memberUids, createdAt }]
   let adminSelectedCompanyId = null;
   let adminMemberFinance = {};         // uid -> { ok, presets, taxTemplates, error }
-  let coTab = 'dashboard';             // 'dashboard' | 'members'
+  let coTab = 'dashboard';             // 'dashboard' | 'members' | 'settings'
   let coPeriod = 'month';              // 'day' | 'week' | 'month' | 'custom'
   let coAnchor = new Date();
   let coCustomFrom = null, coCustomTo = null;
@@ -4997,13 +5031,34 @@ match /users/{userId}/meta/{docId} {
   allow read: if isAdmin();
 }`;
 
+  // Company tax settings: templates the admin defines, a default for members, and a choice per member.
+  // They only change how this company's income figures are worked out; a member's own account and dashboard are untouched.
+  function coCleanTemplates(list){
+    return (Array.isArray(list) ? list : []).filter(t=> t && typeof t.id === 'string' && t.id).slice(0, 30).map(t=> ({
+      id: t.id, name: String(t.name || 'Tax template').slice(0, 40),
+      taxes: (Array.isArray(t.taxes) ? t.taxes : []).slice(0, 10).map(x=> ({ name: String((x && x.name) || 'Tax').slice(0, 40), pct: Math.max(0, Math.min(100, Number(x && x.pct) || 0)) }))
+    }));
+  }
   function normalizeCompany(id, data){
+    const memberUids = Array.isArray(data && data.memberUids) ? data.memberUids.filter(u=>typeof u==='string') : [];
+    const taxTemplates = coCleanTemplates(data && data.taxTemplates), ok = (v)=> v === '' || v === '__own' || v === '__none' || taxTemplates.some(t=> t.id === v);
+    const byMember = {}; Object.entries((data && data.taxByMember) || {}).forEach(([u, v])=>{ if(memberUids.includes(u) && typeof v === 'string' && v !== '' && ok(v)) byMember[u] = v; });
     return {
       id,
       name: String((data && data.name) || 'Untitled company'),
-      memberUids: Array.isArray(data && data.memberUids) ? data.memberUids.filter(u=>typeof u==='string') : [],
-      createdAt: (data && data.createdAt) || null
+      memberUids,
+      createdAt: (data && data.createdAt) || null,
+      taxTemplates,
+      taxDefault: (data && typeof data.taxDefault === 'string' && ok(data.taxDefault) && data.taxDefault !== '__own') ? data.taxDefault : '',
+      taxByMember: byMember
     };
+  }
+  // how this member's tax is worked out in the company figures: their own templates (the default), no tax, or a company template
+  function coTaxFor(company, uid){
+    const tpls = company.taxTemplates || [], pick = (v)=> v === '__none' ? { kind: 'none', label: 'no tax' } : (tpls.find(x=> x.id === v) ? { kind: 'tpl', tpl: tpls.find(x=> x.id === v), label: tpls.find(x=> x.id === v).name } : null);
+    const own = company.taxByMember && company.taxByMember[uid];
+    if(own === '__own') return { kind: 'own' };
+    return (own && pick(own)) || (company.taxDefault && pick(company.taxDefault)) || { kind: 'own' };
   }
   function sortCompanies(){ adminCompaniesCache.sort((a,b)=>a.name.localeCompare(b.name)); }
 
@@ -5017,7 +5072,9 @@ match /users/{userId}/meta/{docId} {
   function getCompany(id){ return (adminCompaniesCache||[]).find(c=>c.id===id) || null; }
   function companyOfUser(uid){ return (adminCompaniesCache||[]).find(c=>c.memberUids.includes(uid)) || null; }
   async function persistCompany(c){
-    await setDoc(doc(db, 'companies', c.id), { name:c.name, memberUids:c.memberUids, createdAt:c.createdAt });
+    const clean = normalizeCompany(c.id, c);                     // keeps the tax settings, and drops choices for people who are no longer members
+    c.taxTemplates = clean.taxTemplates; c.taxDefault = clean.taxDefault; c.taxByMember = clean.taxByMember;
+    await setDoc(doc(db, 'companies', c.id), { name:c.name, memberUids:c.memberUids, createdAt:c.createdAt, taxTemplates:clean.taxTemplates, taxDefault:clean.taxDefault, taxByMember:clean.taxByMember });
   }
   function userLabel(uid){
     const u = (adminDirectoryCache||{})[uid];
@@ -5138,6 +5195,8 @@ match /users/{userId}/meta/{docId} {
   function applyCompanyTab(){
     $('tt-co-dashboard').hidden = coTab !== 'dashboard';
     $('tt-co-members').hidden = coTab !== 'members';
+    $('tt-co-settings').hidden = coTab !== 'settings';
+    if(coTab === 'settings') renderCompanySettings();
   }
   function renderCompanyScreen(){
     renderCompanyDashboard();
@@ -5235,7 +5294,11 @@ match /users/{userId}/meta/{docId} {
       const user = dir[uid] || { uid, email:'', displayName:'' };
       const all = getEntriesForUid(uid);
       const fin = adminMemberFinance[uid] || { ok:false, presets:[], taxTemplates:[], error:'not loaded' };
-      const src = { entries:all, active:null, presets:fin.presets, taxTemplates:fin.taxTemplates };
+      const tax = coTaxFor(company, uid);
+      let presetsUsed = fin.presets, templatesUsed = fin.taxTemplates;
+      if(tax.kind === 'none') presetsUsed = fin.presets.map(p=> (p && typeof p === 'object') ? { ...p, taxTemplateId: null } : p);
+      if(tax.kind === 'tpl'){ templatesUsed = [tax.tpl]; presetsUsed = fin.presets.map(p=> (p && typeof p === 'object') ? { ...p, taxTemplateId: tax.tpl.id } : p); }
+      const src = { entries:all, active:null, presets:presetsUsed, taxTemplates:templatesUsed };
       const secByDate = {};
       all.forEach(e=>{ secByDate[e.date] = (secByDate[e.date]||0) + (e.durationSec||0); });
       let seconds = 0, workedDays = 0;
@@ -5246,7 +5309,7 @@ match /users/{userId}/meta/{docId} {
       });
       const earn = computeEarningsFor(src, dates);
       const proj = computeMonthProjection(src, d=> secByDate[dateKey(d)] || 0, ref);
-      return { uid, user, fin, seconds, workedDays, earn, proj, hasRates: Object.keys(earn.netByCurrency).length > 0 };
+      return { uid, user, fin, tax, seconds, workedDays, earn, proj, hasRates: Object.keys(earn.netByCurrency).length > 0 };
     });
     const sum = (f)=> members.reduce((t,m)=> t + f(m), 0);
     const excluded = Array.from(new Set(members.flatMap(m=>[...m.earn.excluded, ...m.proj.earn.excluded])));
@@ -5399,6 +5462,71 @@ match /users/{userId}/meta/{docId} {
       : '<option value="">Everyone is already in a company</option>';
     $('tt-co-add-btn').disabled = !available;
   }
+
+  // ---- company settings: tax templates, and which tax each member's income gets ----
+  let coTplEditing = null;
+  const coTplSummary = (t)=> t.taxes.length ? t.taxes.map(x=> `${x.pct}%`).join(' → ') : 'no taxes';
+  function coTplOptions(company, first){ return first.concat((company.taxTemplates || []).map(t=> `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)} (${escapeHtml(coTplSummary(t))})</option>`)).join(''); }
+  function renderCompanySettings(){
+    const company = getCompany(adminSelectedCompanyId); if(!company) return;
+    const dir = adminDirectoryCache || {}, tpls = company.taxTemplates || [];
+    $('tt-co-tpl-list').innerHTML = tpls.length ? tpls.map(t=>{
+      const used = company.memberUids.filter(u=> coTaxFor(company, u).tpl && coTaxFor(company, u).tpl.id === t.id).length;
+      return `<div class="tt-co-tpl" data-tpl="${escapeHtml(t.id)}"><div class="meta"><b>${escapeHtml(t.name)}</b><span>${escapeHtml(coTplSummary(t))} · used by ${used} member${used === 1 ? '' : 's'}</span></div><button type="button" class="tt-btn tt-menu-btn-inline" data-tpl-edit>Edit</button><button type="button" class="tt-btn danger tt-menu-btn-inline" data-tpl-del>Delete</button></div>`;
+    }).join('') : '<div class="tt-preset-empty">No company templates yet. Members’ own templates are used.</div>';
+    const def = $('tt-co-tax-default'); def.innerHTML = coTplOptions(company, ['<option value="">Each member’s own templates</option>', '<option value="__none">No tax (net = gross)</option>']); def.value = company.taxDefault;
+    const defLabel = company.taxDefault === '__none' ? 'No tax' : (tpls.find(t=> t.id === company.taxDefault) || {}).name || 'each member’s own';
+    $('tt-co-tax-members').innerHTML = company.memberUids.map(uid=>{
+      const v = company.taxByMember[uid] === undefined ? '' : company.taxByMember[uid], u = dir[uid] || {};
+      return `<div class="tt-co-taxrow" data-uid="${escapeHtml(uid)}"><span>${escapeHtml(userLabel(uid))}<small>${escapeHtml(u.email || '')}</small></span><select class="tt-menu-input" aria-label="Tax for ${escapeHtml(userLabel(uid))}">${coTplOptions(company, [`<option value="">Company default (${escapeHtml(defLabel)})</option>`, '<option value="__own">Member’s own templates</option>', '<option value="__none">No tax (net = gross)</option>']).replace(`value="${escapeHtml(v)}"`, `value="${escapeHtml(v)}" selected`)}</select></div>`;
+    }).join('');
+  }
+  async function coSaveSettings(mutate, msgId, okText){
+    const company = getCompany(adminSelectedCompanyId), msg = $(msgId); if(!company) return false;
+    const before = JSON.stringify({ t: company.taxTemplates, d: company.taxDefault, m: company.taxByMember });
+    mutate(company); msg.className = 'tt-menu-msg';
+    try{ await persistCompany(company); }
+    catch(err){
+      const b = JSON.parse(before); company.taxTemplates = b.t; company.taxDefault = b.d; company.taxByMember = b.m;
+      console.warn('Company settings not saved', err && err.code); msg.textContent = 'Could not save: ' + ((err && err.code === 'permission-denied') ? 'your Firestore rules do not let admins change company settings.' : 'check your connection and try again.'); msg.className = 'tt-menu-msg err';
+      renderCompanySettings(); return false;
+    }
+    msg.textContent = okText || 'Saved.'; msg.className = 'tt-menu-msg ok';
+    renderCompanySettings(); renderCompanyIfOpen(); return true;
+  }
+  function coTplRowHtml(t){ return `<div class="tt-co-trow"><input class="tt-menu-input" data-tax-name type="text" maxlength="40" placeholder="Tax name, e.g. Income tax" aria-label="Tax name" value="${escapeHtml(t.name)}" /><input class="tt-menu-input" data-tax-pct type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="%" aria-label="Percent" value="${t.pct === '' ? '' : escapeHtml(String(t.pct))}" /><button type="button" class="tt-btn tt-menu-btn-inline" data-tax-del aria-label="Remove this tax">✕</button></div>`; }
+  function coTplOpenEditor(t){
+    coTplEditing = t ? t.id : null; $('tt-co-tpl-editor').hidden = false; $('tt-co-tpl-new').hidden = true; $('tt-co-tpl-msg').textContent = '';
+    $('tt-co-tpl-name').value = t ? t.name : ''; $('tt-co-tpl-rows').innerHTML = (t && t.taxes.length ? t.taxes : [{ name: '', pct: '' }]).map(coTplRowHtml).join(''); $('tt-co-tpl-name').focus();
+  }
+  function coTplCloseEditor(){ coTplEditing = null; $('tt-co-tpl-editor').hidden = true; $('tt-co-tpl-new').hidden = false; }
+  $('tt-co-tpl-new').addEventListener('click', ()=> coTplOpenEditor(null));
+  $('tt-co-tpl-cancel').addEventListener('click', coTplCloseEditor);
+  $('tt-co-tpl-addrow').addEventListener('click', ()=>{ if($('tt-co-tpl-rows').children.length >= 10) return; $('tt-co-tpl-rows').insertAdjacentHTML('beforeend', coTplRowHtml({ name: '', pct: '' })); $('tt-co-tpl-rows').lastElementChild.querySelector('input').focus(); });
+  $('tt-co-tpl-rows').addEventListener('click', (e)=>{ const b = e.target.closest('[data-tax-del]'); if(b) b.closest('.tt-co-trow').remove(); });
+  $('tt-co-tpl-save').addEventListener('click', async ()=>{
+    const msg = $('tt-co-tpl-msg'), name = $('tt-co-tpl-name').value.trim(); msg.className = 'tt-menu-msg err';
+    const taxes = [...$('tt-co-tpl-rows').children].map(r=> ({ name: r.querySelector('[data-tax-name]').value.trim(), pct: r.querySelector('[data-tax-pct]').value.trim() }));
+    if(!name){ msg.textContent = 'Give the template a name.'; return; }
+    if(!taxes.length){ msg.textContent = 'Add at least one tax.'; return; }
+    for(const x of taxes){ if(!x.name){ msg.textContent = 'Every tax needs a name.'; return; } const v = Number(x.pct); if(x.pct === '' || !Number.isFinite(v) || v < 0 || v > 100){ msg.textContent = `“${x.name}”: enter a percent from 0 to 100.`; return; } }
+    const company = getCompany(adminSelectedCompanyId);
+    if((company.taxTemplates || []).some(t=> t.name.toLowerCase() === name.toLowerCase() && t.id !== coTplEditing)){ msg.textContent = 'A template with this name already exists.'; return; }
+    const ok = await coSaveSettings(c=>{ const t = { id: coTplEditing || ('ct-' + Math.random().toString(36).slice(2, 10)), name, taxes: taxes.map(x=> ({ name: x.name, pct: Number(x.pct) })) }; c.taxTemplates = coTplEditing ? c.taxTemplates.map(o=> o.id === coTplEditing ? t : o) : c.taxTemplates.concat([t]); }, 'tt-co-tpl-msg', 'Template saved.');
+    if(ok) coTplCloseEditor();
+  });
+  $('tt-co-tpl-list').addEventListener('click', async (e)=>{
+    const row = e.target.closest('[data-tpl]'); if(!row) return; const company = getCompany(adminSelectedCompanyId), id = row.dataset.tpl;
+    if(e.target.closest('[data-tpl-edit]')){ coTplOpenEditor(company.taxTemplates.find(t=> t.id === id)); return; }
+    const del = e.target.closest('[data-tpl-del]'); if(!del) return;
+    if(!del.dataset.sure){ del.dataset.sure = '1'; del.textContent = 'Confirm delete'; setTimeout(()=>{ if(del.isConnected){ delete del.dataset.sure; del.textContent = 'Delete'; } }, 4000); return; }
+    await coSaveSettings(c=>{ c.taxTemplates = c.taxTemplates.filter(t=> t.id !== id); if(c.taxDefault === id) c.taxDefault = ''; Object.keys(c.taxByMember).forEach(u=>{ if(c.taxByMember[u] === id) delete c.taxByMember[u]; }); }, 'tt-co-tax-msg', 'Template deleted. Anyone who used it is back on the company default.');
+  });
+  $('tt-co-tax-default').addEventListener('change', (e)=> coSaveSettings(c=>{ c.taxDefault = e.target.value; }, 'tt-co-tax-msg', 'Default saved.'));
+  $('tt-co-tax-members').addEventListener('change', (e)=>{
+    const row = e.target.closest('[data-uid]'); if(!row) return; const uid = row.dataset.uid, v = e.target.value;
+    coSaveSettings(c=>{ if(v === '') delete c.taxByMember[uid]; else c.taxByMember[uid] = v; }, 'tt-co-tax-msg', 'Saved.');
+  });
 
   $('tt-co-add-btn').addEventListener('click', async ()=>{
     const uid = $('tt-co-add-select').value;
@@ -7088,6 +7216,7 @@ match /users/{userId}/meta/{docId} {
     root.classList.toggle('tt-uni-pg', !$('tt-menu-overlay').hidden || root.classList.contains('tt-admin-open'));
     root.classList.toggle('tt-uni-co', co);
     root.classList.toggle('tt-uni-codash', co && coTab === 'dashboard');
+    if(!(co && coTab === 'dashboard')) coLiveStop();
     timoSync();
     if(uniOn()){
       setActiveTab('tt-uni-view', co ? 'company' : 'personal');          // locked on Company while you are in it
@@ -7400,9 +7529,25 @@ match /users/{userId}/meta/{docId} {
 
   // ---- the company dashboard in the Unified layout: the same grid and cards as the personal one, with team statistics ----
   const UNI_CO_COLORS = ['var(--amber)', 'var(--paper)', '#9DB8FF', 'var(--enh-ok)', '#E98FA3', '#C9A7FF'];
+  // ---- who is recording right now: each member's running timer, live (company dashboard) ----
+  function coLiveStop(){ Object.keys(coLiveUnsubs).forEach(u=>{ try{ coLiveUnsubs[u](); }catch(e){} delete coLiveUnsubs[u]; delete coLive[u]; }); coLiveDenied = false; }
+  function coLiveTick(){ clearTimeout(coLiveTimer); coLiveTimer = setTimeout(()=> renderCompanyIfOpen(), 60); }
+  function coLiveSync(uids){
+    Object.keys(coLiveUnsubs).filter(u=> !uids.includes(u)).forEach(u=>{ try{ coLiveUnsubs[u](); }catch(e){} delete coLiveUnsubs[u]; delete coLive[u]; });
+    if(coLiveDenied) return;
+    uids.forEach(uid=>{
+      if(coLiveUnsubs[uid]) return;
+      coLiveUnsubs[uid] = onSnapshot(activeDoc(uid), (snap)=>{ coLive[uid] = snap.exists() ? snap.data() : null; coLiveTick(); }, (err)=>{
+        console.warn('Live recording status unavailable', err && err.code);          // the Firestore rules do not let an admin read members' running timers
+        Object.keys(coLiveUnsubs).forEach(u=>{ try{ coLiveUnsubs[u](); }catch(e){} delete coLiveUnsubs[u]; delete coLive[u]; });
+        coLiveDenied = true; coLiveTick();
+      });
+    });
+  }
   function renderUniCompany(stats){
     if(!uniOn() || !$('tt-uni-co')) return;
     const { members, totals, dates } = stats, now = new Date(), todayKey = dateKey(now);
+    coLiveSync(members.map(m=> m.uid).filter(Boolean));
     const nameOf = (m)=> m.user.displayName || m.user.email || 'Unknown user';
     const initials = (m)=> nameOf(m).split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w=> w[0].toUpperCase()).join('');
     const color = (i)=> UNI_CO_COLORS[i % UNI_CO_COLORS.length];
@@ -7421,11 +7566,13 @@ match /users/{userId}/meta/{docId} {
     const todayRows = members.map((m, i)=>{
       const mine = ents[i].filter(e=> e.date === todayKey), secs = mine.reduce((a, e)=> a + (e.durationSec || 0), 0);
       const last = mine.reduce((a, e)=> (e.stopISO && (!a || e.stopISO > a.stopISO)) ? e : a, null);
-      return { m, i, secs, last };
+      const live = coLive[m.uid];
+      return { m, i, secs, last, rec: (live && live.startISO) ? live : null };
     }).sort((a, b)=> b.secs - a.secs);
+    const recNow = todayRows.filter(r=> r.rec).length;
     const workedToday = todayRows.filter(r=> r.secs > 0).length;
-    uniSet('tt-uni-co-today', hd(ENH_ICON.todayline, `Today · ${WD_SHORT[WD(now)]} ${now.getDate()} ${MON_SHORT[now.getMonth()]}`, `<span class="tt-enh-pill plain" style="margin-left:auto"><b>${workedToday} of ${members.length}</b> <span style="color:var(--paper-dim);font-weight:500">worked</span></span>`)
-      + `<div class="tt-uni-corows">${todayRows.map(r=> `<div class="tt-uni-coperson"><span class="tt-uni-coav" style="--c:${color(r.i)}">${escapeHtml(initials(r.m))}</span><span class="tt-uni-coname"><b>${escapeHtml(nameOf(r.m))}</b> <i>${r.last ? 'last entry ended ' + escapeHtml(clockTime(r.last.stopISO, r.last.tz)) : 'nothing logged yet today'}</i></span><span class="tt-uni-corow-end"><b>${r.secs ? '+' + escapeHtml(fmtHM(r.secs)) + ' h' : '—'}</b></span></div>`).join('')}</div>`);
+    uniSet('tt-uni-co-today', hd(ENH_ICON.todayline, `Today · ${WD_SHORT[WD(now)]} ${now.getDate()} ${MON_SHORT[now.getMonth()]}`, `<span class="tt-enh-pill plain" style="margin-left:auto"><b>${workedToday} of ${members.length}</b> <span style="color:var(--paper-dim);font-weight:500">worked</span>${recNow ? `<span class="tt-uni-corec" role="img" aria-label="${recNow} recording now" title="${recNow} recording now"></span><b>${recNow}</b>` : ''}</span>`)
+      + `<div class="tt-uni-corows">${todayRows.map(r=> `<div class="tt-uni-coperson"><span class="tt-uni-coav" style="--c:${color(r.i)}">${escapeHtml(initials(r.m))}</span><span class="tt-uni-coname"><b>${escapeHtml(nameOf(r.m))}${r.rec ? '<span class="tt-uni-corec" role="img" aria-label="Recording now" title="Recording now"></span>' : ''}</b> <i>${r.rec ? 'recording since ' + escapeHtml(clockTime(r.rec.startISO, r.rec.tz)) + (r.rec.note ? ' · ' + escapeHtml(r.rec.note) : '') : r.last ? 'last entry ended ' + escapeHtml(clockTime(r.last.stopISO, r.last.tz)) : 'nothing logged yet today'}</i></span><span class="tt-uni-corow-end"><b>${r.secs ? '+' + escapeHtml(fmtHM(r.secs)) + ' h' : '—'}</b></span></div>`).join('')}</div>${coLiveDenied ? '<div class="tt-uni-corecnote">Live recording status is not available: your Firestore rules do not let admins read members’ running timers.</div>' : ''}`);
 
     // members, ranked by hours
     const maxSec = Math.max(1, ...members.map(m=> m.seconds));
@@ -7439,7 +7586,7 @@ match /users/{userId}/meta/{docId} {
       + `<div class="tt-uni-scrollx"><div class="tt-uni-cotable"><div class="tt-uni-corowh"><span>Member</span><span>Hours · share of team</span><span>Days</span><span>Avg / day</span><span>Income</span><span>Month end</span></div>`
       + order.map(({ m, i })=>{
           const share = totals.seconds ? m.seconds / totals.seconds * 100 : 0, avg = m.workedDays ? Math.round(m.seconds / m.workedDays) : 0;
-          const chip = !m.fin.ok ? '<em class="tt-uni-cochip bad">Rates unreadable</em>' : (m.seconds > 0 && !m.hasRates ? '<em class="tt-uni-cochip">No rate set</em>' : '');
+          const chip = (!m.fin.ok ? '<em class="tt-uni-cochip bad">Rates unreadable</em>' : (m.seconds > 0 && !m.hasRates ? '<em class="tt-uni-cochip">No rate set</em>' : '')) + (m.tax && m.tax.kind !== 'own' ? `<em class="tt-uni-cochip" title="Tax set by the company">Tax: ${escapeHtml(m.tax.label)}</em>` : '');
           return `<div class="tt-uni-corowb"><span class="tt-uni-coperson"><span class="tt-uni-coav" style="--c:${color(i)}">${escapeHtml(initials(m))}</span><span class="tt-uni-coname"><b>${escapeHtml(nameOf(m))}</b> <i>${escapeHtml(m.user.email || '')}</i>${chip}</span></span>`
             + `<span><span class="tt-uni-cohours"><b>${escapeHtml(fmtHM(m.seconds))} h</b> <i>${share.toFixed(0)}%</i></span><span class="tt-uni-cobar"><i style="width:${(m.seconds / maxSec * 100).toFixed(1)}%;background:${color(i)}"></i></span></span>`
             + `<span class="mono">${m.workedDays}</span><span class="mono">${m.workedDays ? escapeHtml(fmtHM(avg)) + ' h' : '—'}</span><span class="mono">${escapeHtml(money(m, 'earn'))}</span><span class="mono tt-uni-approx">${escapeHtml(money(m, 'proj'))}</span></div>`;
@@ -8307,7 +8454,7 @@ match /users/{userId}/meta/{docId} {
     if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
     entries = [];
     active = null;
-    renderRec(); timoReset();
+    renderRec(); timoReset(); coLiveStop();
     presets = [];
     taxTemplates = [];
     editingTaxTemplateId = null;
