@@ -1183,6 +1183,52 @@
   @keyframes tt-timo-rise{from{opacity:0; transform:translateY(10px);}to{opacity:1; transform:none;}}
   @keyframes tt-timo-bounce{0%,60%,100%{transform:translateY(0); opacity:.5;}30%{transform:translateY(-5px); opacity:1;}}
   .tt-timo-panel{position:fixed; right:24px; bottom:24px; z-index:3095; width:420px; height:min(660px, calc(100vh - 48px)); display:flex; flex-direction:column; overflow:hidden; border-radius:26px; background:var(--panel); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); border:1px solid var(--line); box-shadow:0 30px 80px rgba(var(--shadow-rgb),.55); color:var(--paper); transform-origin:100% 100%; animation:tt-timo-pop .35s cubic-bezier(.2,.9,.3,1.15) both;}
+  .tt-cl-line{display:block; width:calc(100% - 52px); margin:-4px 0 6px 52px; padding:0; border:0; background:transparent; color:var(--paper-dim); font:inherit; font-size:12px; text-align:left; cursor:pointer; overflow-wrap:anywhere;} .tt-cl-line:hover{color:var(--amber);}
+  .tt-cl-addchip{display:inline-flex; align-items:center; margin:-2px 0 8px 52px; min-height:30px; padding:0 12px; border-radius:999px; border:1px solid var(--amber-dim); background:var(--amber-soft); color:var(--amber); font:inherit; font-size:12px; font-weight:600; cursor:pointer;}
+  .tt-cl-scrim{position:fixed; inset:0; z-index:3096; background:rgba(var(--shadow-rgb),.5);} .tt-cl-scrim[hidden]{display:none;}
+  .tt-cl-drawer{position:fixed; top:0; right:0; bottom:0; z-index:3097; width:min(470px, 100vw); padding:22px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; background:var(--panel); border-left:1px solid var(--line); box-shadow:-30px 0 80px rgba(var(--shadow-rgb),.5); color:var(--paper);} .tt-cl-drawer[hidden]{display:none;}
+  .tt-cl-dhead{display:flex; align-items:center; gap:10px;} .tt-cl-dhead b{flex:1; font-size:18px;}
+  .tt-cl-batch{display:flex; flex-direction:column; gap:8px; margin-top:10px; padding:12px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line);} .tt-cl-batch input[hidden]{display:none;}
+  .tt-cl-miss{align-items:center; justify-content:space-between;}
+  .tt-cl-adminproj{display:flex; flex-direction:column; gap:10px; padding:12px 0; border-top:1px solid var(--line);} .tt-cl-adminproj:first-child{border-top:0;}
+  /* ---- Client & reason: clients per project, chosen from the company's list ---- */
+  .tt-clients{display:none;}
+  .tt-clients[hidden]{display:none !important;}
+  html.tt-uni #tt-clients:not([hidden]){display:flex; flex-direction:column; gap:12px;}
+  html:not(.tt-uni) #tt-clients.tt-cl-pop:not([hidden]){display:flex; flex-direction:column; gap:12px; position:fixed; z-index:3080; width:min(400px, calc(100vw - 24px)); max-height:min(560px, calc(100vh - 32px)); overflow-y:auto; padding:16px; border-radius:20px; background:var(--panel); border:1px solid var(--line); box-shadow:0 24px 60px rgba(var(--shadow-rgb),.5);}
+  .tt-cl-trigger{display:none;}
+  html:not(.tt-uni) .tt-cl-trigger:not([hidden]){display:block; width:100%; margin-top:10px;}
+  .tt-cl-sub{font-size:12.5px; color:var(--paper-dim); margin-top:-4px;}
+  .tt-cl-pill{margin-left:auto; display:inline-flex; align-items:center; border-radius:999px; padding:3px 11px; font-size:11.5px; font-weight:600; border:1px solid var(--line); color:var(--paper-dim);}
+  .tt-cl-pill.req{background:var(--amber-soft); color:var(--amber); border-color:var(--amber-dim);}
+  .tt-cl-pill.ok{background:rgba(143,217,182,.14); color:var(--enh-ok); border-color:rgba(143,217,182,.45);}
+  .tt-cl-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .tt-cl-chip{min-height:38px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--paper); font:inherit; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:7px; cursor:pointer; transition:background .2s, border-color .2s;}
+  .tt-cl-chip:hover{border-color:var(--amber-dim);} .tt-cl-chip.on{background:var(--amber-soft); border-color:var(--amber);}
+  .tt-cl-rows{display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px;}
+  .tt-cl-row{display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line);}
+  .tt-cl-rowhd{display:flex; align-items:center; gap:8px;} .tt-cl-rowhd b{flex:1; font-size:14px; overflow-wrap:anywhere;}
+  .tt-cl-x{width:30px; height:30px; border-radius:50%; border:0; background:transparent; color:var(--paper-dim); display:grid; place-items:center; padding:0; cursor:pointer;} .tt-cl-x:hover{background:rgba(240,138,130,.14); color:var(--stop-text, #F08A82);}
+  .tt-cl-row select, .tt-cl-row input{width:100%; min-height:44px;} .tt-cl-row input[hidden]{display:none;}
+  .tt-cl-warn{font-size:12px; color:var(--amber);}
+  .tt-cl-hint{display:flex; gap:10px; padding:10px 12px; border-radius:12px; background:var(--amber-soft); border:1px solid var(--amber-dim); font-size:12.5px; color:var(--amber); line-height:1.45;}
+  .tt-cl-actions{display:flex; gap:8px; flex-wrap:wrap;} .tt-cl-actions .tt-btn{min-height:38px; width:auto; padding:0 16px;}
+  .tt-cl-none{font-size:13px; color:var(--paper-dim); line-height:1.5;}
+  @media (min-width:901px){
+    /* with the widget shown it becomes the first row beside the timer, and the other cards move down one row */
+    html.tt-uni.tt-has-clients #tt-clients{grid-column:1 / 9; grid-row:1;}
+    html.tt-uni.tt-has-clients #tt-uni-stats{grid-row:2;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="todayline"]{grid-row:3;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="pace"]{grid-row:4;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="pocket"]{grid-row:5;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="curve"]{grid-row:4 / 6;}
+    html.tt-uni.tt-has-clients #tt-uni-entries{grid-row:4 / 8;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="rhythm"]{grid-row:6;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="heat"]{grid-row:6;}
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="earnings"]{grid-row:7;}
+  }
+  @media (max-width:900px){ html.tt-uni #tt-panels-container > #tt-clients{order:1;} }
+  html.tt-uni[data-uni-page="calendar"] #tt-clients{display:none !important;}
   .tt-timo-panel[hidden]{display:none;}
   .tt-segment.tt-solo button[data-val="company"]{display:none;}
   .tt-segment.tt-solo button{pointer-events:none; cursor:default;}
@@ -1890,6 +1936,8 @@
     <button type="button" class="tt-uni-settings" data-uni="settings" data-l="Settings" aria-label="Settings and account"><svg class="tt-uni-ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
   </aside>
   <div class="tt-rec tt-rec-float" id="tt-rec-float" role="img" aria-label="Recording: a timer is running" title="Recording an entry" hidden><i class="tt-rec-dot" aria-hidden="true"></i></div>
+  <div class="tt-cl-scrim" id="tt-cl-scrim" hidden></div>
+  <aside class="tt-cl-drawer" id="tt-cl-drawer" role="dialog" aria-label="Client and reason for this entry" hidden></aside>
   <div class="tt-timo" id="tt-timo" hidden>
     <button type="button" class="tt-timo-launch" id="tt-timo-launch" aria-label="Open TiMo, your time and money assistant" aria-haspopup="dialog" aria-expanded="false" title="TiMo"><i class="tt-timo-ready" id="tt-timo-ready" hidden></i></button>
     <section class="tt-timo-panel" id="tt-timo-panel" role="dialog" aria-label="TiMo" hidden>
@@ -2433,6 +2481,24 @@
 
           <div id="tt-co-settings" hidden>
             <div class="tt-menu-section">
+              <div class="tt-menu-label">Projects &amp; clients</div>
+              <div class="tt-menu-desc">Members choose from these on each recording. A project asks for a client only if it is listed here with at least one client.</div>
+              <div id="tt-cl-admin-projects"></div>
+              <div class="tt-menu-row"><input class="tt-menu-input" id="tt-cl-newproject" list="tt-cl-projects-list" type="text" maxlength="60" placeholder="Add a project, e.g. FINRELAY" aria-label="New project name" autocomplete="off" /><datalist id="tt-cl-projects-list"></datalist><button class="tt-btn tt-menu-btn-inline" id="tt-cl-addproject" type="button">Add project</button></div>
+              <div class="tt-menu-msg" id="tt-cl-admin-msg" role="status"></div>
+            </div>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Reasons</div>
+              <div class="tt-menu-desc">One list for the whole company. “Something else…” is always offered and asks for a short description.</div>
+              <div id="tt-cl-admin-reasons" class="tt-cl-chips"></div>
+              <div class="tt-menu-row" style="margin-top:12px;"><input class="tt-menu-input" id="tt-cl-newreason" type="text" maxlength="60" placeholder="Add a reason" aria-label="New reason" autocomplete="off" /><button class="tt-btn tt-menu-btn-inline" id="tt-cl-addreason" type="button">Add</button></div>
+            </div>
+            <div class="tt-menu-section">
+              <div class="tt-menu-label">Applies from</div>
+              <div class="tt-menu-row"><input class="tt-menu-input" id="tt-cl-from" type="date" aria-label="Client and reason apply from this date" /></div>
+              <div class="tt-menu-desc">Entries before this date are never flagged, and their Client and Reason columns stay empty in exports.</div>
+            </div>
+            <div class="tt-menu-section">
               <div class="tt-menu-label">Company tax templates</div>
               <div class="tt-menu-desc">Taxes apply in order, each on what is left after the previous one.</div>
               <div id="tt-co-tpl-list"></div>
@@ -2563,8 +2629,15 @@
           <option value="">No project</option>
         </select>
       </div>
+      <button type="button" class="tt-btn tt-cl-trigger" id="tt-cl-open" hidden aria-haspopup="dialog" aria-expanded="false">Client &amp; reason</button>
     </div>
     </div>
+
+    <section class="tt-earnings tt-uni-card tt-clients" id="tt-clients" aria-label="Client and reason" hidden>
+      <div class="tt-uni-hd"><span class="tt-enh-disc"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span><span class="tt-enh-title">Client &amp; reason</span><span class="tt-cl-pill" id="tt-cl-pill"></span></div>
+      <div class="tt-cl-sub" id="tt-cl-sub"></div>
+      <div id="tt-cl-body"></div>
+    </section>
 
     <div class="tt-panel" data-panel="today">
       <div class="tt-panel-handle" title="Drag to move">
@@ -2846,7 +2919,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.102</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.103</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -2891,6 +2964,8 @@
   let active = null; // { startISO, note, tz }
   let assignNote = null, assignTimer = 0;
   let usualExplainOpen = false;
+  let clientCatalog = null, unsubCatalog = null, clPending = [], clPopOpen = false, clDrawer = null, clBatch = { open:false, client:'', reason:'', other:'' };   // clients: the company's catalog, the choice for the next recording, the edit drawer
+  const clTyping = {};
   const coLive = {}, coLiveUnsubs = {}; let coLiveDenied = false, coLiveTimer = 0;   // who is recording right now (company dashboard)
   let timoAskId = 0, timoLast = null, timoOpen = false, timoReady = false, timoLap = false, timoTyping = false, timoSeq = 0, timoTimer = 0, timoLapTimer = 0;   // TiMo, the assistant in the corner
   const timoMsgs = [];            // the 'how is your usual day worked out' text under the Today card   // the little confirmation after assigning entries to a project
@@ -4597,6 +4672,7 @@
       const row = [e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec||0), e.note||''];
       if(hasOwners) row.push(e.ownerName || '');
       row.push(e.tz || ''); // timezone last, so existing columns keep their positions
+      clCells(e).forEach(c=> row.push(c));
       return row;
     });
   }
@@ -4843,6 +4919,7 @@
   function editedEntryFields(entry, stopISO, durationSec, note){
     const updated = { date: entry.date, startISO: entry.startISO, stopISO, durationSec, note: note || '', uid: entry.uid };
     if(entry.tz) updated.tz = entry.tz;
+    if(Array.isArray(entry.clients) && entry.clients.length) updated.clients = entry.clients;
     return updated;
   }
 
@@ -4850,7 +4927,7 @@
     const wb = XLSX.utils.book_new();
     const hasOwners = entriesArr.some(e=>e.ownerName);
     const headers = adminExportType==='detailed'
-      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User','Timezone'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'])
+      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User','Timezone'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone']).concat(clHeads())
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const totalSec = dates.reduce((s,d)=>s+adminSecondsForDate(entriesArr,d), 0);
@@ -4861,7 +4938,7 @@
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = adminExportType==='detailed'
-      ? (hasOwners ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20},{wch:20}] : [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}])
+      ? (hasOwners ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20},{wch:20}] : [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}]).concat(clWidths())
       : [{wch:14},{wch:10},{wch:12}];
     XLSX.utils.book_append_sheet(wb, ws, 'Entries');
     XLSX.writeFile(wb, `Double_T_admin_${adminExportSafeName()}_${adminExportPeriod}.xlsx`);
@@ -4870,7 +4947,7 @@
   function adminDoExportCsv(entriesArr, dates, label){
     const hasOwners = entriesArr.some(e=>e.ownerName);
     const headers = adminExportType==='detailed'
-      ? (hasOwners ? ['date','start','stop','duration_h','duration_hms','notes','user','timezone'] : ['date','start','stop','duration_h','duration_hms','notes','timezone'])
+      ? (hasOwners ? ['date','start','stop','duration_h','duration_hms','notes','user','timezone'] : ['date','start','stop','duration_h','duration_hms','notes','timezone']).concat(clHeads(true))
       : (adminExportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const csvLines = [headers.join(',')];
@@ -4982,7 +5059,7 @@
     }
 
     const headers = adminExportType==='detailed'
-      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User','Timezone'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'])
+      ? (hasOwners ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','User','Timezone'] : ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone']).concat(clHeads())
       : (adminExportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = adminExportType==='detailed' ? adminBuildDetailedRows(entriesArr, dates) : adminBuildSummaryRows(entriesArr, dates, adminExportPeriod, adminExportAnchorDate);
     const columnStyles = adminExportType==='detailed'
@@ -5075,6 +5152,7 @@ match /users/{userId}/meta/{docId} {
     const clean = normalizeCompany(c.id, c);                     // keeps the tax settings, and drops choices for people who are no longer members
     c.taxTemplates = clean.taxTemplates; c.taxDefault = clean.taxDefault; c.taxByMember = clean.taxByMember;
     await setDoc(doc(db, 'companies', c.id), { name:c.name, memberUids:c.memberUids, createdAt:c.createdAt, taxTemplates:clean.taxTemplates, taxDefault:clean.taxDefault, taxByMember:clean.taxByMember });
+    clSyncMembers(c);
   }
   function userLabel(uid){
     const u = (adminDirectoryCache||{})[uid];
@@ -5463,12 +5541,63 @@ match /users/{userId}/meta/{docId} {
     $('tt-co-add-btn').disabled = !available;
   }
 
+  // ---- company settings: clients and reasons (the catalog every member picks from) ----
+  const adminCatalogs = {};          // company id → its catalog, or null when none exists yet
+  const CL_DEFAULT_REASONS = ['Integration support', 'Incident / troubleshooting', 'Onboarding', 'Configuration change', 'Meeting'];
+  async function clLoadCatalog(company){
+    if(company.id in adminCatalogs) return adminCatalogs[company.id];
+    try{ const snap = await getDoc(doc(db, 'clientCatalogs', company.id)); adminCatalogs[company.id] = snap.exists() ? clNormalizeCatalog(company.id, snap.data()) : null; }
+    catch(err){ console.warn('Could not load the client catalog', err && err.code); return undefined; }
+    return adminCatalogs[company.id];
+  }
+  const clCatalogOf = (company)=> adminCatalogs[company.id] || { companyId: company.id, projects: {}, reasons: CL_DEFAULT_REASONS.slice(), from: dateKey(new Date()) };
+  async function renderClientSettings(){
+    const company = getCompany(adminSelectedCompanyId); if(!company || !$('tt-cl-admin-projects')) return;
+    const loaded = await clLoadCatalog(company), msg = $('tt-cl-admin-msg');
+    if(loaded === undefined){ msg.textContent = 'Could not load the clients list: your Firestore rules do not let admins read it.'; msg.className = 'tt-menu-msg err'; return; }
+    const cat = clCatalogOf(company), names = Object.keys(cat.projects);
+    $('tt-cl-admin-projects').innerHTML = names.length ? names.map(n=> `<div class="tt-cl-adminproj" data-proj="${escapeHtml(n)}"><div class="tt-cl-rowhd"><b>${escapeHtml(n)}</b><button type="button" class="tt-btn danger tt-menu-btn-inline" data-cl-delproject style="width:auto">Delete</button></div><div class="tt-cl-chips">${cat.projects[n].map(c=> `<span class="tt-cl-chip on" style="padding-right:6px">${escapeHtml(c)}<button type="button" class="tt-cl-x" style="width:24px;height:24px" data-cl-delclient="${escapeHtml(c)}" aria-label="Remove ${escapeHtml(c)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>`).join('') || '<span class="tt-cl-sub">No clients yet. Entries on this project do not ask for one.</span>'}</div><div class="tt-menu-row"><input class="tt-menu-input" data-cl-newclient type="text" maxlength="60" placeholder="Add a client" aria-label="New client for ${escapeHtml(n)}" autocomplete="off" /><button type="button" class="tt-btn tt-menu-btn-inline" data-cl-addclient>Add</button></div></div>`).join('') : '<div class="tt-preset-empty">No projects yet. Members are not asked for a client until you add one.</div>';
+    $('tt-cl-admin-reasons').innerHTML = cat.reasons.map(r=> `<span class="tt-cl-chip on" style="padding-right:6px">${escapeHtml(r)}<button type="button" class="tt-cl-x" style="width:24px;height:24px" data-cl-delreason="${escapeHtml(r)}" aria-label="Remove ${escapeHtml(r)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>`).join('') + '<span class="tt-cl-sub" style="align-self:center">+ “Something else…” (always)</span>';
+    $('tt-cl-from').value = cat.from === '9999-12-31' ? '' : cat.from;
+    // suggestions: the project names the members already use
+    const known = new Set(); company.memberUids.forEach(u=> ((adminMemberFinance[u] && adminMemberFinance[u].presets) || []).forEach(p=>{ const n = presetName(p); if(n) known.add(n); }));
+    $('tt-cl-projects-list').innerHTML = [...known].filter(n=> !(n in cat.projects)).map(n=> `<option value="${escapeHtml(n)}"></option>`).join('');
+  }
+  async function clCatSave(mutate, okText){
+    const company = getCompany(adminSelectedCompanyId), msg = $('tt-cl-admin-msg'); if(!company) return false;
+    const next = JSON.parse(JSON.stringify(clCatalogOf(company))); msg.className = 'tt-menu-msg';
+    const problem = mutate(next); if(problem){ msg.textContent = problem; msg.className = 'tt-menu-msg err'; return false; }
+    try{ await setDoc(doc(db, 'clientCatalogs', company.id), { companyId: company.id, memberUids: company.memberUids, projects: next.projects, reasons: next.reasons, from: next.from, updatedAt: new Date().toISOString() }); }
+    catch(err){ console.warn('Client catalog not saved', err && err.code); msg.textContent = 'Could not save: ' + ((err && err.code === 'permission-denied') ? 'your Firestore rules do not let admins change the clients list.' : 'check your connection and try again.'); msg.className = 'tt-menu-msg err'; renderClientSettings(); return false; }
+    adminCatalogs[company.id] = clNormalizeCatalog(company.id, next); msg.textContent = okText || 'Saved.'; msg.className = 'tt-menu-msg ok'; renderClientSettings(); return true;
+  }
+  const clDup = (list, v)=> list.some(x=> x.toLowerCase() === v.toLowerCase());
+  $('tt-cl-addproject').addEventListener('click', async ()=>{ const el = $('tt-cl-newproject'), v = el.value.trim(); if(!v) return; if(await clCatSave(c=>{ if(Object.keys(c.projects).some(k=> k.toLowerCase() === v.toLowerCase())) return 'That project is already in the list.'; if(Object.keys(c.projects).length >= 30) return 'At most 30 projects.'; c.projects[v] = []; }, `${v} added. Now add its clients.`)) el.value = ''; });
+  $('tt-cl-newproject').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); $('tt-cl-addproject').click(); } });
+  $('tt-cl-admin-projects').addEventListener('click', async (e)=>{
+    const box = e.target.closest('[data-proj]'); if(!box) return; const proj = box.dataset.proj;
+    if(e.target.closest('[data-cl-addclient]')){ const el = box.querySelector('[data-cl-newclient]'), v = el.value.trim(); if(!v) return; await clCatSave(c=>{ if(clDup(c.projects[proj], v)) return 'That client is already on ' + proj + '.'; if(c.projects[proj].length >= 40) return 'At most 40 clients per project.'; c.projects[proj].push(v); }, `${v} added to ${proj}.`); return; }
+    const dc = e.target.closest('[data-cl-delclient]'); if(dc){ await clCatSave(c=>{ c.projects[proj] = c.projects[proj].filter(x=> x !== dc.dataset.clDelclient); }, 'Client removed. Entries that already have it keep it.'); return; }
+    const dp = e.target.closest('[data-cl-delproject]'); if(dp){ if(!dp.dataset.sure){ dp.dataset.sure = '1'; dp.textContent = 'Confirm delete'; setTimeout(()=>{ if(dp.isConnected){ delete dp.dataset.sure; dp.textContent = 'Delete'; } }, 4000); return; } await clCatSave(c=>{ delete c.projects[proj]; }, `${proj} removed. Its entries keep their clients.`); }
+  });
+  $('tt-cl-admin-projects').addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && e.target.matches('[data-cl-newclient]')){ e.preventDefault(); e.target.closest('[data-proj]').querySelector('[data-cl-addclient]').click(); } });
+  $('tt-cl-addreason').addEventListener('click', async ()=>{ const el = $('tt-cl-newreason'), v = el.value.trim(); if(!v) return; if(await clCatSave(c=>{ if(v.toLowerCase() === CL_SE.toLowerCase()) return '“Something else…” is always offered, no need to add it.'; if(clDup(c.reasons, v)) return 'That reason is already in the list.'; if(c.reasons.length >= 12) return 'At most 12 reasons.'; c.reasons.push(v); }, 'Reason added.')) el.value = ''; });
+  $('tt-cl-newreason').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); $('tt-cl-addreason').click(); } });
+  $('tt-cl-admin-reasons').addEventListener('click', (e)=>{ const d = e.target.closest('[data-cl-delreason]'); if(d) clCatSave(c=>{ c.reasons = c.reasons.filter(x=> x !== d.dataset.clDelreason); }, 'Reason removed. Entries that already have it keep it.'); });
+  $('tt-cl-from').addEventListener('change', (e)=>{ const v = e.target.value; if(/^\d{4}-\d\d-\d\d$/.test(v)) clCatSave(c=>{ c.from = v; }, 'Saved. It applies to entries from ' + v + '.'); });
+  // when a company's members change, its catalog's member list follows (that is what lets members read it)
+  async function clSyncMembers(company){
+    try{ const snap = await getDoc(doc(db, 'clientCatalogs', company.id)); if(snap.exists()) await setDoc(doc(db, 'clientCatalogs', company.id), { memberUids: company.memberUids }, { merge: true }); }
+    catch(err){ console.warn('Could not update the clients list for the new members', err && err.code); }
+  }
+
   // ---- company settings: tax templates, and which tax each member's income gets ----
   let coTplEditing = null;
   const coTplSummary = (t)=> t.taxes.length ? t.taxes.map(x=> `${x.pct}%`).join(' → ') : 'no taxes';
   function coTplOptions(company, first){ return first.concat((company.taxTemplates || []).map(t=> `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)} (${escapeHtml(coTplSummary(t))})</option>`)).join(''); }
   function renderCompanySettings(){
     const company = getCompany(adminSelectedCompanyId); if(!company) return;
+    renderClientSettings();
     const dir = adminDirectoryCache || {}, tpls = company.taxTemplates || [];
     $('tt-co-tpl-list').innerHTML = tpls.length ? tpls.map(t=>{
       const used = company.memberUids.filter(u=> coTaxFor(company, u).tpl && coTaxFor(company, u).tpl.id === t.id).length;
@@ -5604,7 +5733,7 @@ match /users/{userId}/meta/{docId} {
       desc: `${company.name} will be removed. ${company.memberUids.length ? `${company.memberUids.length} member${company.memberUids.length===1?'':'s'} will simply no longer be grouped. ` : ''}Nobody's account or entries are deleted.`,
       confirmLabel: 'Delete company',
       onConfirm: async ()=>{
-        try{ await deleteDoc(doc(db, 'companies', company.id)); }
+        try{ await deleteDoc(doc(db, 'companies', company.id)); deleteDoc(doc(db, 'clientCatalogs', company.id)).catch(()=>{}); delete adminCatalogs[company.id]; }
         catch(err){
           console.error('Could not delete company', err);
           $('tt-co-members-msg').textContent = `Could not delete it (${(err && err.code) || 'error'}).`;
@@ -6069,8 +6198,8 @@ match /users/{userId}/meta/{docId} {
     { id:'waves',         label:'Waves',         preview:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 46' preserveAspectRatio='none'%3E%3Cpath d='M0 30 Q 20 20 40 30 T 80 28 V46 H0Z' fill='%233cbac4' fill-opacity='.45'/%3E%3Cpath d='M0 36 Q 20 28 40 36 T 80 34 V46 H0Z' fill='%23e8a33d' fill-opacity='.45'/%3E%3C/svg%3E\") center/100% 100% no-repeat, #16202b" },
     { id:'chronograph',   label:'Chronograph',   preview:'repeating-radial-gradient(circle at 82% 50%, transparent 0 9px, rgba(237,231,221,.28) 9px 10px), #16202b' }
   ];
-  const ALERT_KEYS = ['forecast', 'timer', 'norate', 'noproject', 'notarget', 'best'];
-  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas', alerts:{ forecast:true, timer:true, norate:true, noproject:true, notarget:true, best:true }, holidays:{ on:true, country:'' } };
+  const ALERT_KEYS = ['forecast', 'timer', 'norate', 'noproject', 'notarget', 'best', 'clients'];
+  const BG_DEFAULT = { kind:'none', id:'', dim:40, stamp:'', style:'glass', panels:'classic', target:null, layout:'canvas', alerts:{ forecast:true, timer:true, norate:true, noproject:true, notarget:true, best:true, clients:true }, holidays:{ on:true, country:'' } };
   const bgReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let bgPref = { ...BG_DEFAULT };
   let bgImage = '';          // data URL of the custom image (this user's)
@@ -6883,6 +7012,8 @@ match /users/{userId}/meta/{docId} {
     const noProject = monthEntries.filter(e=> !e.note).length;
     if(noProject) items.push({ kind:'info', rule:'noproject', month:monthPrefix, count:noProject, key:`noproject:${monthPrefix}`, title:`${plural(noProject, 'entry')} without a project this month`, body:'They are counted as hours but earn nothing. Assign a project to include them in income.' });
     if(H.best >= 0 && H.weeks >= 4) items.push({ kind:'info', rule:'best', key:`best:${H.best}`, title:`${WD_LONG[H.best]} is your strongest day`, body:`${H.avg[H.best].toFixed(1)} h on average over the last 16 weeks.` });
+    const needCl = clNeeding();
+    if(needCl.length) items.push({ kind:'warn', rule:'clients', key:`clients:${needCl.length}:${needCl[needCl.length - 1].id}`, count:needCl.length, title:`${needCl.length} ${needCl.length === 1 ? 'entry needs' : 'entries need'} a client and a reason`, body:'They count in your hours, but exports leave Client and Reason empty until you add them.' });
     for(let i = items.length - 1; i >= 0; i--) if(items[i].rule && bgPref.alerts && bgPref.alerts[items[i].rule] === false) items.splice(i, 1);
     if(!items.some(i=> i.kind === 'warn')) items.push({ kind:'ok', key:'ok', title:'Nothing needs your attention', body:'Rates are set, no timer is left running and the pace is fine.' });
     return items;
@@ -7366,9 +7497,194 @@ match /users/{userId}/meta/{docId} {
     const again = document.querySelector('[data-usual-info]'); if(again) again.focus();
   });
 
+  // ---------------- clients and reasons on entries ----------------
+  // The company's admin lists the clients of each project (and the reasons) in a catalog that every member can read.
+  // Each entry then carries { name, reason, other } for one or more clients. It applies only from the catalog's start date.
+  const CL_SE = 'Something else';
+  function clNormalizeCatalog(id, data){
+    const clean = (a, n)=> Array.from(new Set((Array.isArray(a) ? a : []).filter(x=> typeof x === 'string').map(x=> x.trim().slice(0, 60)).filter(Boolean))).slice(0, n);
+    const projects = {}; Object.entries((data && data.projects) || {}).slice(0, 30).forEach(([k, v])=>{ const c = clean(v, 40); if(k && typeof k === 'string') projects[k.slice(0, 60)] = c; });
+    return { companyId: (data && data.companyId) || id, projects, reasons: clean(data && data.reasons, 12).filter(r=> r !== CL_SE), from: (data && /^\d{4}-\d\d-\d\d$/.test(data.from || '')) ? data.from : '9999-12-31' };
+  }
+  const clUsed = ()=> !!(clientCatalog && Object.values(clientCatalog.projects).some(a=> a.length));
+  const clientsFor = (project)=> (clientCatalog && clientCatalog.projects[project]) || [];
+  const clRequired = (project, date)=> clUsed() && clientsFor(project || '').length > 0 && (date || '') >= clientCatalog.from;
+  // Client and Reason columns in the detailed exports: only when the company uses clients, and always at the END,
+  // so every existing column keeps its position.
+  const clHeads = (lower)=> clUsed() ? (lower ? ['client', 'reason'] : ['Client', 'Reason']) : [];
+  const clWidths = ()=> clUsed() ? [{wch:28},{wch:34}] : [];
+  function clCells(e){
+    if(!clUsed() || !clRequired(e.note || '', e.date) || !Array.isArray(e.clients) || !e.clients.length) return clUsed() ? ['', ''] : [];
+    return [e.clients.map(x=> x.name).join('; '), e.clients.map(clText).join('; ')];
+  }
+  const clValidName = (x)=> !!(x && typeof x.name === 'string' && x.name);
+  const clValid = (x)=> !!(x && x.name && x.reason && (x.reason !== CL_SE || String(x.other || '').trim()));
+  const clOk = (e)=> !clRequired(e.note || '', e.date) || (Array.isArray(e.clients) && e.clients.length >= 1 && e.clients.every(clValid));
+  const clText = (x)=> x.reason === CL_SE ? `${CL_SE}: ${x.other}` : x.reason;
+  const clNeeding = ()=> entries.filter(e=> e.date && !clOk(e));
+  const clProject = ()=> active ? (active.note || '') : ($('tt-note') ? $('tt-note').value : '');
+  const clSelection = ()=> active ? (Array.isArray(active.clients) ? active.clients : []) : clPending;
+  function clRefresh(){ renderClientsWidget(); if(uniOn()){ renderUniEntries(); renderUnified(); } renderEnhancedPanels(true); }
+  function clSetSelection(arr){
+    arr = arr.slice(0, 10).map(x=> ({ name: x.name, reason: x.reason || '', other: x.other || '' }));
+    if(active){ active = { ...active, clients: arr }; renderClientsWidget(); setDoc(activeDoc(currentUid), { clients: arr }, { merge: true }).catch(err=> console.warn('Could not save the clients on the running entry', err && err.code)); }
+    else { clPending = arr; try{ localStorage.setItem('tt-cl-pending:' + currentUid, JSON.stringify(arr)); }catch(e){} renderClientsWidget(); }
+  }
+  const clReasonOptions = (sel)=> `<option value="">Choose a reason…</option>${((clientCatalog && clientCatalog.reasons) || []).map(r=> `<option value="${escapeHtml(r)}"${sel === r ? ' selected' : ''}>${escapeHtml(r)}</option>`).join('')}<option value="${CL_SE}"${sel === CL_SE ? ' selected' : ''}>Something else…</option>`;
+  // the rows for a list of chosen clients (used by the widget and by the edit drawer)
+  function clRowsHtml(sel, typing){
+    return sel.map((x, i)=> { const other = typing && typing[i] !== undefined ? typing[i] : (x.other || ''); return `<div class="tt-cl-row" data-i="${i}"><div class="tt-cl-rowhd"><b>${escapeHtml(x.name)}</b><button type="button" class="tt-cl-x" data-cl-remove aria-label="Remove ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><select class="tt-menu-input" data-cl-reason aria-label="Reason for ${escapeHtml(x.name)}">${clReasonOptions(x.reason)}</select><input class="tt-menu-input" data-cl-other type="text" maxlength="120" placeholder="Describe the reason" aria-label="Other reason for ${escapeHtml(x.name)}" value="${escapeHtml(other)}"${x.reason === CL_SE ? '' : ' hidden'}>${clValid({ ...x, other }) ? '' : `<div class="tt-cl-warn">${x.reason ? 'Describe the reason' : 'Choose a reason'}</div>`}</div>`; }).join('');
+  }
+  const clChipsHtml = (project, sel)=> clientsFor(project).map(n=> { const on = sel.some(x=> x.name === n); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-toggle="${escapeHtml(n)}" aria-pressed="${on}">${on ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ''}${escapeHtml(n)}</button>`; }).join('');
+  const clToggle = (sel, name)=> sel.some(x=> x.name === name) ? sel.filter(x=> x.name !== name) : sel.concat([{ name, reason: '', other: '' }]);
+  function clLastComplete(project){ for(let i = entries.length - 1; i >= 0; i--){ const e = entries[i]; if((e.note || '') === project && Array.isArray(e.clients) && e.clients.length && e.clients.every(clValid) && clientsFor(project).length) return e; } return null; }
+  function renderClientsWidget(){
+    const box = $('tt-clients'); if(!box) return;
+    const on = !!currentUid && clUsed();
+    document.documentElement.classList.toggle('tt-has-clients', on);
+    const trig = $('tt-cl-open'); trig.hidden = !on;
+    box.classList.toggle('tt-cl-pop', !uniOn());
+    box.hidden = !on || (!uniOn() && !clPopOpen);
+    if(!on) return;
+    const project = clProject(), list = clientsFor(project), req = list.length > 0, sel = clSelection().filter(x=> list.includes(x.name));
+    const incomplete = req && (sel.length === 0 || sel.some(x=> !clValid(x)));
+    const state = !req ? 'none' : (incomplete ? 'req' : 'ok'), pill = !req ? 'Not needed' : (incomplete ? 'Required' : 'Complete ✓');
+    $('tt-cl-pill').className = 'tt-cl-pill ' + state; $('tt-cl-pill').textContent = pill;
+    const missingN = clNeeding().length;
+    trig.textContent = `Client & reason · ${missingN && !active ? missingN + ' missing' : pill}`;
+    $('tt-cl-sub').textContent = `${active ? 'For this recording' : 'For your next recording'}${project ? ' · ' + project : ''}`;
+    const last = (req && sel.length === 0) ? clLastComplete(project) : null;
+    let html = !req ? `<div class="tt-cl-none">${project ? escapeHtml(project) + ' has no clients, so nothing is asked.' : 'Choose a project to pick a client.'}</div>`
+      : `<div class="tt-cl-chips" role="group" aria-label="Clients">${clChipsHtml(project, sel)}</div>${sel.length ? `<div class="tt-cl-rows">${clRowsHtml(sel, clTyping)}</div>` : ''}${incomplete ? `<div class="tt-cl-hint"><span>${sel.length === 0 ? 'Add at least one client and a reason. You can also do it after you stop, from Recent entries, and you will get a reminder until it is done.' : 'Every client needs a reason.'}</span></div>` : ''}<div class="tt-cl-actions">${last ? '<button type="button" class="tt-btn" data-cl-same>Same as last entry</button>' : ''}${sel.length ? '<button type="button" class="tt-btn" data-cl-clear>Clear</button>' : ''}</div>`;
+    const missing = clNeeding().length;
+    if(!active && missing) html += `<div class="tt-cl-hint tt-cl-miss"><span>${missing} earlier ${missing === 1 ? 'entry needs' : 'entries need'} a client and a reason.</span><button type="button" class="tt-btn" style="min-height:34px;width:auto;padding:0 14px" data-cl-review>Review</button></div>`;
+    const body = $('tt-cl-body'), sig = html.replace(/ value="[^"]*"/g, '');          // typed text is not a change of structure
+    if(body.dataset.sig !== sig){ body.dataset.sig = sig; body.innerHTML = html; }
+    trig.setAttribute('aria-expanded', String(clPopOpen));
+  }
+  function clPlacePopover(){
+    const box = $('tt-clients'), t = $('tt-cl-open'); if(!box || uniOn()) return; const r = t.getBoundingClientRect();
+    box.style.left = Math.max(12, Math.min(r.left, innerWidth - box.offsetWidth - 12)) + 'px'; box.style.top = Math.min(r.bottom + 8, Math.max(12, innerHeight - 160)) + 'px';
+  }
+  $('tt-cl-open').addEventListener('click', (e)=>{ e.stopPropagation(); clPopOpen = !clPopOpen; renderClientsWidget(); if(clPopOpen) clPlacePopover(); });
+  document.addEventListener('click', (e)=>{ if(clPopOpen && !uniOn() && !e.composedPath().some(n=> n.id === 'tt-clients' || n.id === 'tt-cl-open')){ clPopOpen = false; renderClientsWidget(); } });   // composedPath: the click may have redrawn what was clicked
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && clPopOpen){ clPopOpen = false; renderClientsWidget(); const t = $('tt-cl-open'); if(t) t.focus(); } });
+  $('tt-clients').addEventListener('click', (e)=>{
+    const sel = clSelection(), project = clProject(), t = e.target.closest('[data-cl-toggle],[data-cl-remove],[data-cl-same],[data-cl-clear]'); if(!t) return;
+    Object.keys(clTyping).forEach(k=> delete clTyping[k]);
+    if(t.dataset.clToggle !== undefined) clSetSelection(clToggle(sel, t.dataset.clToggle));
+    else if(t.hasAttribute('data-cl-remove')) clSetSelection(sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i));
+    else if(t.hasAttribute('data-cl-clear')) clSetSelection([]);
+    else if(t.hasAttribute('data-cl-same')){ const l = clLastComplete(project); if(l) clSetSelection(l.clients); }
+  });
+  $('tt-clients').addEventListener('change', (e)=>{
+    const row = e.target.closest('.tt-cl-row'); if(!row) return; const i = +row.dataset.i, sel = clSelection().slice();
+    if(e.target.matches('[data-cl-reason]')){ delete clTyping[i]; sel[i] = { ...sel[i], reason: e.target.value, other: e.target.value === CL_SE ? (sel[i].other || '') : '' }; clSetSelection(sel); }
+    else if(e.target.matches('[data-cl-other]')){ delete clTyping[i]; sel[i] = { ...sel[i], other: e.target.value.trim() }; clSetSelection(sel); }
+  });
+  $('tt-clients').addEventListener('input', (e)=>{ if(e.target.matches('[data-cl-other]')){ const row = e.target.closest('.tt-cl-row'); clTyping[+row.dataset.i] = e.target.value; } });
+  // a new project means a new list of clients
+  $('tt-note').addEventListener('change', ()=>{ if(!active){ clSetSelection([]); } else renderClientsWidget(); });
+
+  // ---- fixing an entry afterwards: the edit drawer (one entry, or "review one by one") ----
+  const clLine = (e)=>{
+    if(!clRequired(e.note || '', e.date)) return '';
+    if(clOk(e)) return `<button type="button" class="tt-cl-line" data-cl-edit="${escapeHtml(e.id)}" aria-label="Edit client and reason">${escapeHtml(e.clients.map(x=> `${x.name} · ${clText(x)}`).join(' · '))}</button>`;
+    return `<button type="button" class="tt-cl-addchip" data-cl-edit="${escapeHtml(e.id)}">${e.clients && e.clients.length ? 'Reason missing' : 'Add client & reason'}</button>`;
+  };
+  function clOpenDrawer(ids, mode, opener){
+    ids = ids.filter(id=> entries.some(e=> e.id === id)); if(!ids.length) return;
+    const e = entries.find(x=> x.id === ids[0]);
+    clDrawer = { ids, i: 0, mode, sel: (Array.isArray(e.clients) ? e.clients : []).map(x=> ({ ...x })), typing: {}, msg: '', opener: opener || document.activeElement };
+    renderClDrawer(); setTimeout(()=>{ const f = $('tt-cl-drawer').querySelector('button[data-cl-toggle], .tt-cl-x'); if(f) f.focus(); }, 30);
+  }
+  function clCloseDrawer(){ const op = clDrawer && clDrawer.opener; clDrawer = null; renderClDrawer(); if(op && op.isConnected && op.focus) try{ op.focus(); }catch(e){} }
+  function renderClDrawer(){
+    const dr = $('tt-cl-drawer'), sc = $('tt-cl-scrim'); if(!dr) return;
+    if(!clDrawer){ dr.hidden = true; sc.hidden = true; dr.innerHTML = ''; return; }
+    const e = entries.find(x=> x.id === clDrawer.ids[clDrawer.i]);
+    if(!e){ clDrawer = null; dr.hidden = true; sc.hidden = true; return; }
+    const list = clientsFor(e.note || ''), sel = clDrawer.sel, ok = sel.length >= 1 && sel.every(clValid), review = clDrawer.mode === 'review', n = clDrawer.ids.length;
+    const [y, m, d] = e.date.split('-').map(Number);
+    dr.hidden = false; sc.hidden = false;
+    dr.innerHTML = `<div class="tt-cl-dhead"><b>Client &amp; reason</b>${review ? `<span class="tt-cl-pill req">Entry ${clDrawer.i + 1} of ${n}</span>` : ''}<button type="button" class="tt-cl-x" data-cl-close aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`
+      + `<div class="tt-cl-row"><div class="tt-cl-sub" style="margin:0">${WD_SHORT[(new Date(y, m - 1, d).getDay() + 6) % 7]} ${d} ${MON_SHORT[m - 1]}</div><b>${escapeHtml(clockTime(e.startISO, e.tz))}–${escapeHtml(clockTime(e.stopISO, e.tz))} · ${escapeHtml(e.note || 'No project')} · ${escapeHtml(fmtHM(e.durationSec || 0))} h</b></div>`
+      + `<div class="tt-cl-chips" role="group" aria-label="Clients">${clChipsHtml(e.note || '', sel)}</div>`
+      + (sel.length ? `<div class="tt-cl-rows" style="grid-template-columns:1fr">${clRowsHtml(sel, clDrawer.typing)}</div>` : '')
+      + (ok ? '' : `<div class="tt-cl-hint"><span>${sel.length === 0 ? 'At least one client is required.' : 'Every client needs a reason.'}</span></div>`)
+      + (clDrawer.msg ? `<div class="tt-cl-hint" role="alert"><span>${escapeHtml(clDrawer.msg)}</span></div>` : '')
+      + `<div class="tt-cl-actions" style="margin-top:auto"><button type="button" class="tt-btn primary" data-cl-save${ok ? '' : ' disabled'}>${review && clDrawer.i < n - 1 ? 'Save and next' : 'Save'}</button>${review && clDrawer.i < n - 1 ? '<button type="button" class="tt-btn" data-cl-skip>Skip</button>' : ''}<button type="button" class="tt-btn" data-cl-close>${review ? 'Done for now' : 'Cancel'}</button></div>`;
+  }
+  async function clSaveDrawer(){
+    if(!clDrawer) return; const e = entries.find(x=> x.id === clDrawer.ids[clDrawer.i]); if(!e) return;
+    const sel = clDrawer.sel.map(x=> ({ name: x.name, reason: x.reason, other: x.reason === CL_SE ? String(x.other || '').trim() : '' }));
+    if(!sel.length || !sel.every(clValid)) return;
+    try{ await setDoc(doc(entriesCol(currentUid), e.id), { clients: sel }, { merge: true }); }
+    catch(err){ console.warn('Could not save the clients', err && err.code); clDrawer.msg = (err && err.code === 'permission-denied') ? 'Could not save: your Firestore rules do not let you change an existing entry.' : 'Could not save. Check your connection and try again.'; renderClDrawer(); return; }
+    clAdvance();
+  }
+  function clAdvance(){
+    if(!clDrawer) return;
+    if(clDrawer.mode !== 'review'){ clCloseDrawer(); return; }
+    const rest = clDrawer.ids.slice(clDrawer.i + 1).filter(id=> { const x = entries.find(en=> en.id === id); return x && !clOk(x); });
+    if(!rest.length){ clCloseDrawer(); assignNote = { ok: true, text: 'All entries now have a client and a reason.' }; refreshAssign(); clearTimeout(assignTimer); assignTimer = setTimeout(()=>{ assignNote = null; refreshAssign(); }, 5000); return; }
+    const next = entries.find(x=> x.id === rest[0]); clDrawer = { ...clDrawer, ids: rest, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> ({ ...x })), typing: {}, msg: '' }; renderClDrawer();
+  }
+  $('tt-cl-drawer').addEventListener('click', (e)=>{
+    if(!clDrawer) return; const t = e.target.closest('[data-cl-toggle],[data-cl-remove],[data-cl-save],[data-cl-skip],[data-cl-close]'); if(!t) return;
+    if(t.hasAttribute('data-cl-close')){ clCloseDrawer(); return; }
+    if(t.hasAttribute('data-cl-save')){ clSaveDrawer(); return; }
+    if(t.hasAttribute('data-cl-skip')){ const ids = clDrawer.ids.slice(1).concat(clDrawer.ids.slice(0, 1)), next = entries.find(x=> x.id === ids[0]); clDrawer = { ...clDrawer, ids, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> ({ ...x })), typing: {}, msg: '' }; renderClDrawer(); return; }
+    clDrawer.typing = {}; clDrawer.msg = '';
+    if(t.dataset.clToggle !== undefined) clDrawer.sel = clToggle(clDrawer.sel, t.dataset.clToggle); else clDrawer.sel = clDrawer.sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i);
+    renderClDrawer();
+  });
+  $('tt-cl-drawer').addEventListener('change', (e)=>{
+    if(!clDrawer) return; const row = e.target.closest('.tt-cl-row'); if(!row || row.dataset.i === undefined) return; const i = +row.dataset.i;
+    if(e.target.matches('[data-cl-reason]')){ delete clDrawer.typing[i]; clDrawer.sel[i] = { ...clDrawer.sel[i], reason: e.target.value, other: e.target.value === CL_SE ? (clDrawer.sel[i].other || '') : '' }; }
+    else if(e.target.matches('[data-cl-other]')){ clDrawer.sel[i] = { ...clDrawer.sel[i], other: e.target.value.trim() }; const b = $('tt-cl-drawer').querySelector('[data-cl-save]'); if(b) b.disabled = !(clDrawer.sel.length && clDrawer.sel.every(clValid)); return; }
+    clDrawer.msg = ''; renderClDrawer();
+  });
+  $('tt-cl-drawer').addEventListener('input', (e)=>{ if(clDrawer && e.target.matches('[data-cl-other]')){ const row = e.target.closest('.tt-cl-row'); clDrawer.typing[+row.dataset.i] = e.target.value; clDrawer.sel[+row.dataset.i] = { ...clDrawer.sel[+row.dataset.i], other: e.target.value }; const b = $('tt-cl-drawer').querySelector('[data-cl-save]'); if(b) b.disabled = !(clDrawer.sel.length && clDrawer.sel.every(clValid)); } });
+  $('tt-cl-scrim').addEventListener('click', ()=> clCloseDrawer());
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && clDrawer){ clCloseDrawer(); e.stopImmediatePropagation(); } }, true);
+  // the reminder's actions (bell, Attention panel and the widget share them)
+  async function clApplyBatch(otherText){
+    const { client, reason } = clBatch, other = String(otherText || '').trim();
+    if(!client || !reason || (reason === CL_SE && !other)) return;
+    const targets = clNeeding().filter(e=> clientsFor(e.note || '').includes(client));
+    const note = (ok, text)=>{ assignNote = { ok, text }; refreshAssign(); clearTimeout(assignTimer); assignTimer = setTimeout(()=>{ assignNote = null; refreshAssign(); }, 5000); };
+    if(!targets.length){ note(false, `None of the entries is on a project that has ${client}.`); return; }
+    try{
+      for(let i = 0; i < targets.length; i += 400){
+        const batch = writeBatch(db);
+        targets.slice(i, i + 400).forEach(e=>{ const next = (Array.isArray(e.clients) && e.clients.length) ? e.clients.map(x=> clValid(x) ? x : { name: x.name, reason, other: reason === CL_SE ? other : '' }) : [{ name: client, reason, other: reason === CL_SE ? other : '' }]; batch.update(doc(entriesCol(currentUid), e.id), { clients: next }); });
+        await batch.commit();
+      }
+      clBatch = { open: false, client: '', reason: '', other: '' };
+      note(true, `${targets.length} ${targets.length === 1 ? 'entry' : 'entries'} updated.`);
+    }catch(err){ console.warn('Could not apply the client and reason', err && err.code); note(false, 'Could not save. Check your connection and try again.'); }
+  }
+  document.addEventListener('click', (e)=>{
+    const ed = e.target.closest('[data-cl-edit]'); if(ed){ e.stopPropagation(); clOpenDrawer([ed.dataset.clEdit], 'edit', ed); return; }
+    if(e.target.closest('[data-cl-review]')){ uniCloseBell(); clPopOpen = false; renderClientsWidget(); clOpenDrawer(clNeeding().map(x=> x.id), 'review', e.target.closest('[data-cl-review]')); return; }
+    if(e.target.closest('[data-cl-batch]')){ clBatch = { ...clBatch, open: !clBatch.open }; refreshAssign(); return; }
+    const ap = e.target.closest('[data-cl-batch-apply]'); if(ap && !ap.disabled){ const o = ap.parentNode.querySelector('[data-cl-batch-other]'); clApplyBatch(o ? o.value : ''); }
+  }, true);
+  document.addEventListener('change', (e)=>{
+    if(e.target.matches('[data-cl-batch-client]')){ clBatch = { ...clBatch, client: e.target.value }; refreshAssign(); }
+    else if(e.target.matches('[data-cl-batch-reason]')){ clBatch = { ...clBatch, reason: e.target.value }; refreshAssign(); }
+  });
+
   // ---------------- give the entries that have no project a project, straight from the alert ----------------
   // Anyone can do this for their own entries. The project is simply the entry's "note", and earnings follow from it.
+  function clFixControl(i){
+    const need = clNeeding(), names = Array.from(new Set(need.flatMap(e=> clientsFor(e.note || '')))), b = clBatch;
+    const form = b.open ? `<div class="tt-cl-batch"><select class="tt-assign-sel" data-cl-batch-client aria-label="Client"><option value="">Choose a client…</option>${names.map(n=> `<option value="${escapeHtml(n)}"${b.client === n ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select><select class="tt-assign-sel" data-cl-batch-reason aria-label="Reason">${clReasonOptions(b.reason)}</select><input class="tt-assign-sel" data-cl-batch-other type="text" maxlength="120" placeholder="Describe the reason" aria-label="Other reason"${b.reason === CL_SE ? '' : ' hidden'}><button type="button" class="tt-btn primary tt-assign-btn" data-cl-batch-apply${(b.client && b.reason) ? '' : ' disabled'}>Apply to ${need.length === 1 ? 'it' : 'all ' + need.length}</button></div>` : '';
+    return `<div class="tt-assign"><button type="button" class="tt-btn tt-assign-btn" data-cl-review>Review one by one</button><button type="button" class="tt-btn tt-assign-btn" data-cl-batch${b.open ? ' aria-expanded="true"' : ''}>Apply to all…</button></div>${form}`;
+  }
   function assignControl(i){
+    if(i.rule === 'clients') return clFixControl(i);
     if(i.rule !== 'noproject') return '';
     const names = presets.map(presetName).filter(Boolean);
     if(!names.length) return `<div class="tt-assign"><button type="button" class="tt-enh-link" data-assign-go="1">Add a project first</button></div>`;
@@ -7486,7 +7802,7 @@ match /users/{userId}/meta/{docId} {
     for(let i = entries.length - 1; i >= 0 && shown < 40; i--){
       const e = entries[i]; if(!e.date) continue;
       const [y, m, d] = e.date.split('-').map(Number);
-      add(e.date, row(e.date, `${clockTime(e.startISO, e.tz)}–${clockTime(e.stopISO, e.tz)}`, e.note, fmtHM(e.durationSec || 0), payOf({ entries:[e] }, new Date(y, m - 1, d)), false));
+      add(e.date, row(e.date, `${clockTime(e.startISO, e.tz)}–${clockTime(e.stopISO, e.tz)}`, e.note, fmtHM(e.durationSec || 0), payOf({ entries:[e] }, new Date(y, m - 1, d)), false) + clLine(e));
       shown++;
     }
     const body = groups.map(g=>{ const [y, m, d] = g.key.split('-').map(Number); return `<div class="tt-uni-day"><span>${label(g.key)}</span> <span>${fmtHM(secondsForDate(new Date(y, m - 1, d)))} h</span></div>${g.rows.join('')}`; }).join('');
@@ -7653,7 +7969,7 @@ match /users/{userId}/meta/{docId} {
 
   // ---------------- account pages in Unified: Settings · Projects · Export ----------------
   // These regroup the screens that already exist (every control, and its handler, is the original one); only the arrangement is new.
-  const ALERT_LABELS = { forecast:'Forecast is under the monthly target', timer:'A timer has been left running', norate:'A project has hours but no rate', noproject:'Entries without a project', notarget:'No monthly target is set', best:'Your strongest weekday' };
+  const ALERT_LABELS = { forecast:'Forecast is under the monthly target', timer:'A timer has been left running', norate:'A project has hours but no rate', noproject:'Entries without a project', notarget:'No monthly target is set', best:'Your strongest weekday', clients:'Entries without a client or reason' };
   const uniScreenName = ()=> ((document.querySelector('.tt-menu-screen:not([hidden])') || {}).id || '').replace('tt-menu-screen-', '');
 
   function uniOnScreen(name){
@@ -8352,6 +8668,11 @@ match /users/{userId}/meta/{docId} {
     initMonthView();
     initBackground(uid);
 
+    try{ clPending = JSON.parse(localStorage.getItem('tt-cl-pending:' + uid) || '[]').filter(clValidName); }catch(e){ clPending = []; }
+    unsubCatalog = onSnapshot(query(collection(db, 'clientCatalogs'), where('memberUids', 'array-contains', uid)), (snap)=>{
+      const d = snap.docs[0]; clientCatalog = d ? clNormalizeCatalog(d.id, d.data()) : null; clRefresh();
+    }, (err)=>{ console.warn('Client catalog unavailable', err && err.code); clientCatalog = null; clRefresh(); });
+
     const q = query(entriesCol(uid), orderBy('startISO'));
     unsubEntries = onSnapshot(q, (snap)=>{
       entries = snap.docs.map(d=>({ id:d.id, ...d.data() }));
@@ -8445,6 +8766,8 @@ match /users/{userId}/meta/{docId} {
 
   function detachListeners(){
     if(unsubEntries){ unsubEntries(); unsubEntries = null; }
+    if(unsubCatalog){ unsubCatalog(); unsubCatalog = null; }
+    clientCatalog = null; clPending = []; clPopOpen = false; clDrawer = null;
     if(unsubActive){ unsubActive(); unsubActive = null; }
     if(unsubPresets){ unsubPresets(); unsubPresets = null; }
     if(unsubPrefs){ unsubPrefs(); unsubPrefs = null; }
@@ -8484,7 +8807,7 @@ match /users/{userId}/meta/{docId} {
   }
 
   function render(){
-    renderRec(); timoSync();
+    renderRec(); timoSync(); renderClientsWidget();
     $('tt-today-date').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
 
     const running = !!active;
@@ -8790,6 +9113,7 @@ match /users/{userId}/meta/{docId} {
           note: active.note || ''
         };
         if(withTz && tz) entry.tz = tz;
+        if(withTz && Array.isArray(active.clients) && active.clients.length) entry.clients = active.clients.map(x=> ({ name: x.name, reason: x.reason || '', other: x.other || '' }));
         batch.set(newEntryRef, entry);
         batch.delete(activeDoc(currentUid));
         await batch.commit();
@@ -8806,7 +9130,9 @@ match /users/{userId}/meta/{docId} {
         const data = { startISO: new Date().toISOString(), note: $('tt-note').value.trim() };
         const tz = browserTimeZone();
         if(withTz && tz) data.tz = tz;
+        if(withTz && clPending.length && clientsFor(data.note).length) data.clients = clPending.filter(x=> clientsFor(data.note).includes(x.name));
         await setDoc(activeDoc(currentUid), data);
+        if(data.clients){ clPending = []; try{ localStorage.removeItem('tt-cl-pending:' + currentUid); }catch(e){} }
       };
       try{
         try{ await begin(true); }
@@ -8865,7 +9191,7 @@ match /users/{userId}/meta/{docId} {
       .filter(e=>keys.has(e.date))
       .sort((a,b)=>a.startISO.localeCompare(b.startISO))
       .map(e=>{
-        return [e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec), e.note||'', e.tz||''];
+        return [e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), +(e.durationSec/3600).toFixed(2), fmtHMS(e.durationSec), e.note||'', e.tz||''].concat(clCells(e));
       });
   }
 
@@ -8924,7 +9250,7 @@ match /users/{userId}/meta/{docId} {
   function doExportXlsx(dates, label){
     const wb = XLSX.utils.book_new();
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone']
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'].concat(clHeads())
       : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
@@ -8940,7 +9266,7 @@ match /users/{userId}/meta/{docId} {
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = exportType==='detailed'
-      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}]
+      ? [{wch:12},{wch:8},{wch:8},{wch:12},{wch:12},{wch:30},{wch:20}].concat(clWidths())
       : [{wch:14},{wch:10},{wch:10}];
     ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:headers.length-1} }];
 
@@ -8963,7 +9289,7 @@ match /users/{userId}/meta/{docId} {
 
   function doExportCsv(dates, label){
     const headers = exportType==='detailed'
-      ? ['date','start','stop','duration_h','duration_hms','notes','timezone']
+      ? ['date','start','stop','duration_h','duration_hms','notes','timezone'].concat(clHeads(true))
       : (exportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const csvLines = [headers.join(',')];
@@ -9117,7 +9443,7 @@ match /users/{userId}/meta/{docId} {
     }
 
     const headers = exportType==='detailed'
-      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone']
+      ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'].concat(clHeads())
       : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
 
