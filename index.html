@@ -786,6 +786,7 @@
   .tt-curve .xl{position:absolute; top:100%; margin-top:7px; transform:translateX(-50%); font-family:'Space Mono',monospace; font-size:10.5px; color:var(--paper-dim);}
   .tt-curve .dot{position:absolute; width:12px; height:12px; transform:translate(-50%,-50%); border-radius:50%; background:var(--paper); border:3px solid var(--amber);}
   .tt-curve .tag{position:absolute; font-family:'Space Mono',monospace; font-size:10.5px; font-weight:700; white-space:nowrap;}
+  .tt-curve .tag{background:var(--panel); padding:1px 6px; border-radius:6px; box-shadow:0 0 0 2px var(--panel);}   /* lines never run through a label */
   /* gross to pocket */
   .tt-pk-group + .tt-pk-group{margin-top:12px; padding-top:12px; border-top:1px solid var(--line);}
   .tt-pk-row{margin-top:8px;}
@@ -2955,7 +2956,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.108</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.109</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -7086,11 +7087,16 @@ match /users/{userId}/meta/{docId} {
       return;
     }
     const n = P.n, tgt = P.target ? P.target.amount : 0;
-    const ymax = Math.max(tgt, P.projected || 0, S.earned, 1) * 1.08;
+    // the scale fits the highest line (target, actual, pace or projection) with headroom, on round gridlines,
+    // so the target sits at its real height and a pace above it never leaves the chart
+    const peak = Math.max(tgt, P.projected || 0, S.earned, ...S.proj.map(p=> p[1]), 1);
+    const rawTop = peak * 1.15, mag = Math.pow(10, Math.floor(Math.log10(rawTop / 4)));
+    const step = [1, 2, 2.5, 5, 10].map(f=> f * mag).find(st=> st * 4 >= rawTop / 1.0001 || st * 5 >= rawTop) || 10 * mag;
+    const ymax = step * Math.ceil(rawTop / step - 1e-9);
     const X = (d)=> 10 + (d - 1) / Math.max(1, n - 1) * 700, Y = (v)=> 232 - v / ymax * 214;
     const path = (pts)=> pts.map((p, i)=> `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(' ');
     const actualPts = [[1, 0]].concat(S.actual.map((v, i)=> [i + 1, v]));
-    const ticks = tgt ? [0, tgt / 3, tgt * 2 / 3, tgt] : [0, ymax / 3, ymax * 2 / 3, ymax / 1.08];
+    const ticks = Array.from({ length: Math.round(ymax / step) + 1 }, (_, i)=> i * step);
     const xt = [1, 5, 10, 15, 20, 25, n].filter((d, i, a)=> a.indexOf(d) === i && d <= n);
     const pct = (v, total)=> (v / total * 100).toFixed(2);
     const last = S.proj.length ? S.proj[S.proj.length - 1] : null;
@@ -7103,11 +7109,13 @@ match /users/{userId}/meta/{docId} {
         ${tgt && S.proj.length ? `<path d="${path([[S.lastDay, S.earned], [n, tgt]])}" stroke="var(--paper)" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>` : ''}
         ${S.proj.length ? `<path d="${path(S.proj)}" stroke="var(--amber)" stroke-width="2.5" stroke-dasharray="7 5" fill="none" vector-effect="non-scaling-stroke"/>` : ''}
         <path d="${path(actualPts)}" stroke="var(--amber)" stroke-width="3.5" stroke-linejoin="round" fill="none" vector-effect="non-scaling-stroke"/></svg>
-        ${ticks.map(v=> `<span class="yl" style="top:${pct(Y(v), 240)}%">${Math.round(v)}</span>`).join('')}
+        ${ticks.map(v=> `<span class="yl" style="top:${pct(Y(v), 240)}%">${step < 1 ? +v.toFixed(2) : Math.round(v)}</span>`).join('')}
         ${xt.map(d=> `<span class="xl" style="left:${pct(X(d), 720)}%">${d}</span>`).join('')}
         <span class="dot" style="left:${pct(X(S.lastDay), 720)}%;top:${pct(Y(S.earned), 240)}%"></span>
         ${last ? `<span class="dot" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;background:var(--ink)"></span><span class="tag" style="left:${pct(X(last[0]), 720)}%;top:${pct(Y(last[1]), 240)}%;transform:translate(-100%,${Y(last[1]) / 240 * 100 > 78 ? '-170%' : '150%'});color:var(--amber)">≈ ${enhFmt(last[1])}</span>` : ''}
-        ${tgt ? `<span class="tag" style="left:100%;top:${pct(Y(tgt), 240)}%;transform:translate(-100%,-170%)">target ${Math.round(tgt)}</span>` : ''}</div>${uniOn() ? enhDayBars(P, S) : ''}`);
+        ${tgt ? (last && Math.abs(Y(last[1]) - Y(tgt)) < 30
+          ? `<span class="tag" style="left:0;top:${pct(Y(tgt), 240)}%;transform:translate(0,-170%)">target ${Math.round(tgt)}</span>`
+          : `<span class="tag" style="left:100%;top:${pct(Y(tgt), 240)}%;transform:translate(-100%,-170%)">target ${Math.round(tgt)}</span>`) : ''}</div>${uniOn() ? enhDayBars(P, S) : ''}`);
   }
 
   function enhRenderPocket(){
