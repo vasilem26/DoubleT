@@ -1003,6 +1003,15 @@
     #tt-co-mode{flex:1; display:flex;} #tt-co-mode button{flex:1;}
     #tt-co-currency{flex:0 0 96px; min-height:48px;}
   }
+  @media (max-width:900px){
+    /* the company page on a phone: same full-width, finger-sized controls as the personal one */
+    #tt-admin-page-company .tt-co-toolbar{display:flex; flex-wrap:wrap; gap:10px;}
+    #tt-co-viewtoggle, #tt-co-tabs{flex:1 1 0;} #tt-co-viewtoggle button, #tt-co-tabs button{flex:1;}
+    #tt-co-period{flex:1 1 100%; display:flex;} #tt-co-period button{flex:1;}
+    #tt-admin-page-company .tt-co-money{flex:1 1 100%; display:flex; gap:10px;}
+    #tt-co-mode{flex:1; display:flex;} #tt-co-mode button{flex:1;}
+    #tt-co-currency{flex:0 0 96px; min-height:48px;}
+  }
   @media (max-width:360px){ html.tt-uni #tt-uni-top{flex-wrap:wrap;} }                  /* very narrow phones: let the top bar take a second row rather than squash the buttons */
 
   /* ---- account + admin screens become PAGES (desktop): same rail and top bar, cards instead of a side sheet ---- */
@@ -1020,6 +1029,9 @@
     /* the shared bar sits above the company page and the page starts below it, so every button on it is reachable */
     html.tt-uni.tt-uni-codash #tt-uni-controls{position:relative; z-index:3040; width:min(1180px, calc(100% - 64px)); margin-left:auto; margin-right:auto;}
     html.tt-uni.tt-uni-codash .tt-admin-page{top:calc(74px + var(--uni-ctl-h, 0px));}
+    /* the shared bar sits above the company page and the page starts below it, so every button on it is reachable */
+    html.tt-uni.tt-uni-codash #tt-uni-controls{position:relative; z-index:3040; width:min(1180px, calc(100% - 64px)); margin-left:auto; margin-right:auto;}
+    html.tt-uni.tt-uni-codash .tt-admin-page{top:calc(74px + var(--uni-ctl-h, 0px));}
     html.tt-uni .tt-admin-page-inner{background:none !important; border:0 !important; box-shadow:none !important; padding:0 !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important;}
     html.tt-uni .tt-menu-overlay{inset:74px 0 0 96px; z-index:2900; justify-content:center; overflow-y:auto; background:transparent !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; transition:none;}
     html.tt-uni .tt-menu-panel{max-width:1180px; width:100%; height:auto; min-height:100%; background:transparent; border:0; box-shadow:none; transform:none !important; opacity:1 !important; transition:none; padding:12px 32px 48px; overflow:visible;}
@@ -1033,6 +1045,7 @@
     html.tt-uni .tt-admin-page-inner{max-width:1180px;}
     html.tt-uni #tt-admin-page-root:not([hidden]){display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
     html.tt-uni #tt-admin-page-root .tt-admin-bigcard{margin:0; height:100%;}
+    html.tt-uni .tt-admin-exit-btn{width:auto; min-width:96px; padding:0 22px;}
     html.tt-uni .tt-admin-exit-btn{width:auto; min-width:96px; padding:0 22px;}
   }
 
@@ -1183,7 +1196,13 @@
   @keyframes tt-timo-rise{from{opacity:0; transform:translateY(10px);}to{opacity:1; transform:none;}}
   @keyframes tt-timo-bounce{0%,60%,100%{transform:translateY(0); opacity:.5;}30%{transform:translateY(-5px); opacity:1;}}
   .tt-timo-panel{position:fixed; right:24px; bottom:24px; z-index:3095; width:420px; height:min(660px, calc(100vh - 48px)); display:flex; flex-direction:column; overflow:hidden; border-radius:26px; background:var(--panel); -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); border:1px solid var(--line); box-shadow:0 30px 80px rgba(var(--shadow-rgb),.55); color:var(--paper); transform-origin:100% 100%; animation:tt-timo-pop .35s cubic-bezier(.2,.9,.3,1.15) both;}
-  .tt-cl-line{display:block; width:calc(100% - 52px); margin:-4px 0 6px 52px; padding:0; border:0; background:transparent; color:var(--paper-dim); font:inherit; font-size:12px; text-align:left; cursor:pointer; overflow-wrap:anywhere;} .tt-cl-line:hover{color:var(--amber);}
+  .tt-cl-line{display:flex; flex-direction:column; width:calc(100% - 52px); margin:-2px 0 10px 52px; padding:2px 0; border:0; border-left:2px solid var(--line); background:transparent; color:var(--paper-dim); font:inherit; font-size:12px; text-align:left; cursor:pointer;}
+  .tt-cl-line:hover, .tt-cl-line:focus-visible{border-left-color:var(--amber);}
+  .tt-cl-lc{display:grid; grid-template-columns:fit-content(42%) 1fr; gap:4px 12px; padding:5px 0 5px 10px;} .tt-cl-lc + .tt-cl-lc{border-top:1px dashed var(--line);}
+  .tt-cl-lc > b{color:var(--paper); font-weight:600; overflow-wrap:break-word; line-height:1.35; min-width:56px;}
+  .tt-cl-lrs{display:flex; flex-direction:column; gap:4px; min-width:0;}
+  .tt-cl-lr{display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; line-height:1.35;} .tt-cl-lr > span{overflow-wrap:anywhere;}
+  .tt-cl-lr em{font-style:normal; font-size:11px; padding:1px 7px; border-radius:999px; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); white-space:nowrap;}
   .tt-cl-addchip{display:inline-flex; align-items:center; margin:-2px 0 8px 52px; min-height:30px; padding:0 12px; border-radius:999px; border:1px solid var(--amber-dim); background:var(--amber-soft); color:var(--amber); font:inherit; font-size:12px; font-weight:600; cursor:pointer;}
   .tt-cl-scrim{position:fixed; inset:0; z-index:3096; background:rgba(var(--shadow-rgb),.5);} .tt-cl-scrim[hidden]{display:none;}
   .tt-cl-drawer{position:fixed; top:0; right:0; bottom:0; z-index:3097; width:min(470px, 100vw); padding:22px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; background:var(--panel); border-left:1px solid var(--line); box-shadow:-30px 0 80px rgba(var(--shadow-rgb),.5); color:var(--paper);} .tt-cl-drawer[hidden]{display:none;}
@@ -1220,6 +1239,8 @@
   .tt-cl-actions .tt-btn, .tt-cl-miss .tt-btn{flex:none; min-width:0;}
   .tt-cl-miss{background:transparent; border:1px dashed var(--line); color:var(--paper-dim); padding:8px 8px 8px 14px;}
   .tt-cl-merch{display:flex; flex-direction:column; gap:8px; padding-top:10px; border-top:1px dashed var(--line);}
+  .tt-cl-reason .tt-cl-merch{padding-top:2px; border-top:0; gap:6px;} .tt-cl-mchip{min-height:32px; padding:0 11px; font-size:12px;}
+  .tt-cl-reason + .tt-cl-reason{padding-top:10px; border-top:1px dashed var(--line);}
   .tt-cl-reason{display:flex; flex-direction:column; gap:8px;} .tt-cl-reasonline{display:flex; align-items:center; gap:6px;} .tt-cl-reasonline select{flex:1; min-width:0;}
   .tt-cl-addreason{align-self:flex-start; min-height:32px; padding:4px 0; border:0; background:transparent; color:var(--amber); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;} .tt-cl-addreason:hover{text-decoration:underline;}
   @media (min-width:901px){
@@ -1350,6 +1371,7 @@
     html.tt-uni.tt-uni-settings .tt-uni-snav{display:flex; flex-direction:column; gap:6px; grid-column:1; position:sticky; top:20px; align-self:start;}
     html.tt-uni.tt-uni-settings .tt-menu-screen:not([hidden]){grid-column:2; display:flex !important; flex-direction:column; gap:20px;}
     html.tt-uni .tt-menu-screen:not([hidden]) > .tt-menu-section{width:100%; max-width:none; box-sizing:border-box; justify-self:stretch; align-self:stretch;}
+    html.tt-uni .tt-menu-screen:not([hidden]) > .tt-menu-section{width:100%; max-width:none; box-sizing:border-box; justify-self:stretch; align-self:stretch;}
     .tt-uni-snav button{display:flex; align-items:center; gap:12px; min-height:48px; padding:0 16px; border-radius:16px; border:1px solid transparent; background:transparent; color:var(--paper-dim); font-family:'Work Sans',sans-serif; font-size:14px; font-weight:600; text-align:left; cursor:pointer; transition:color .2s, background .2s, border-color .2s;}
     .tt-uni-snav button:hover{color:var(--paper); background:var(--panel-2);}
     .tt-uni-snav button.active{color:var(--paper); background:var(--amber-soft); border-color:var(--amber-dim);}
@@ -1393,6 +1415,8 @@
     html.tt-uni #tt-menu-screen-exports > :nth-child(5) > .tt-menu-label{font-size:11px; font-weight:400; text-transform:uppercase; letter-spacing:.06em; color:var(--paper-dim);}
   }
 
+  /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
+  html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
   /* the shared period bar is the only place for Net/Gross and currency in Unified (same state, one control) */
   html.tt-uni #tt-earnings-mode, html.tt-uni #tt-earnings-currency{display:none;}
   /* Calendar is its own page in Unified; on a phone it simply stays at the bottom */
@@ -2293,11 +2317,11 @@
           <div class="tt-menu-section" id="tt-export-type-section">
             <div class="tt-menu-label">Report type</div>
             <div class="tt-segment tt-export-segment" id="tt-export-type">
-              <button data-val="detailed" class="active">Detailed</button><button data-val="summary">Summary</button>
+              <button data-val="detailed" class="active">Detailed</button><button data-val="summary">Summary</button><button data-val="clients" hidden>By client</button>
             </div>
             <div class="tt-menu-desc" style="margin-top:8px; margin-bottom:0;">
               Detailed lists every start/stop entry with notes. Summary lists just the totals per day
-              (or per month, for a Year report).
+              (or per month, for a Year report).<span id="tt-export-clients-desc" hidden> By client gives one row per client, reason and merchant, each with its share of the entry's hours, so filtering by client, reason or merchant still adds up.</span>
             </div>
           </div>
           <div class="tt-menu-section">
@@ -2930,7 +2954,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.106</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.107</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -7524,7 +7548,7 @@ match /users/{userId}/meta/{docId} {
   }
   const clUsed = ()=> !!(clientCatalog && Object.values(clientCatalog.projects).some(a=> a.length));
   const clMerchantsFor = (project, client)=> (clientCatalog && clientCatalog.merchants && clientCatalog.merchants[project] && clientCatalog.merchants[project][client]) || [];
-  const clName = (x)=> x.name + ((Array.isArray(x.merchants) && x.merchants.length) ? ' › ' + x.merchants.join(', ') : '');
+  const clReasonText = (r)=> r.reason === CL_SE ? `${CL_SE}: ${r.other}` : r.reason;
   const clientsFor = (project)=> (clientCatalog && clientCatalog.projects[project]) || [];
   const clRequired = (project, date)=> clUsed() && clientsFor(project || '').length > 0 && (date || '') >= clientCatalog.from;
   // Client and Reason columns in the detailed exports: only when the company uses clients, and always at the END,
@@ -7533,15 +7557,21 @@ match /users/{userId}/meta/{docId} {
   const clWidths = ()=> clUsed() ? [{wch:28},{wch:34},{wch:28}] : [];
   function clCells(e){
     if(!clUsed() || !clRequired(e.note || '', e.date) || !Array.isArray(e.clients) || !e.clients.length) return clUsed() ? ['', '', ''] : [];
-    const anyM = e.clients.some(x=> Array.isArray(x.merchants) && x.merchants.length);
-    return [e.clients.map(x=> x.name).join('; '), e.clients.map(clText).join('; '), anyM ? e.clients.map(x=> (Array.isArray(x.merchants) && x.merchants.length) ? x.merchants.join(', ') : '–').join('; ') : ''];
+    const ms = e.clients.map(x=> Array.from(new Set(clNorm(x).reasons.flatMap(r=> r.merchants))));     // read from the reasons, whatever version saved it
+    return [e.clients.map(x=> x.name).join('; '), e.clients.map(clText).join('; '), ms.some(m=> m.length) ? ms.map(m=> m.length ? m.join(', ') : '–').join('; ') : ''];
   }
   const clValidName = (x)=> !!(x && typeof x.name === 'string' && x.name);
   const clReasonOk = (r)=> !!(r && r.reason && (r.reason !== CL_SE || String(r.other || '').trim()));
   // one shape for every client item, whatever version saved it
-  const clNorm = (x)=> ({ name: (x && x.name) || '', reasons: (x && Array.isArray(x.reasons) && x.reasons.length ? x.reasons : [{ reason: x && x.reason, other: x && x.other }]).slice(0, 5).map(r=> ({ reason: (r && r.reason) || '', other: (r && r.other) || '' })), merchants: (x && Array.isArray(x.merchants)) ? x.merchants.slice(0, 10) : [] });
+  const clNorm = (x)=>{
+    // older entries kept merchants on the client: they then apply to each of its reasons
+    const legacyM = (x && Array.isArray(x.merchants)) ? x.merchants.slice(0, 10) : [];
+    const rs = (x && Array.isArray(x.reasons) && x.reasons.length) ? x.reasons : [{ reason: x && x.reason, other: x && x.other }];
+    const perReason = rs.some(r=> r && Array.isArray(r.merchants));
+    return { name: (x && x.name) || '', reasons: rs.slice(0, 5).map(r=> ({ reason: (r && r.reason) || '', other: (r && r.other) || '', merchants: perReason ? ((r && Array.isArray(r.merchants)) ? r.merchants.slice(0, 10) : []) : legacyM.slice() })) };
+  };
   // what is written: the list, plus the first reason in the old fields so an older copy of the app still reads it
-  const clStore = (n)=> ({ name: n.name, reason: n.reasons[0].reason, other: n.reasons[0].other, reasons: n.reasons.map(r=> ({ reason: r.reason, other: r.other })), merchants: n.merchants });
+  const clStore = (n)=> ({ name: n.name, reason: n.reasons[0].reason, other: n.reasons[0].other, reasons: n.reasons.map(r=> ({ reason: r.reason, other: r.other, merchants: Array.isArray(r.merchants) ? r.merchants : [] })), merchants: Array.from(new Set(n.reasons.flatMap(r=> r.merchants || []))) });   // merchants: every merchant of the client, for older copies of the app
   const clEdit = (sel, i, fn)=> sel.map((x, k)=> { if(k !== i) return x; const n = clNorm(x); return clStore({ ...n, reasons: fn(n.reasons) }); });
   const clValid = (x)=> !!(x && x.name && clNorm(x).reasons.every(clReasonOk));
   const clOk = (e)=> !clRequired(e.note || '', e.date) || (Array.isArray(e.clients) && e.clients.length >= 1 && e.clients.every(clValid));
@@ -7549,7 +7579,7 @@ match /users/{userId}/meta/{docId} {
   const clNeeding = ()=> entries.filter(e=> e.date && !clOk(e));
   const clProject = ()=> active ? (active.note || '') : ($('tt-note') ? $('tt-note').value : '');
   const clSelection = ()=> active ? (Array.isArray(active.clients) ? active.clients : []) : clPending;
-  function clRefresh(){ renderClientsWidget(); if(uniOn()){ renderUniEntries(); renderUnified(); } renderEnhancedPanels(true); }
+  function clRefresh(){ try{ updateExportControlsAvailability(); }catch(e){} renderClientsWidget(); if(uniOn()){ renderUniEntries(); renderUnified(); } renderEnhancedPanels(true); }
   function clSetSelection(arr){
     arr = arr.slice(0, 10).map(x=> clStore(clNorm(x)));
     if(active){ active = { ...active, clients: arr }; renderClientsWidget(); setDoc(activeDoc(currentUid), { clients: arr }, { merge: true }).catch(err=> console.warn('Could not save the clients on the running entry', err && err.code)); }
@@ -7559,20 +7589,22 @@ match /users/{userId}/meta/{docId} {
   // the rows for a list of chosen clients (used by the widget and by the edit drawer)
   // merchants: only the ones the admin set for this client, as toggle chips. A merchant already on an entry that is no
   // longer in the list still shows (switched on) so it can be removed, but it cannot be chosen again.
-  const clMerchantChips = (project, x)=> {
-    const pre = clMerchantsFor(project, x.name), chosen = x.merchants || [], kept = chosen.filter(m=> !pre.includes(m));
+  // merchants: only the admin's ones for this client, as toggle chips, under each reason (the same merchant may be on
+  // two reasons). One already on an entry but no longer in the list still shows, switched on, so it can be removed.
+  const clMerchantChips = (project, client, r)=> {
+    const pre = clMerchantsFor(project, client), chosen = r.merchants || [], kept = chosen.filter(m=> !pre.includes(m));
     if(!pre.length && !kept.length) return '';
-    const chip = (m)=> { const on = chosen.includes(m); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-merchant="${escapeHtml(m)}" aria-pressed="${on}">${on ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ''}${escapeHtml(m)}</button>`; };
-    return `<div class="tt-cl-merch"><div class="tt-cl-sub" style="margin:0">Merchant (optional)</div><div class="tt-cl-chips">${pre.concat(kept).map(chip).join('')}</div></div>`;
+    const chip = (m)=> { const on = chosen.includes(m); return `<button type="button" class="tt-cl-chip tt-cl-mchip${on ? ' on' : ''}" data-cl-merchant="${escapeHtml(m)}" aria-pressed="${on}">${on ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ''}${escapeHtml(m)}</button>`; };
+    return `<div class="tt-cl-merch"><span class="tt-cl-sub" style="margin:0">Merchant (optional)</span><div class="tt-cl-chips" role="group" aria-label="Merchants for this reason">${pre.concat(kept).map(chip).join('')}</div></div>`;
   };
   // switching a merchant ON is only possible for one in the admin's list
-  const clToggleMerchant = (sel, i, m, project)=> sel.map((x, j)=> { if(j !== i) return x; const n = clNorm(x); const on = n.merchants.includes(m); if(!on && !clMerchantsFor(project, n.name).includes(m)) return x; return clStore({ ...n, merchants: on ? n.merchants.filter(v=> v !== m) : n.merchants.concat([m]) }); });
+  const clToggleMerchant = (sel, i, j, m, project)=> sel.map((x, k)=> { if(k !== i) return x; const n = clNorm(x), r = n.reasons[j]; if(!r) return x; const on = r.merchants.includes(m); if(!on && !clMerchantsFor(project, n.name).includes(m)) return x; return clStore({ ...n, reasons: n.reasons.map((q, t)=> t !== j ? q : { ...q, merchants: on ? q.merchants.filter(v=> v !== m) : q.merchants.concat([m]) }) }); });
   function clRowsHtml(sel, typing, project){
     const typed = (i, j, r)=> (typing && typing[i + ':' + j] !== undefined) ? typing[i + ':' + j] : (r.other || '');
     return sel.map((raw, i)=> { const x = clNorm(raw), many = x.reasons.length > 1;
-      const reasons = x.reasons.map((r, j)=> `<div class="tt-cl-reason" data-j="${j}"><div class="tt-cl-reasonline"><select class="tt-menu-input" data-cl-reason aria-label="Reason${many ? ' ' + (j + 1) : ''} for ${escapeHtml(x.name)}">${clReasonOptions(r.reason)}</select>${many ? `<button type="button" class="tt-cl-x" data-cl-rmreason aria-label="Remove reason ${j + 1} for ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div><input class="tt-menu-input" data-cl-other type="text" maxlength="120" placeholder="Describe the reason" aria-label="Other reason for ${escapeHtml(x.name)}" value="${escapeHtml(typed(i, j, r))}"${r.reason === CL_SE ? '' : ' hidden'}></div>`).join('');
+      const reasons = x.reasons.map((r, j)=> `<div class="tt-cl-reason" data-j="${j}"><div class="tt-cl-reasonline"><select class="tt-menu-input" data-cl-reason aria-label="Reason${many ? ' ' + (j + 1) : ''} for ${escapeHtml(x.name)}">${clReasonOptions(r.reason)}</select>${many ? `<button type="button" class="tt-cl-x" data-cl-rmreason aria-label="Remove reason ${j + 1} for ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div><input class="tt-menu-input" data-cl-other type="text" maxlength="120" placeholder="Describe the reason" aria-label="Other reason for ${escapeHtml(x.name)}" value="${escapeHtml(typed(i, j, r))}"${r.reason === CL_SE ? '' : ' hidden'}>${clMerchantChips(project || '', x.name, r)}</div>`).join('');
       const bad = x.reasons.find((r, j)=> !clReasonOk({ reason: r.reason, other: typed(i, j, r) }));
-      return `<div class="tt-cl-row" data-i="${i}"><div class="tt-cl-rowhd"><b>${escapeHtml(x.name)}</b><button type="button" class="tt-cl-x" data-cl-remove aria-label="Remove ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${reasons}${x.reasons.length < 5 ? '<button type="button" class="tt-cl-addreason" data-cl-addreason>+ Add another reason</button>' : ''}${clMerchantChips(project || '', x)}${bad ? `<div class="tt-cl-warn">${bad.reason ? 'Describe the reason' : 'Choose a reason'}</div>` : ''}</div>`; }).join('');
+      return `<div class="tt-cl-row" data-i="${i}"><div class="tt-cl-rowhd"><b>${escapeHtml(x.name)}</b><button type="button" class="tt-cl-x" data-cl-remove aria-label="Remove ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${reasons}${x.reasons.length < 5 ? '<button type="button" class="tt-cl-addreason" data-cl-addreason>+ Add another reason</button>' : ''}${bad ? `<div class="tt-cl-warn">${bad.reason ? 'Describe the reason' : 'Choose a reason'}</div>` : ''}</div>`; }).join('');
   }
   const clChipsHtml = (project, sel)=> clientsFor(project).map(n=> { const on = sel.some(x=> x.name === n); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-toggle="${escapeHtml(n)}" aria-pressed="${on}">${on ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ''}${escapeHtml(n)}</button>`; }).join('');
   const clToggle = (sel, name)=> sel.some(x=> x.name === name) ? sel.filter(x=> x.name !== name) : sel.concat([clStore(clNorm({ name }))]);
@@ -7618,7 +7650,7 @@ match /users/{userId}/meta/{docId} {
     const sel = clSelection(), project = clProject(), t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-same],[data-cl-clear]'); if(!t) return;
     Object.keys(clTyping).forEach(k=> delete clTyping[k]);
     if(t.dataset.clToggle !== undefined) clSetSelection(clToggle(sel, t.dataset.clToggle));
-    else if(t.dataset.clMerchant !== undefined) clSetSelection(clToggleMerchant(sel, +t.closest('.tt-cl-row').dataset.i, t.dataset.clMerchant, project));
+    else if(t.dataset.clMerchant !== undefined) clSetSelection(clToggleMerchant(sel, +t.closest('.tt-cl-row').dataset.i, +t.closest('[data-j]').dataset.j, t.dataset.clMerchant, project));
     else if(t.hasAttribute('data-cl-addreason')) clSetSelection(clEdit(sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.concat([{ reason: '', other: '' }])));
     else if(t.hasAttribute('data-cl-rmreason')){ const j = +t.closest('[data-j]').dataset.j; clSetSelection(clEdit(sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.filter((_, k)=> k !== j))); }
     else if(t.hasAttribute('data-cl-remove')) clSetSelection(sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i));
@@ -7627,7 +7659,7 @@ match /users/{userId}/meta/{docId} {
   });
   $('tt-clients').addEventListener('change', (e)=>{
     const row = e.target.closest('.tt-cl-row'), rb = e.target.closest('[data-j]'); if(!row || !rb) return; const i = +row.dataset.i, j = +rb.dataset.j, sel = clSelection(), v = e.target.value; delete clTyping[i + ':' + j];
-    if(e.target.matches('[data-cl-reason]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { reason: v, other: v === CL_SE ? r.other : '' })));
+    if(e.target.matches('[data-cl-reason]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, reason: v, other: v === CL_SE ? r.other : '' })));
     else if(e.target.matches('[data-cl-other]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v.trim() })));
   });
   $('tt-clients').addEventListener('input', (e)=>{ if(e.target.matches('[data-cl-other]')){ clTyping[e.target.closest('.tt-cl-row').dataset.i + ':' + e.target.closest('[data-j]').dataset.j] = e.target.value; } });
@@ -7637,7 +7669,11 @@ match /users/{userId}/meta/{docId} {
   // ---- fixing an entry afterwards: the edit drawer (one entry, or "review one by one") ----
   const clLine = (e)=>{
     if(!clRequired(e.note || '', e.date)) return '';
-    if(clOk(e)) return `<button type="button" class="tt-cl-line" data-cl-edit="${escapeHtml(e.id)}" aria-label="Edit client and reason">${escapeHtml(e.clients.map(x=> `${clName(x)} · ${clText(x)}`).join(' · '))}</button>`;
+    if(clOk(e)){
+      const cs = e.clients.map(clNorm);
+      const said = cs.map(x=> `${x.name}: ${x.reasons.map(r=> clReasonText(r) + (r.merchants.length ? ' (' + r.merchants.join(', ') + ')' : '')).join(', ')}`).join('; ');
+      return `<button type="button" class="tt-cl-line" data-cl-edit="${escapeHtml(e.id)}" aria-label="Edit client and reason. ${escapeHtml(said)}">${cs.map(x=> `<span class="tt-cl-lc"><b>${escapeHtml(x.name)}</b><span class="tt-cl-lrs">${x.reasons.map(r=> `<span class="tt-cl-lr"><span>${escapeHtml(clReasonText(r))}</span>${r.merchants.map(m=> `<em>${escapeHtml(m)}</em>`).join('')}</span>`).join('')}</span></span>`).join('')}</button>`;
+    }
     return `<button type="button" class="tt-cl-addchip" data-cl-edit="${escapeHtml(e.id)}">${e.clients && e.clients.length ? 'Reason missing' : 'Add client & reason'}</button>`;
   };
   function clOpenDrawer(ids, mode, opener){
@@ -7665,7 +7701,7 @@ match /users/{userId}/meta/{docId} {
   }
   async function clSaveDrawer(){
     if(!clDrawer) return; const e = entries.find(x=> x.id === clDrawer.ids[clDrawer.i]); if(!e) return;
-    const sel = clDrawer.sel.map(x=> { const n = clNorm(x); return clStore({ ...n, reasons: n.reasons.map(r=> ({ reason: r.reason, other: r.reason === CL_SE ? String(r.other || '').trim() : '' })) }); });
+    const sel = clDrawer.sel.map(x=> { const n = clNorm(x); return clStore({ ...n, reasons: n.reasons.map(r=> ({ ...r, other: r.reason === CL_SE ? String(r.other || '').trim() : '' })) }); });
     if(!sel.length || !sel.every(clValid)) return;
     try{ await setDoc(doc(entriesCol(currentUid), e.id), { clients: sel }, { merge: true }); }
     catch(err){ console.warn('Could not save the clients', err && err.code); clDrawer.msg = (err && err.code === 'permission-denied') ? 'Could not save: your Firestore rules do not let you change an existing entry.' : 'Could not save. Check your connection and try again.'; renderClDrawer(); return; }
@@ -7685,7 +7721,7 @@ match /users/{userId}/meta/{docId} {
     if(t.hasAttribute('data-cl-skip')){ const ids = clDrawer.ids.slice(1).concat(clDrawer.ids.slice(0, 1)), next = entries.find(x=> x.id === ids[0]); clDrawer = { ...clDrawer, ids, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> clStore(clNorm(x))), typing: {}, msg: '' }; renderClDrawer(); return; }
     clDrawer.typing = {}; clDrawer.msg = '';
     if(t.dataset.clToggle !== undefined) clDrawer.sel = clToggle(clDrawer.sel, t.dataset.clToggle);
-    else if(t.dataset.clMerchant !== undefined) clDrawer.sel = clToggleMerchant(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, t.dataset.clMerchant, ((entries.find(x=> x.id === clDrawer.ids[clDrawer.i]) || {}).note) || '');
+    else if(t.dataset.clMerchant !== undefined) clDrawer.sel = clToggleMerchant(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, +t.closest('[data-j]').dataset.j, t.dataset.clMerchant, ((entries.find(x=> x.id === clDrawer.ids[clDrawer.i]) || {}).note) || '');
     else if(t.hasAttribute('data-cl-addreason')) clDrawer.sel = clEdit(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.concat([{ reason: '', other: '' }]));
     else if(t.hasAttribute('data-cl-rmreason')){ const j = +t.closest('[data-j]').dataset.j; clDrawer.sel = clEdit(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.filter((_, k)=> k !== j)); }
     else clDrawer.sel = clDrawer.sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i);
@@ -7695,7 +7731,7 @@ match /users/{userId}/meta/{docId} {
   $('tt-cl-drawer').addEventListener('change', (e)=>{
     if(!clDrawer) return; const row = e.target.closest('.tt-cl-row'), rb = e.target.closest('[data-j]'); if(!row || !rb || row.dataset.i === undefined) return; const i = +row.dataset.i, j = +rb.dataset.j, v = e.target.value;
     if(e.target.matches('[data-cl-other]')){ clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v.trim() })); clDrawerSaveState(); return; }   // no redraw: it would swallow a click on Save
-    if(e.target.matches('[data-cl-reason]')){ delete clDrawer.typing[i + ':' + j]; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { reason: v, other: v === CL_SE ? r.other : '' })); }
+    if(e.target.matches('[data-cl-reason]')){ delete clDrawer.typing[i + ':' + j]; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, reason: v, other: v === CL_SE ? r.other : '' })); }
     clDrawer.msg = ''; renderClDrawer();
   });
   $('tt-cl-drawer').addEventListener('input', (e)=>{ if(clDrawer && e.target.matches('[data-cl-other]')){ const i = +e.target.closest('.tt-cl-row').dataset.i, j = +e.target.closest('[data-j]').dataset.j, v = e.target.value; clDrawer.typing[i + ':' + j] = v; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v })); clDrawerSaveState(); } });
@@ -7711,7 +7747,7 @@ match /users/{userId}/meta/{docId} {
     try{
       for(let i = 0; i < targets.length; i += 400){
         const batch = writeBatch(db);
-        targets.slice(i, i + 400).forEach(e=>{ const next = (Array.isArray(e.clients) && e.clients.length) ? e.clients.map(x=> { if(clValid(x)) return x; const n = clNorm(x); return clStore({ ...n, reasons: n.reasons.map(r=> clReasonOk(r) ? r : { reason, other: reason === CL_SE ? other : '' }) }); }) : [clStore(clNorm({ name: client, reason, other: reason === CL_SE ? other : '' }))]; batch.update(doc(entriesCol(currentUid), e.id), { clients: next }); });
+        targets.slice(i, i + 400).forEach(e=>{ const next = (Array.isArray(e.clients) && e.clients.length) ? e.clients.map(x=> { if(clValid(x)) return x; const n = clNorm(x); return clStore({ ...n, reasons: n.reasons.map(r=> clReasonOk(r) ? r : { ...r, reason, other: reason === CL_SE ? other : '' }) }); }) : [clStore(clNorm({ name: client, reason, other: reason === CL_SE ? other : '' }))]; batch.update(doc(entriesCol(currentUid), e.id), { clients: next }); });
         await batch.commit();
       }
       clBatch = { open: false, client: '', reason: '', other: '' };
@@ -7876,6 +7912,7 @@ match /users/{userId}/meta/{docId} {
       const f = co ? coCustomFrom : customFromDate, t = co ? coCustomTo : customToDate;
       $('tt-uni-from').value = f ? dateKey(f) : ''; $('tt-uni-to').value = t ? dateKey(t) : '';
     }
+    document.documentElement.style.setProperty('--uni-ctl-h', (co && coTab === 'dashboard' ? $('tt-uni-controls').offsetHeight + 18 : 0) + 'px');
     document.documentElement.style.setProperty('--uni-ctl-h', (co && coTab === 'dashboard' ? $('tt-uni-controls').offsetHeight + 18 : 0) + 'px');
     // a switcher only when there is a choice, so you never have to go through Admin → Companies
     const sel = $('tt-uni-cosel'), list = co && adminCompaniesCache ? adminCompaniesCache : [];
@@ -8645,6 +8682,8 @@ match /users/{userId}/meta/{docId} {
     });
   }
 
+  window.addEventListener('resize', ()=>{ if(uniOn()) renderUniBar(); });
+
   function renderUnified(){
     if(!uniOn()) return;
     const user = auth.currentUser, name = user ? (user.displayName || user.email || '') : '';
@@ -8742,6 +8781,7 @@ match /users/{userId}/meta/{docId} {
       renderProjectSelect();
       renderPresetManager();
       renderEnhancedPanels();   // rates and tax templates feed the money panels
+      if(uniOn()) uniSyncProjects();   // the Projects tab shows how many there are
       if(uniOn()) uniSyncProjects();   // the Projects tab shows how many there are
     }, (err)=> console.error('presets listener error', err));
 
@@ -9238,6 +9278,23 @@ match /users/{userId}/meta/{docId} {
     return `${monthNames[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`;
   }
 
+  // "By client": one row per client · reason · merchant. Each row gets an equal share of its entry's hours (in
+  // hundredths, the last row takes the rounding), so any filter adds up to the real total.
+  const CL_EXPORT_HEADS = ['Date','Start','Stop','Project','Client','Reason','Merchant','Hours (share)','Entry hours','Entry','Timezone'];
+  const CL_EXPORT_HEADS_CSV = ['date','start','stop','project','client','reason','merchant','hours_share','entry_hours','entry','timezone'];
+  function buildClientRows(dates){
+    const keys = new Set(dates.map(dateKey)), out = [];
+    entries.filter(e=> keys.has(e.date)).sort((a, b)=> a.startISO.localeCompare(b.startISO)).forEach((e, n)=>{
+      const parts = [];
+      const has = Array.isArray(e.clients) && e.clients.length && clRequired(e.note || '', e.date);
+      if(has) e.clients.map(clNorm).forEach(x=> x.reasons.forEach(r=>{ const label = r.reason ? clReasonText(r) : 'Not set'; (r.merchants.length ? r.merchants : ['']).forEach(m=> parts.push([x.name, label, m])); }));
+      else parts.push(clRequired(e.note || '', e.date) ? ['Not set', 'Not set', ''] : ['', '', '']);
+      const total = Math.round((e.durationSec || 0) / 36), each = Math.floor(total / parts.length);   // hundredths of an hour
+      parts.forEach((pt, k)=>{ const share = (k === parts.length - 1 ? total - each * (parts.length - 1) : each) / 100;
+        out.push([e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), e.note || '', pt[0], pt[1], pt[2], share, +(e.durationSec / 3600).toFixed(2), n + 1, e.tz || '']); });
+    });
+    return out;
+  }
   function buildDetailedRows(dates){
     const keys = new Set(dates.map(dateKey));
     return entries
@@ -9274,6 +9331,7 @@ match /users/{userId}/meta/{docId} {
         `${getExportLabel(exportPeriod)} — chart, ${fmtHM(totalSec)}h total.`;
       return;
     }
+    if(exportType==='clients'){ const cr = buildClientRows(dates), n = new Set(cr.map(r=> r[9])).size; $('tt-export-preview').textContent = `${getExportLabel(exportPeriod)} — ${cr.length} rows from ${n} ${n === 1 ? 'entry' : 'entries'}, ${fmtHM(totalSec)}h total.`; return; }
     const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
     const noun = exportType==='detailed' ? 'entries' : (exportPeriod==='year' ? 'months' : 'days');
     $('tt-export-preview').textContent =
@@ -9281,6 +9339,9 @@ match /users/{userId}/meta/{docId} {
   }
 
   function updateExportControlsAvailability(){
+    const clBtn = $('tt-export-type').querySelector('[data-val="clients"]');
+    if(clBtn){ clBtn.hidden = !clUsed(); if(!clUsed() && exportType==='clients'){ exportType = 'detailed'; setActiveTab('tt-export-type', 'detailed'); } }
+    $('tt-export-clients-desc').hidden = !clUsed();
     const isPdf = exportFormat==='pdf';
     $('tt-export-view-section').hidden = !isPdf;
     if(!isPdf && exportView==='chart'){
@@ -9302,6 +9363,20 @@ match /users/{userId}/meta/{docId} {
 
   function doExportXlsx(dates, label){
     const wb = XLSX.utils.book_new();
+    if(exportType==='clients'){
+      const rows = buildClientRows(dates), total = rows.reduce((t, r)=> t + Math.round(r[7] * 100), 0) / 100;
+      const aoa = [[`Double T — Time by client (${label})`], [], CL_EXPORT_HEADS, ...rows, [], ['Total (h)', '', '', '', '', '', '', total]];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{wch:12},{wch:8},{wch:8},{wch:16},{wch:24},{wch:34},{wch:22},{wch:13},{wch:12},{wch:7},{wch:18}];
+      ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:CL_EXPORT_HEADS.length-1} }];
+      ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s:{r:2,c:0}, e:{r:2 + rows.length, c:CL_EXPORT_HEADS.length-1} }) };
+      if(ws['A1']) ws['A1'].s = { font:{ bold:true, sz:13, color:{rgb:'1B2733'} } };
+      CL_EXPORT_HEADS.forEach((_, ci)=>{ const a = XLSX.utils.encode_cell({r:2, c:ci}); if(ws[a]) ws[a].s = { font:{ bold:true, color:{rgb:'FFFFFF'} }, fill:{ fgColor:{rgb:'E8A33D'} } }; });
+      ws['!freeze'] = { xSplit:0, ySplit:3 };
+      XLSX.utils.book_append_sheet(wb, ws, 'By client');
+      XLSX.writeFile(wb, `Double_T_by_client_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.xlsx`);
+      return;
+    }
     const headers = exportType==='detailed'
       ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'].concat(clHeads())
       : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
@@ -9335,12 +9410,18 @@ match /users/{userId}/meta/{docId} {
     const totalValAddr = XLSX.utils.encode_cell({r:totalRow, c:1});
     if(ws[totalValAddr]) ws[totalValAddr].s = { font:{ bold:true, color:{rgb:'B87A1E'} } };
 
+    if(exportType==='detailed' && rows.length) ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s:{r:2,c:0}, e:{r:2 + rows.length, c:headers.length-1} }) };
     ws['!freeze'] = { xSplit:0, ySplit:3 };
     XLSX.utils.book_append_sheet(wb, ws, 'Report');
     XLSX.writeFile(wb, `Double_T_${exportType}_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.xlsx`);
   }
 
   function doExportCsv(dates, label){
+    if(exportType==='clients'){
+      const lines = [CL_EXPORT_HEADS_CSV.join(',')].concat(buildClientRows(dates).map(r=> r.map(v=>{ const t = String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; }).join(',')));
+      triggerDownloadBlob('\uFEFF' + lines.join('\n'), `Double_T_by_client_${exportPeriod}_${label.replace(/[^\w-]+/g,'_')}.csv`, 'text/csv;charset=utf-8');
+      return;
+    }
     const headers = exportType==='detailed'
       ? ['date','start','stop','duration_h','duration_hms','notes','timezone'].concat(clHeads(true))
       : (exportPeriod==='year' ? ['month','total_h','total_hms'] : ['date','total_h','total_hms']);
@@ -9425,7 +9506,7 @@ match /users/{userId}/meta/{docId} {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const typeLabel = (exportView==='chart') ? 'Chart' : (exportType==='detailed' ? 'Detailed' : 'Summary');
+    const typeLabel = (exportView==='chart') ? 'Chart' : (exportType==='clients' ? 'By client' : exportType==='detailed' ? 'Detailed' : 'Summary');
     const totalSec = dates.reduce((s,d)=>s+secondsForDate(d),0);
 
     // branded header bar
@@ -9495,10 +9576,11 @@ match /users/{userId}/meta/{docId} {
       return;
     }
 
-    const headers = exportType==='detailed'
+    const byClient = exportType==='clients';
+    const headers = byClient ? CL_EXPORT_HEADS.slice(0, 9) : exportType==='detailed'
       ? ['Date','Start','Stop','Duration (h)','Duration (h:m:s)','Notes','Timezone'].concat(clHeads())
       : (exportPeriod==='year' ? ['Month','Total (h)','Total (h:m:s)'] : ['Date','Total (h)','Total (h:m:s)']);
-    const rows = exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
+    const rows = byClient ? buildClientRows(dates).map(r=> r.slice(0, 9)) : exportType==='detailed' ? buildDetailedRows(dates) : buildSummaryRows(dates, exportPeriod);
 
     doc.autoTable({
       head: [headers],
