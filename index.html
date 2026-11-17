@@ -1219,6 +1219,8 @@
   html.tt-uni #tt-clients:not([hidden]){gap:16px;}
   .tt-cl-actions .tt-btn, .tt-cl-miss .tt-btn{flex:none; min-width:0;}
   .tt-cl-miss{background:transparent; border:1px dashed var(--line); color:var(--paper-dim); padding:8px 8px 8px 14px;}
+  .tt-cl-merch{display:flex; flex-direction:column; gap:8px; padding-top:10px; border-top:1px dashed var(--line);}
+  .tt-cl-merchadd{display:flex; gap:6px; align-items:center;} .tt-cl-merchadd input{flex:1; min-width:0; min-height:40px !important;} .tt-cl-merchadd .tt-btn{flex:none; min-width:0; min-height:40px; padding:0 14px;}
   .tt-cl-reason{display:flex; flex-direction:column; gap:8px;} .tt-cl-reasonline{display:flex; align-items:center; gap:6px;} .tt-cl-reasonline select{flex:1; min-width:0;}
   .tt-cl-addreason{align-self:flex-start; min-height:32px; padding:4px 0; border:0; background:transparent; color:var(--amber); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;} .tt-cl-addreason:hover{text-decoration:underline;}
   @media (min-width:901px){
@@ -2929,7 +2931,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.104</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.105</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -7556,7 +7558,15 @@ match /users/{userId}/meta/{docId} {
   }
   const clReasonOptions = (sel)=> `<option value="">Choose a reason…</option>${((clientCatalog && clientCatalog.reasons) || []).map(r=> `<option value="${escapeHtml(r)}"${sel === r ? ' selected' : ''}>${escapeHtml(r)}</option>`).join('')}<option value="${CL_SE}"${sel === CL_SE ? ' selected' : ''}>Something else…</option>`;
   // the rows for a list of chosen clients (used by the widget and by the edit drawer)
-  const clMerchantChips = (project, x)=> { const list = clMerchantsFor(project, x.name); return list.length ? `<div class="tt-cl-sub" style="margin:0">Merchant (optional)</div><div class="tt-cl-chips">${list.map(m=> { const on = (x.merchants || []).includes(m); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-merchant="${escapeHtml(m)}" aria-pressed="${on}">${escapeHtml(m)}</button>`; }).join('')}</div>` : ''; };
+  // merchants: toggle chips for the company's predefined ones, plus any typed for this entry only
+  const clMerchantChips = (project, x)=> {
+    const pre = clMerchantsFor(project, x.name), chosen = x.merchants || [], custom = chosen.filter(m=> !pre.some(p=> p.toLowerCase() === m.toLowerCase()));
+    const chip = (m)=> { const on = chosen.includes(m); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-merchant="${escapeHtml(m)}" aria-pressed="${on}">${on ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ''}${escapeHtml(m)}</button>`; };
+    const chips = pre.concat(custom).map(chip).join('');
+    return `<div class="tt-cl-merch"><div class="tt-cl-sub" style="margin:0">Merchant (optional)</div>${chips ? `<div class="tt-cl-chips">${chips}</div>` : ''}${chosen.length < 10 ? `<div class="tt-cl-merchadd"><input class="tt-menu-input" data-cl-merchant-new type="text" maxlength="60" placeholder="${pre.length ? 'Another merchant…' : 'Add a merchant…'}" aria-label="Add a merchant for ${escapeHtml(x.name)}" autocomplete="off"><button type="button" class="tt-btn" data-cl-merchant-add>Add</button></div>` : ''}</div>`;
+  };
+  // add a typed merchant to client i: if it matches a predefined one it is simply switched on
+  const clAddMerchant = (sel, i, project, typed)=> { const v = String(typed || '').trim().slice(0, 60); if(!v) return null; const x = clNorm(sel[i]); const pre = clMerchantsFor(project, x.name).find(p=> p.toLowerCase() === v.toLowerCase()); const name = pre || v; if(x.merchants.some(m=> m.toLowerCase() === name.toLowerCase()) || x.merchants.length >= 10) return sel; return sel.map((y, k)=> k !== i ? y : clStore({ ...x, merchants: x.merchants.concat([name]) })); };
   const clToggleMerchant = (sel, i, m)=> sel.map((x, j)=> { if(j !== i) return x; const n = clNorm(x); return clStore({ ...n, merchants: n.merchants.includes(m) ? n.merchants.filter(v=> v !== m) : n.merchants.concat([m]) }); });
   function clRowsHtml(sel, typing, project){
     const typed = (i, j, r)=> (typing && typing[i + ':' + j] !== undefined) ? typing[i + ':' + j] : (r.other || '');
@@ -7606,7 +7616,8 @@ match /users/{userId}/meta/{docId} {
   document.addEventListener('click', (e)=>{ if(clPopOpen && !uniOn() && !e.composedPath().some(n=> n.id === 'tt-clients' || n.id === 'tt-cl-open')){ clPopOpen = false; renderClientsWidget(); } });   // composedPath: the click may have redrawn what was clicked
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && clPopOpen){ clPopOpen = false; renderClientsWidget(); const t = $('tt-cl-open'); if(t) t.focus(); } });
   $('tt-clients').addEventListener('click', (e)=>{
-    const sel = clSelection(), project = clProject(), t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-same],[data-cl-clear]'); if(!t) return;
+    const sel = clSelection(), project = clProject(), t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-merchant-add],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-same],[data-cl-clear]'); if(!t) return;
+    if(t.hasAttribute('data-cl-merchant-add')){ const row = t.closest('.tt-cl-row'), inp = row.querySelector('[data-cl-merchant-new]'), next = clAddMerchant(sel, +row.dataset.i, project, inp.value); if(next){ clSetSelection(next); const again = $('tt-cl-body').querySelector(`.tt-cl-row[data-i="${row.dataset.i}"] [data-cl-merchant-new]`); if(again){ again.value = ''; again.focus(); } } return; }
     Object.keys(clTyping).forEach(k=> delete clTyping[k]);
     if(t.dataset.clToggle !== undefined) clSetSelection(clToggle(sel, t.dataset.clToggle));
     else if(t.dataset.clMerchant !== undefined) clSetSelection(clToggleMerchant(sel, +t.closest('.tt-cl-row').dataset.i, t.dataset.clMerchant));
@@ -7621,6 +7632,7 @@ match /users/{userId}/meta/{docId} {
     if(e.target.matches('[data-cl-reason]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { reason: v, other: v === CL_SE ? r.other : '' })));
     else if(e.target.matches('[data-cl-other]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v.trim() })));
   });
+  $('tt-clients').addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && e.target.matches('[data-cl-merchant-new]')){ e.preventDefault(); e.target.closest('.tt-cl-merchadd').querySelector('[data-cl-merchant-add]').click(); } });
   $('tt-clients').addEventListener('input', (e)=>{ if(e.target.matches('[data-cl-other]')){ clTyping[e.target.closest('.tt-cl-row').dataset.i + ':' + e.target.closest('[data-j]').dataset.j] = e.target.value; } });
   // a new project means a new list of clients
   $('tt-note').addEventListener('change', ()=>{ if(!active){ clSetSelection([]); } else renderClientsWidget(); });
@@ -7670,7 +7682,8 @@ match /users/{userId}/meta/{docId} {
     const next = entries.find(x=> x.id === rest[0]); clDrawer = { ...clDrawer, ids: rest, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> clStore(clNorm(x))), typing: {}, msg: '' }; renderClDrawer();
   }
   $('tt-cl-drawer').addEventListener('click', (e)=>{
-    if(!clDrawer) return; const t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-save],[data-cl-skip],[data-cl-close]'); if(!t) return;
+    if(!clDrawer) return; const t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-merchant-add],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-save],[data-cl-skip],[data-cl-close]'); if(!t) return;
+    if(t.hasAttribute('data-cl-merchant-add')){ const row = t.closest('.tt-cl-row'), en = entries.find(x=> x.id === clDrawer.ids[clDrawer.i]), next = clAddMerchant(clDrawer.sel, +row.dataset.i, (en && en.note) || '', row.querySelector('[data-cl-merchant-new]').value); if(next){ clDrawer.sel = next; renderClDrawer(); const again = $('tt-cl-drawer').querySelector(`.tt-cl-row[data-i="${row.dataset.i}"] [data-cl-merchant-new]`); if(again) again.focus(); } return; }
     if(t.hasAttribute('data-cl-close')){ clCloseDrawer(); return; }
     if(t.hasAttribute('data-cl-save')){ clSaveDrawer(); return; }
     if(t.hasAttribute('data-cl-skip')){ const ids = clDrawer.ids.slice(1).concat(clDrawer.ids.slice(0, 1)), next = entries.find(x=> x.id === ids[0]); clDrawer = { ...clDrawer, ids, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> clStore(clNorm(x))), typing: {}, msg: '' }; renderClDrawer(); return; }
@@ -7689,6 +7702,7 @@ match /users/{userId}/meta/{docId} {
     if(e.target.matches('[data-cl-reason]')){ delete clDrawer.typing[i + ':' + j]; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { reason: v, other: v === CL_SE ? r.other : '' })); }
     clDrawer.msg = ''; renderClDrawer();
   });
+  $('tt-cl-drawer').addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && e.target.matches('[data-cl-merchant-new]')){ e.preventDefault(); e.target.closest('.tt-cl-merchadd').querySelector('[data-cl-merchant-add]').click(); } });
   $('tt-cl-drawer').addEventListener('input', (e)=>{ if(clDrawer && e.target.matches('[data-cl-other]')){ const i = +e.target.closest('.tt-cl-row').dataset.i, j = +e.target.closest('[data-j]').dataset.j, v = e.target.value; clDrawer.typing[i + ':' + j] = v; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v })); clDrawerSaveState(); } });
   $('tt-cl-scrim').addEventListener('click', ()=> clCloseDrawer());
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && clDrawer){ clCloseDrawer(); e.stopImmediatePropagation(); } }, true);
