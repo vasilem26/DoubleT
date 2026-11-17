@@ -1190,6 +1190,7 @@
   .tt-cl-dhead{display:flex; align-items:center; gap:10px;} .tt-cl-dhead b{flex:1; font-size:18px;}
   .tt-cl-batch{display:flex; flex-direction:column; gap:8px; margin-top:10px; padding:12px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line);} .tt-cl-batch input[hidden]{display:none;}
   .tt-cl-miss{align-items:center; justify-content:space-between;}
+  .tt-cl-adminclient{display:flex; flex-direction:column; gap:8px; padding:10px 12px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line);}
   .tt-cl-adminproj{display:flex; flex-direction:column; gap:10px; padding:12px 0; border-top:1px solid var(--line);} .tt-cl-adminproj:first-child{border-top:0;}
   /* ---- Client & reason: clients per project, chosen from the company's list ---- */
   .tt-clients{display:none;}
@@ -1214,6 +1215,12 @@
   .tt-cl-hint{display:flex; gap:10px; padding:10px 12px; border-radius:12px; background:var(--amber-soft); border:1px solid var(--amber-dim); font-size:12.5px; color:var(--amber); line-height:1.45;}
   .tt-cl-actions{display:flex; gap:8px; flex-wrap:wrap;} .tt-cl-actions .tt-btn{min-height:38px; width:auto; padding:0 16px;}
   .tt-cl-none{font-size:13px; color:var(--paper-dim); line-height:1.5;}
+  #tt-cl-body{display:flex; flex-direction:column; gap:16px;}
+  html.tt-uni #tt-clients:not([hidden]){gap:16px;}
+  .tt-cl-actions .tt-btn, .tt-cl-miss .tt-btn{flex:none; min-width:0;}
+  .tt-cl-miss{background:transparent; border:1px dashed var(--line); color:var(--paper-dim); padding:8px 8px 8px 14px;}
+  .tt-cl-reason{display:flex; flex-direction:column; gap:8px;} .tt-cl-reasonline{display:flex; align-items:center; gap:6px;} .tt-cl-reasonline select{flex:1; min-width:0;}
+  .tt-cl-addreason{align-self:flex-start; min-height:32px; padding:4px 0; border:0; background:transparent; color:var(--amber); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer;} .tt-cl-addreason:hover{text-decoration:underline;}
   @media (min-width:901px){
     /* with the widget shown it becomes the first row beside the timer, and the other cards move down one row */
     html.tt-uni.tt-has-clients #tt-clients{grid-column:1 / 9; grid-row:1;}
@@ -1222,7 +1229,10 @@
     html.tt-uni.tt-has-clients .tt-panel[data-panel="pace"]{grid-row:4;}
     html.tt-uni.tt-has-clients .tt-panel[data-panel="pocket"]{grid-row:5;}
     html.tt-uni.tt-has-clients .tt-panel[data-panel="curve"]{grid-row:4 / 6;}
-    html.tt-uni.tt-has-clients #tt-uni-entries{grid-row:4 / 8;}
+    /* the right column no longer follows the left rows: the timer keeps its own height and the entries sit right under it,
+       however tall the widget grows (--cl-timer-h is the timer's measured height) */
+    html.tt-uni.tt-has-clients .tt-panel[data-panel="timer"]{grid-row:1; align-self:start; min-height:420px;}
+    html.tt-uni.tt-has-clients #tt-uni-entries{grid-row:1 / 8; margin-top:calc(var(--cl-timer-h, 420px) + 24px);}
     html.tt-uni.tt-has-clients .tt-panel[data-panel="rhythm"]{grid-row:6;}
     html.tt-uni.tt-has-clients .tt-panel[data-panel="heat"]{grid-row:6;}
     html.tt-uni.tt-has-clients .tt-panel[data-panel="earnings"]{grid-row:7;}
@@ -2919,7 +2929,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.103</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.104</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -5550,13 +5560,13 @@ match /users/{userId}/meta/{docId} {
     catch(err){ console.warn('Could not load the client catalog', err && err.code); return undefined; }
     return adminCatalogs[company.id];
   }
-  const clCatalogOf = (company)=> adminCatalogs[company.id] || { companyId: company.id, projects: {}, reasons: CL_DEFAULT_REASONS.slice(), from: dateKey(new Date()) };
+  const clCatalogOf = (company)=> adminCatalogs[company.id] || { companyId: company.id, projects: {}, merchants: {}, reasons: CL_DEFAULT_REASONS.slice(), from: dateKey(new Date()) };
   async function renderClientSettings(){
     const company = getCompany(adminSelectedCompanyId); if(!company || !$('tt-cl-admin-projects')) return;
     const loaded = await clLoadCatalog(company), msg = $('tt-cl-admin-msg');
     if(loaded === undefined){ msg.textContent = 'Could not load the clients list: your Firestore rules do not let admins read it.'; msg.className = 'tt-menu-msg err'; return; }
     const cat = clCatalogOf(company), names = Object.keys(cat.projects);
-    $('tt-cl-admin-projects').innerHTML = names.length ? names.map(n=> `<div class="tt-cl-adminproj" data-proj="${escapeHtml(n)}"><div class="tt-cl-rowhd"><b>${escapeHtml(n)}</b><button type="button" class="tt-btn danger tt-menu-btn-inline" data-cl-delproject style="width:auto">Delete</button></div><div class="tt-cl-chips">${cat.projects[n].map(c=> `<span class="tt-cl-chip on" style="padding-right:6px">${escapeHtml(c)}<button type="button" class="tt-cl-x" style="width:24px;height:24px" data-cl-delclient="${escapeHtml(c)}" aria-label="Remove ${escapeHtml(c)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>`).join('') || '<span class="tt-cl-sub">No clients yet. Entries on this project do not ask for one.</span>'}</div><div class="tt-menu-row"><input class="tt-menu-input" data-cl-newclient type="text" maxlength="60" placeholder="Add a client" aria-label="New client for ${escapeHtml(n)}" autocomplete="off" /><button type="button" class="tt-btn tt-menu-btn-inline" data-cl-addclient>Add</button></div></div>`).join('') : '<div class="tt-preset-empty">No projects yet. Members are not asked for a client until you add one.</div>';
+    $('tt-cl-admin-projects').innerHTML = names.length ? names.map(n=> `<div class="tt-cl-adminproj" data-proj="${escapeHtml(n)}"><div class="tt-cl-rowhd"><b>${escapeHtml(n)}</b><button type="button" class="tt-btn danger tt-menu-btn-inline" data-cl-delproject style="width:auto">Delete</button></div>${cat.projects[n].map(c=> `<div class="tt-cl-adminclient" data-client="${escapeHtml(c)}"><div class="tt-cl-rowhd"><b>${escapeHtml(c)}</b><button type="button" class="tt-cl-x" data-cl-delclient="${escapeHtml(c)}" aria-label="Remove ${escapeHtml(c)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="tt-cl-chips">${((cat.merchants[n] || {})[c] || []).map(m=> `<span class="tt-cl-chip on" style="padding-right:6px">${escapeHtml(m)}<button type="button" class="tt-cl-x" style="width:24px;height:24px" data-cl-delmerchant="${escapeHtml(m)}" aria-label="Remove merchant ${escapeHtml(m)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>`).join('') || '<span class="tt-cl-sub">No merchants. Merchant is optional.</span>'}</div><div class="tt-menu-row"><input class="tt-menu-input" data-cl-newmerchant type="text" maxlength="60" placeholder="Add a merchant (optional)" aria-label="New merchant for ${escapeHtml(c)}" autocomplete="off" /><button type="button" class="tt-btn tt-menu-btn-inline" data-cl-addmerchant>Add</button></div></div>`).join('') || '<span class="tt-cl-sub">No clients yet. Entries on this project do not ask for one.</span>'}<div class="tt-menu-row"><input class="tt-menu-input" data-cl-newclient type="text" maxlength="60" placeholder="Add a client" aria-label="New client for ${escapeHtml(n)}" autocomplete="off" /><button type="button" class="tt-btn tt-menu-btn-inline" data-cl-addclient>Add</button></div></div>`).join('') : '<div class="tt-preset-empty">No projects yet. Members are not asked for a client until you add one.</div>';
     $('tt-cl-admin-reasons').innerHTML = cat.reasons.map(r=> `<span class="tt-cl-chip on" style="padding-right:6px">${escapeHtml(r)}<button type="button" class="tt-cl-x" style="width:24px;height:24px" data-cl-delreason="${escapeHtml(r)}" aria-label="Remove ${escapeHtml(r)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>`).join('') + '<span class="tt-cl-sub" style="align-self:center">+ “Something else…” (always)</span>';
     $('tt-cl-from').value = cat.from === '9999-12-31' ? '' : cat.from;
     // suggestions: the project names the members already use
@@ -5567,7 +5577,7 @@ match /users/{userId}/meta/{docId} {
     const company = getCompany(adminSelectedCompanyId), msg = $('tt-cl-admin-msg'); if(!company) return false;
     const next = JSON.parse(JSON.stringify(clCatalogOf(company))); msg.className = 'tt-menu-msg';
     const problem = mutate(next); if(problem){ msg.textContent = problem; msg.className = 'tt-menu-msg err'; return false; }
-    try{ await setDoc(doc(db, 'clientCatalogs', company.id), { companyId: company.id, memberUids: company.memberUids, projects: next.projects, reasons: next.reasons, from: next.from, updatedAt: new Date().toISOString() }); }
+    try{ await setDoc(doc(db, 'clientCatalogs', company.id), { companyId: company.id, memberUids: company.memberUids, projects: next.projects, merchants: next.merchants || {}, reasons: next.reasons, from: next.from, updatedAt: new Date().toISOString() }); }
     catch(err){ console.warn('Client catalog not saved', err && err.code); msg.textContent = 'Could not save: ' + ((err && err.code === 'permission-denied') ? 'your Firestore rules do not let admins change the clients list.' : 'check your connection and try again.'); msg.className = 'tt-menu-msg err'; renderClientSettings(); return false; }
     adminCatalogs[company.id] = clNormalizeCatalog(company.id, next); msg.textContent = okText || 'Saved.'; msg.className = 'tt-menu-msg ok'; renderClientSettings(); return true;
   }
@@ -5577,10 +5587,13 @@ match /users/{userId}/meta/{docId} {
   $('tt-cl-admin-projects').addEventListener('click', async (e)=>{
     const box = e.target.closest('[data-proj]'); if(!box) return; const proj = box.dataset.proj;
     if(e.target.closest('[data-cl-addclient]')){ const el = box.querySelector('[data-cl-newclient]'), v = el.value.trim(); if(!v) return; await clCatSave(c=>{ if(clDup(c.projects[proj], v)) return 'That client is already on ' + proj + '.'; if(c.projects[proj].length >= 40) return 'At most 40 clients per project.'; c.projects[proj].push(v); }, `${v} added to ${proj}.`); return; }
-    const dc = e.target.closest('[data-cl-delclient]'); if(dc){ await clCatSave(c=>{ c.projects[proj] = c.projects[proj].filter(x=> x !== dc.dataset.clDelclient); }, 'Client removed. Entries that already have it keep it.'); return; }
-    const dp = e.target.closest('[data-cl-delproject]'); if(dp){ if(!dp.dataset.sure){ dp.dataset.sure = '1'; dp.textContent = 'Confirm delete'; setTimeout(()=>{ if(dp.isConnected){ delete dp.dataset.sure; dp.textContent = 'Delete'; } }, 4000); return; } await clCatSave(c=>{ delete c.projects[proj]; }, `${proj} removed. Its entries keep their clients.`); }
+    const am = e.target.closest('[data-cl-addmerchant]');
+    if(am){ const blk = am.closest('[data-client]'), cl = blk.dataset.client, el = blk.querySelector('[data-cl-newmerchant]'), v = el.value.trim(); if(!v) return; await clCatSave(c=>{ c.merchants = c.merchants || {}; const l = ((c.merchants[proj] = c.merchants[proj] || {})[cl] = c.merchants[proj][cl] || []); if(clDup(l, v)) return `That merchant is already on ${cl}.`; if(l.length >= 40) return 'At most 40 merchants per client.'; l.push(v); }, `${v} added to ${cl}.`); return; }
+    const dm = e.target.closest('[data-cl-delmerchant]'); if(dm){ const cl = dm.closest('[data-client]').dataset.client; await clCatSave(c=>{ if(c.merchants && c.merchants[proj] && c.merchants[proj][cl]) c.merchants[proj][cl] = c.merchants[proj][cl].filter(x=> x !== dm.dataset.clDelmerchant); }, 'Merchant removed. Entries that already have it keep it.'); return; }
+    const dc = e.target.closest('[data-cl-delclient]'); if(dc){ await clCatSave(c=>{ c.projects[proj] = c.projects[proj].filter(x=> x !== dc.dataset.clDelclient); if(c.merchants && c.merchants[proj]) delete c.merchants[proj][dc.dataset.clDelclient]; }, 'Client removed. Entries that already have it keep it.'); return; }
+    const dp = e.target.closest('[data-cl-delproject]'); if(dp){ if(!dp.dataset.sure){ dp.dataset.sure = '1'; dp.textContent = 'Confirm delete'; setTimeout(()=>{ if(dp.isConnected){ delete dp.dataset.sure; dp.textContent = 'Delete'; } }, 4000); return; } await clCatSave(c=>{ delete c.projects[proj]; if(c.merchants) delete c.merchants[proj]; }, `${proj} removed. Its entries keep their clients.`); }
   });
-  $('tt-cl-admin-projects').addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && e.target.matches('[data-cl-newclient]')){ e.preventDefault(); e.target.closest('[data-proj]').querySelector('[data-cl-addclient]').click(); } });
+  $('tt-cl-admin-projects').addEventListener('keydown', (e)=>{ if(e.key !== 'Enter') return; if(e.target.matches('[data-cl-newclient]')){ e.preventDefault(); e.target.closest('[data-proj]').querySelector('[data-cl-addclient]').click(); } else if(e.target.matches('[data-cl-newmerchant]')){ e.preventDefault(); e.target.closest('[data-client]').querySelector('[data-cl-addmerchant]').click(); } });
   $('tt-cl-addreason').addEventListener('click', async ()=>{ const el = $('tt-cl-newreason'), v = el.value.trim(); if(!v) return; if(await clCatSave(c=>{ if(v.toLowerCase() === CL_SE.toLowerCase()) return '“Something else…” is always offered, no need to add it.'; if(clDup(c.reasons, v)) return 'That reason is already in the list.'; if(c.reasons.length >= 12) return 'At most 12 reasons.'; c.reasons.push(v); }, 'Reason added.')) el.value = ''; });
   $('tt-cl-newreason').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); $('tt-cl-addreason').click(); } });
   $('tt-cl-admin-reasons').addEventListener('click', (e)=>{ const d = e.target.closest('[data-cl-delreason]'); if(d) clCatSave(c=>{ c.reasons = c.reasons.filter(x=> x !== d.dataset.clDelreason); }, 'Reason removed. Entries that already have it keep it.'); });
@@ -7504,40 +7517,62 @@ match /users/{userId}/meta/{docId} {
   function clNormalizeCatalog(id, data){
     const clean = (a, n)=> Array.from(new Set((Array.isArray(a) ? a : []).filter(x=> typeof x === 'string').map(x=> x.trim().slice(0, 60)).filter(Boolean))).slice(0, n);
     const projects = {}; Object.entries((data && data.projects) || {}).slice(0, 30).forEach(([k, v])=>{ const c = clean(v, 40); if(k && typeof k === 'string') projects[k.slice(0, 60)] = c; });
-    return { companyId: (data && data.companyId) || id, projects, reasons: clean(data && data.reasons, 12).filter(r=> r !== CL_SE), from: (data && /^\d{4}-\d\d-\d\d$/.test(data.from || '')) ? data.from : '9999-12-31' };
+    const merchants = {};
+    Object.entries((data && data.merchants) || {}).forEach(([pn, byClient])=>{ if(!projects[pn] || !byClient || typeof byClient !== 'object') return; Object.entries(byClient).forEach(([cn, list])=>{ if(!projects[pn].includes(cn)) return; const l = clean(list, 40); if(l.length) (merchants[pn] = merchants[pn] || {})[cn] = l; }); });
+    return { companyId: (data && data.companyId) || id, projects, merchants, reasons: clean(data && data.reasons, 12).filter(r=> r !== CL_SE), from: (data && /^\d{4}-\d\d-\d\d$/.test(data.from || '')) ? data.from : '9999-12-31' };
   }
   const clUsed = ()=> !!(clientCatalog && Object.values(clientCatalog.projects).some(a=> a.length));
+  const clMerchantsFor = (project, client)=> (clientCatalog && clientCatalog.merchants && clientCatalog.merchants[project] && clientCatalog.merchants[project][client]) || [];
+  const clName = (x)=> x.name + ((Array.isArray(x.merchants) && x.merchants.length) ? ' › ' + x.merchants.join(', ') : '');
   const clientsFor = (project)=> (clientCatalog && clientCatalog.projects[project]) || [];
   const clRequired = (project, date)=> clUsed() && clientsFor(project || '').length > 0 && (date || '') >= clientCatalog.from;
   // Client and Reason columns in the detailed exports: only when the company uses clients, and always at the END,
   // so every existing column keeps its position.
-  const clHeads = (lower)=> clUsed() ? (lower ? ['client', 'reason'] : ['Client', 'Reason']) : [];
-  const clWidths = ()=> clUsed() ? [{wch:28},{wch:34}] : [];
+  const clHeads = (lower)=> clUsed() ? (lower ? ['client', 'reason', 'merchant'] : ['Client', 'Reason', 'Merchant']) : [];
+  const clWidths = ()=> clUsed() ? [{wch:28},{wch:34},{wch:28}] : [];
   function clCells(e){
-    if(!clUsed() || !clRequired(e.note || '', e.date) || !Array.isArray(e.clients) || !e.clients.length) return clUsed() ? ['', ''] : [];
-    return [e.clients.map(x=> x.name).join('; '), e.clients.map(clText).join('; ')];
+    if(!clUsed() || !clRequired(e.note || '', e.date) || !Array.isArray(e.clients) || !e.clients.length) return clUsed() ? ['', '', ''] : [];
+    const anyM = e.clients.some(x=> Array.isArray(x.merchants) && x.merchants.length);
+    return [e.clients.map(x=> x.name).join('; '), e.clients.map(clText).join('; '), anyM ? e.clients.map(x=> (Array.isArray(x.merchants) && x.merchants.length) ? x.merchants.join(', ') : '–').join('; ') : ''];
   }
   const clValidName = (x)=> !!(x && typeof x.name === 'string' && x.name);
-  const clValid = (x)=> !!(x && x.name && x.reason && (x.reason !== CL_SE || String(x.other || '').trim()));
+  const clReasonOk = (r)=> !!(r && r.reason && (r.reason !== CL_SE || String(r.other || '').trim()));
+  // one shape for every client item, whatever version saved it
+  const clNorm = (x)=> ({ name: (x && x.name) || '', reasons: (x && Array.isArray(x.reasons) && x.reasons.length ? x.reasons : [{ reason: x && x.reason, other: x && x.other }]).slice(0, 5).map(r=> ({ reason: (r && r.reason) || '', other: (r && r.other) || '' })), merchants: (x && Array.isArray(x.merchants)) ? x.merchants.slice(0, 10) : [] });
+  // what is written: the list, plus the first reason in the old fields so an older copy of the app still reads it
+  const clStore = (n)=> ({ name: n.name, reason: n.reasons[0].reason, other: n.reasons[0].other, reasons: n.reasons.map(r=> ({ reason: r.reason, other: r.other })), merchants: n.merchants });
+  const clEdit = (sel, i, fn)=> sel.map((x, k)=> { if(k !== i) return x; const n = clNorm(x); return clStore({ ...n, reasons: fn(n.reasons) }); });
+  const clValid = (x)=> !!(x && x.name && clNorm(x).reasons.every(clReasonOk));
   const clOk = (e)=> !clRequired(e.note || '', e.date) || (Array.isArray(e.clients) && e.clients.length >= 1 && e.clients.every(clValid));
-  const clText = (x)=> x.reason === CL_SE ? `${CL_SE}: ${x.other}` : x.reason;
+  const clText = (x)=> clNorm(x).reasons.map(r=> r.reason === CL_SE ? `${CL_SE}: ${r.other}` : r.reason).join(' + ');
   const clNeeding = ()=> entries.filter(e=> e.date && !clOk(e));
   const clProject = ()=> active ? (active.note || '') : ($('tt-note') ? $('tt-note').value : '');
   const clSelection = ()=> active ? (Array.isArray(active.clients) ? active.clients : []) : clPending;
   function clRefresh(){ renderClientsWidget(); if(uniOn()){ renderUniEntries(); renderUnified(); } renderEnhancedPanels(true); }
   function clSetSelection(arr){
-    arr = arr.slice(0, 10).map(x=> ({ name: x.name, reason: x.reason || '', other: x.other || '' }));
+    arr = arr.slice(0, 10).map(x=> clStore(clNorm(x)));
     if(active){ active = { ...active, clients: arr }; renderClientsWidget(); setDoc(activeDoc(currentUid), { clients: arr }, { merge: true }).catch(err=> console.warn('Could not save the clients on the running entry', err && err.code)); }
     else { clPending = arr; try{ localStorage.setItem('tt-cl-pending:' + currentUid, JSON.stringify(arr)); }catch(e){} renderClientsWidget(); }
   }
   const clReasonOptions = (sel)=> `<option value="">Choose a reason…</option>${((clientCatalog && clientCatalog.reasons) || []).map(r=> `<option value="${escapeHtml(r)}"${sel === r ? ' selected' : ''}>${escapeHtml(r)}</option>`).join('')}<option value="${CL_SE}"${sel === CL_SE ? ' selected' : ''}>Something else…</option>`;
   // the rows for a list of chosen clients (used by the widget and by the edit drawer)
-  function clRowsHtml(sel, typing){
-    return sel.map((x, i)=> { const other = typing && typing[i] !== undefined ? typing[i] : (x.other || ''); return `<div class="tt-cl-row" data-i="${i}"><div class="tt-cl-rowhd"><b>${escapeHtml(x.name)}</b><button type="button" class="tt-cl-x" data-cl-remove aria-label="Remove ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><select class="tt-menu-input" data-cl-reason aria-label="Reason for ${escapeHtml(x.name)}">${clReasonOptions(x.reason)}</select><input class="tt-menu-input" data-cl-other type="text" maxlength="120" placeholder="Describe the reason" aria-label="Other reason for ${escapeHtml(x.name)}" value="${escapeHtml(other)}"${x.reason === CL_SE ? '' : ' hidden'}>${clValid({ ...x, other }) ? '' : `<div class="tt-cl-warn">${x.reason ? 'Describe the reason' : 'Choose a reason'}</div>`}</div>`; }).join('');
+  const clMerchantChips = (project, x)=> { const list = clMerchantsFor(project, x.name); return list.length ? `<div class="tt-cl-sub" style="margin:0">Merchant (optional)</div><div class="tt-cl-chips">${list.map(m=> { const on = (x.merchants || []).includes(m); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-merchant="${escapeHtml(m)}" aria-pressed="${on}">${escapeHtml(m)}</button>`; }).join('')}</div>` : ''; };
+  const clToggleMerchant = (sel, i, m)=> sel.map((x, j)=> { if(j !== i) return x; const n = clNorm(x); return clStore({ ...n, merchants: n.merchants.includes(m) ? n.merchants.filter(v=> v !== m) : n.merchants.concat([m]) }); });
+  function clRowsHtml(sel, typing, project){
+    const typed = (i, j, r)=> (typing && typing[i + ':' + j] !== undefined) ? typing[i + ':' + j] : (r.other || '');
+    return sel.map((raw, i)=> { const x = clNorm(raw), many = x.reasons.length > 1;
+      const reasons = x.reasons.map((r, j)=> `<div class="tt-cl-reason" data-j="${j}"><div class="tt-cl-reasonline"><select class="tt-menu-input" data-cl-reason aria-label="Reason${many ? ' ' + (j + 1) : ''} for ${escapeHtml(x.name)}">${clReasonOptions(r.reason)}</select>${many ? `<button type="button" class="tt-cl-x" data-cl-rmreason aria-label="Remove reason ${j + 1} for ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div><input class="tt-menu-input" data-cl-other type="text" maxlength="120" placeholder="Describe the reason" aria-label="Other reason for ${escapeHtml(x.name)}" value="${escapeHtml(typed(i, j, r))}"${r.reason === CL_SE ? '' : ' hidden'}></div>`).join('');
+      const bad = x.reasons.find((r, j)=> !clReasonOk({ reason: r.reason, other: typed(i, j, r) }));
+      return `<div class="tt-cl-row" data-i="${i}"><div class="tt-cl-rowhd"><b>${escapeHtml(x.name)}</b><button type="button" class="tt-cl-x" data-cl-remove aria-label="Remove ${escapeHtml(x.name)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${reasons}${x.reasons.length < 5 ? '<button type="button" class="tt-cl-addreason" data-cl-addreason>+ Add another reason</button>' : ''}${clMerchantChips(project || '', x)}${bad ? `<div class="tt-cl-warn">${bad.reason ? 'Describe the reason' : 'Choose a reason'}</div>` : ''}</div>`; }).join('');
   }
   const clChipsHtml = (project, sel)=> clientsFor(project).map(n=> { const on = sel.some(x=> x.name === n); return `<button type="button" class="tt-cl-chip${on ? ' on' : ''}" data-cl-toggle="${escapeHtml(n)}" aria-pressed="${on}">${on ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>' : ''}${escapeHtml(n)}</button>`; }).join('');
-  const clToggle = (sel, name)=> sel.some(x=> x.name === name) ? sel.filter(x=> x.name !== name) : sel.concat([{ name, reason: '', other: '' }]);
+  const clToggle = (sel, name)=> sel.some(x=> x.name === name) ? sel.filter(x=> x.name !== name) : sel.concat([clStore(clNorm({ name }))]);
   function clLastComplete(project){ for(let i = entries.length - 1; i >= 0; i--){ const e = entries[i]; if((e.note || '') === project && Array.isArray(e.clients) && e.clients.length && e.clients.every(clValid) && clientsFor(project).length) return e; } return null; }
+  let clTimerWatch = null;
+  function clWatchTimer(){
+    if(clTimerWatch || !window.ResizeObserver) return; const t = document.querySelector('.tt-panel[data-panel="timer"]'), c = $('tt-panels-container'); if(!t || !c) return;
+    clTimerWatch = new ResizeObserver(()=> c.style.setProperty('--cl-timer-h', Math.round(t.getBoundingClientRect().height) + 'px')); clTimerWatch.observe(t);
+  }
   function renderClientsWidget(){
     const box = $('tt-clients'); if(!box) return;
     const on = !!currentUid && clUsed();
@@ -7546,6 +7581,7 @@ match /users/{userId}/meta/{docId} {
     box.classList.toggle('tt-cl-pop', !uniOn());
     box.hidden = !on || (!uniOn() && !clPopOpen);
     if(!on) return;
+    clWatchTimer();
     const project = clProject(), list = clientsFor(project), req = list.length > 0, sel = clSelection().filter(x=> list.includes(x.name));
     const incomplete = req && (sel.length === 0 || sel.some(x=> !clValid(x)));
     const state = !req ? 'none' : (incomplete ? 'req' : 'ok'), pill = !req ? 'Not needed' : (incomplete ? 'Required' : 'Complete ✓');
@@ -7555,7 +7591,7 @@ match /users/{userId}/meta/{docId} {
     $('tt-cl-sub').textContent = `${active ? 'For this recording' : 'For your next recording'}${project ? ' · ' + project : ''}`;
     const last = (req && sel.length === 0) ? clLastComplete(project) : null;
     let html = !req ? `<div class="tt-cl-none">${project ? escapeHtml(project) + ' has no clients, so nothing is asked.' : 'Choose a project to pick a client.'}</div>`
-      : `<div class="tt-cl-chips" role="group" aria-label="Clients">${clChipsHtml(project, sel)}</div>${sel.length ? `<div class="tt-cl-rows">${clRowsHtml(sel, clTyping)}</div>` : ''}${incomplete ? `<div class="tt-cl-hint"><span>${sel.length === 0 ? 'Add at least one client and a reason. You can also do it after you stop, from Recent entries, and you will get a reminder until it is done.' : 'Every client needs a reason.'}</span></div>` : ''}<div class="tt-cl-actions">${last ? '<button type="button" class="tt-btn" data-cl-same>Same as last entry</button>' : ''}${sel.length ? '<button type="button" class="tt-btn" data-cl-clear>Clear</button>' : ''}</div>`;
+      : `<div class="tt-cl-chips" role="group" aria-label="Clients">${clChipsHtml(project, sel)}</div>${sel.length ? `<div class="tt-cl-rows">${clRowsHtml(sel, clTyping, project)}</div>` : ''}${incomplete ? `<div class="tt-cl-hint"><span>${sel.length === 0 ? 'Add at least one client and a reason. You can also do it after you stop, from Recent entries, and you will get a reminder until it is done.' : 'Every client needs a reason.'}</span></div>` : ''}${(last || sel.length) ? `<div class="tt-cl-actions">${last ? '<button type="button" class="tt-btn" data-cl-same>Same as last entry</button>' : ''}${sel.length ? '<button type="button" class="tt-btn" data-cl-clear>Clear</button>' : ''}</div>` : ''}`;
     const missing = clNeeding().length;
     if(!active && missing) html += `<div class="tt-cl-hint tt-cl-miss"><span>${missing} earlier ${missing === 1 ? 'entry needs' : 'entries need'} a client and a reason.</span><button type="button" class="tt-btn" style="min-height:34px;width:auto;padding:0 14px" data-cl-review>Review</button></div>`;
     const body = $('tt-cl-body'), sig = html.replace(/ value="[^"]*"/g, '');          // typed text is not a change of structure
@@ -7570,32 +7606,35 @@ match /users/{userId}/meta/{docId} {
   document.addEventListener('click', (e)=>{ if(clPopOpen && !uniOn() && !e.composedPath().some(n=> n.id === 'tt-clients' || n.id === 'tt-cl-open')){ clPopOpen = false; renderClientsWidget(); } });   // composedPath: the click may have redrawn what was clicked
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && clPopOpen){ clPopOpen = false; renderClientsWidget(); const t = $('tt-cl-open'); if(t) t.focus(); } });
   $('tt-clients').addEventListener('click', (e)=>{
-    const sel = clSelection(), project = clProject(), t = e.target.closest('[data-cl-toggle],[data-cl-remove],[data-cl-same],[data-cl-clear]'); if(!t) return;
+    const sel = clSelection(), project = clProject(), t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-same],[data-cl-clear]'); if(!t) return;
     Object.keys(clTyping).forEach(k=> delete clTyping[k]);
     if(t.dataset.clToggle !== undefined) clSetSelection(clToggle(sel, t.dataset.clToggle));
+    else if(t.dataset.clMerchant !== undefined) clSetSelection(clToggleMerchant(sel, +t.closest('.tt-cl-row').dataset.i, t.dataset.clMerchant));
+    else if(t.hasAttribute('data-cl-addreason')) clSetSelection(clEdit(sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.concat([{ reason: '', other: '' }])));
+    else if(t.hasAttribute('data-cl-rmreason')){ const j = +t.closest('[data-j]').dataset.j; clSetSelection(clEdit(sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.filter((_, k)=> k !== j))); }
     else if(t.hasAttribute('data-cl-remove')) clSetSelection(sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i));
     else if(t.hasAttribute('data-cl-clear')) clSetSelection([]);
     else if(t.hasAttribute('data-cl-same')){ const l = clLastComplete(project); if(l) clSetSelection(l.clients); }
   });
   $('tt-clients').addEventListener('change', (e)=>{
-    const row = e.target.closest('.tt-cl-row'); if(!row) return; const i = +row.dataset.i, sel = clSelection().slice();
-    if(e.target.matches('[data-cl-reason]')){ delete clTyping[i]; sel[i] = { ...sel[i], reason: e.target.value, other: e.target.value === CL_SE ? (sel[i].other || '') : '' }; clSetSelection(sel); }
-    else if(e.target.matches('[data-cl-other]')){ delete clTyping[i]; sel[i] = { ...sel[i], other: e.target.value.trim() }; clSetSelection(sel); }
+    const row = e.target.closest('.tt-cl-row'), rb = e.target.closest('[data-j]'); if(!row || !rb) return; const i = +row.dataset.i, j = +rb.dataset.j, sel = clSelection(), v = e.target.value; delete clTyping[i + ':' + j];
+    if(e.target.matches('[data-cl-reason]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { reason: v, other: v === CL_SE ? r.other : '' })));
+    else if(e.target.matches('[data-cl-other]')) clSetSelection(clEdit(sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v.trim() })));
   });
-  $('tt-clients').addEventListener('input', (e)=>{ if(e.target.matches('[data-cl-other]')){ const row = e.target.closest('.tt-cl-row'); clTyping[+row.dataset.i] = e.target.value; } });
+  $('tt-clients').addEventListener('input', (e)=>{ if(e.target.matches('[data-cl-other]')){ clTyping[e.target.closest('.tt-cl-row').dataset.i + ':' + e.target.closest('[data-j]').dataset.j] = e.target.value; } });
   // a new project means a new list of clients
   $('tt-note').addEventListener('change', ()=>{ if(!active){ clSetSelection([]); } else renderClientsWidget(); });
 
   // ---- fixing an entry afterwards: the edit drawer (one entry, or "review one by one") ----
   const clLine = (e)=>{
     if(!clRequired(e.note || '', e.date)) return '';
-    if(clOk(e)) return `<button type="button" class="tt-cl-line" data-cl-edit="${escapeHtml(e.id)}" aria-label="Edit client and reason">${escapeHtml(e.clients.map(x=> `${x.name} · ${clText(x)}`).join(' · '))}</button>`;
+    if(clOk(e)) return `<button type="button" class="tt-cl-line" data-cl-edit="${escapeHtml(e.id)}" aria-label="Edit client and reason">${escapeHtml(e.clients.map(x=> `${clName(x)} · ${clText(x)}`).join(' · '))}</button>`;
     return `<button type="button" class="tt-cl-addchip" data-cl-edit="${escapeHtml(e.id)}">${e.clients && e.clients.length ? 'Reason missing' : 'Add client & reason'}</button>`;
   };
   function clOpenDrawer(ids, mode, opener){
     ids = ids.filter(id=> entries.some(e=> e.id === id)); if(!ids.length) return;
     const e = entries.find(x=> x.id === ids[0]);
-    clDrawer = { ids, i: 0, mode, sel: (Array.isArray(e.clients) ? e.clients : []).map(x=> ({ ...x })), typing: {}, msg: '', opener: opener || document.activeElement };
+    clDrawer = { ids, i: 0, mode, sel: (Array.isArray(e.clients) ? e.clients : []).map(x=> clStore(clNorm(x))), typing: {}, msg: '', opener: opener || document.activeElement };
     renderClDrawer(); setTimeout(()=>{ const f = $('tt-cl-drawer').querySelector('button[data-cl-toggle], .tt-cl-x'); if(f) f.focus(); }, 30);
   }
   function clCloseDrawer(){ const op = clDrawer && clDrawer.opener; clDrawer = null; renderClDrawer(); if(op && op.isConnected && op.focus) try{ op.focus(); }catch(e){} }
@@ -7610,14 +7649,14 @@ match /users/{userId}/meta/{docId} {
     dr.innerHTML = `<div class="tt-cl-dhead"><b>Client &amp; reason</b>${review ? `<span class="tt-cl-pill req">Entry ${clDrawer.i + 1} of ${n}</span>` : ''}<button type="button" class="tt-cl-x" data-cl-close aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`
       + `<div class="tt-cl-row"><div class="tt-cl-sub" style="margin:0">${WD_SHORT[(new Date(y, m - 1, d).getDay() + 6) % 7]} ${d} ${MON_SHORT[m - 1]}</div><b>${escapeHtml(clockTime(e.startISO, e.tz))}–${escapeHtml(clockTime(e.stopISO, e.tz))} · ${escapeHtml(e.note || 'No project')} · ${escapeHtml(fmtHM(e.durationSec || 0))} h</b></div>`
       + `<div class="tt-cl-chips" role="group" aria-label="Clients">${clChipsHtml(e.note || '', sel)}</div>`
-      + (sel.length ? `<div class="tt-cl-rows" style="grid-template-columns:1fr">${clRowsHtml(sel, clDrawer.typing)}</div>` : '')
+      + (sel.length ? `<div class="tt-cl-rows" style="grid-template-columns:1fr">${clRowsHtml(sel, clDrawer.typing, e.note || '')}</div>` : '')
       + (ok ? '' : `<div class="tt-cl-hint"><span>${sel.length === 0 ? 'At least one client is required.' : 'Every client needs a reason.'}</span></div>`)
       + (clDrawer.msg ? `<div class="tt-cl-hint" role="alert"><span>${escapeHtml(clDrawer.msg)}</span></div>` : '')
       + `<div class="tt-cl-actions" style="margin-top:auto"><button type="button" class="tt-btn primary" data-cl-save${ok ? '' : ' disabled'}>${review && clDrawer.i < n - 1 ? 'Save and next' : 'Save'}</button>${review && clDrawer.i < n - 1 ? '<button type="button" class="tt-btn" data-cl-skip>Skip</button>' : ''}<button type="button" class="tt-btn" data-cl-close>${review ? 'Done for now' : 'Cancel'}</button></div>`;
   }
   async function clSaveDrawer(){
     if(!clDrawer) return; const e = entries.find(x=> x.id === clDrawer.ids[clDrawer.i]); if(!e) return;
-    const sel = clDrawer.sel.map(x=> ({ name: x.name, reason: x.reason, other: x.reason === CL_SE ? String(x.other || '').trim() : '' }));
+    const sel = clDrawer.sel.map(x=> { const n = clNorm(x); return clStore({ ...n, reasons: n.reasons.map(r=> ({ reason: r.reason, other: r.reason === CL_SE ? String(r.other || '').trim() : '' })) }); });
     if(!sel.length || !sel.every(clValid)) return;
     try{ await setDoc(doc(entriesCol(currentUid), e.id), { clients: sel }, { merge: true }); }
     catch(err){ console.warn('Could not save the clients', err && err.code); clDrawer.msg = (err && err.code === 'permission-denied') ? 'Could not save: your Firestore rules do not let you change an existing entry.' : 'Could not save. Check your connection and try again.'; renderClDrawer(); return; }
@@ -7628,24 +7667,29 @@ match /users/{userId}/meta/{docId} {
     if(clDrawer.mode !== 'review'){ clCloseDrawer(); return; }
     const rest = clDrawer.ids.slice(clDrawer.i + 1).filter(id=> { const x = entries.find(en=> en.id === id); return x && !clOk(x); });
     if(!rest.length){ clCloseDrawer(); assignNote = { ok: true, text: 'All entries now have a client and a reason.' }; refreshAssign(); clearTimeout(assignTimer); assignTimer = setTimeout(()=>{ assignNote = null; refreshAssign(); }, 5000); return; }
-    const next = entries.find(x=> x.id === rest[0]); clDrawer = { ...clDrawer, ids: rest, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> ({ ...x })), typing: {}, msg: '' }; renderClDrawer();
+    const next = entries.find(x=> x.id === rest[0]); clDrawer = { ...clDrawer, ids: rest, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> clStore(clNorm(x))), typing: {}, msg: '' }; renderClDrawer();
   }
   $('tt-cl-drawer').addEventListener('click', (e)=>{
-    if(!clDrawer) return; const t = e.target.closest('[data-cl-toggle],[data-cl-remove],[data-cl-save],[data-cl-skip],[data-cl-close]'); if(!t) return;
+    if(!clDrawer) return; const t = e.target.closest('[data-cl-toggle],[data-cl-merchant],[data-cl-addreason],[data-cl-rmreason],[data-cl-remove],[data-cl-save],[data-cl-skip],[data-cl-close]'); if(!t) return;
     if(t.hasAttribute('data-cl-close')){ clCloseDrawer(); return; }
     if(t.hasAttribute('data-cl-save')){ clSaveDrawer(); return; }
-    if(t.hasAttribute('data-cl-skip')){ const ids = clDrawer.ids.slice(1).concat(clDrawer.ids.slice(0, 1)), next = entries.find(x=> x.id === ids[0]); clDrawer = { ...clDrawer, ids, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> ({ ...x })), typing: {}, msg: '' }; renderClDrawer(); return; }
+    if(t.hasAttribute('data-cl-skip')){ const ids = clDrawer.ids.slice(1).concat(clDrawer.ids.slice(0, 1)), next = entries.find(x=> x.id === ids[0]); clDrawer = { ...clDrawer, ids, i: 0, sel: (Array.isArray(next.clients) ? next.clients : []).map(x=> clStore(clNorm(x))), typing: {}, msg: '' }; renderClDrawer(); return; }
     clDrawer.typing = {}; clDrawer.msg = '';
-    if(t.dataset.clToggle !== undefined) clDrawer.sel = clToggle(clDrawer.sel, t.dataset.clToggle); else clDrawer.sel = clDrawer.sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i);
+    if(t.dataset.clToggle !== undefined) clDrawer.sel = clToggle(clDrawer.sel, t.dataset.clToggle);
+    else if(t.dataset.clMerchant !== undefined) clDrawer.sel = clToggleMerchant(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, t.dataset.clMerchant);
+    else if(t.hasAttribute('data-cl-addreason')) clDrawer.sel = clEdit(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.concat([{ reason: '', other: '' }]));
+    else if(t.hasAttribute('data-cl-rmreason')){ const j = +t.closest('[data-j]').dataset.j; clDrawer.sel = clEdit(clDrawer.sel, +t.closest('.tt-cl-row').dataset.i, rs=> rs.filter((_, k)=> k !== j)); }
+    else clDrawer.sel = clDrawer.sel.filter((_, i)=> i !== +t.closest('.tt-cl-row').dataset.i);
     renderClDrawer();
   });
+  const clDrawerSaveState = ()=>{ const b = $('tt-cl-drawer').querySelector('[data-cl-save]'); if(b) b.disabled = !(clDrawer.sel.length && clDrawer.sel.every(clValid)); };
   $('tt-cl-drawer').addEventListener('change', (e)=>{
-    if(!clDrawer) return; const row = e.target.closest('.tt-cl-row'); if(!row || row.dataset.i === undefined) return; const i = +row.dataset.i;
-    if(e.target.matches('[data-cl-reason]')){ delete clDrawer.typing[i]; clDrawer.sel[i] = { ...clDrawer.sel[i], reason: e.target.value, other: e.target.value === CL_SE ? (clDrawer.sel[i].other || '') : '' }; }
-    else if(e.target.matches('[data-cl-other]')){ clDrawer.sel[i] = { ...clDrawer.sel[i], other: e.target.value.trim() }; const b = $('tt-cl-drawer').querySelector('[data-cl-save]'); if(b) b.disabled = !(clDrawer.sel.length && clDrawer.sel.every(clValid)); return; }
+    if(!clDrawer) return; const row = e.target.closest('.tt-cl-row'), rb = e.target.closest('[data-j]'); if(!row || !rb || row.dataset.i === undefined) return; const i = +row.dataset.i, j = +rb.dataset.j, v = e.target.value;
+    if(e.target.matches('[data-cl-other]')){ clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v.trim() })); clDrawerSaveState(); return; }   // no redraw: it would swallow a click on Save
+    if(e.target.matches('[data-cl-reason]')){ delete clDrawer.typing[i + ':' + j]; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { reason: v, other: v === CL_SE ? r.other : '' })); }
     clDrawer.msg = ''; renderClDrawer();
   });
-  $('tt-cl-drawer').addEventListener('input', (e)=>{ if(clDrawer && e.target.matches('[data-cl-other]')){ const row = e.target.closest('.tt-cl-row'); clDrawer.typing[+row.dataset.i] = e.target.value; clDrawer.sel[+row.dataset.i] = { ...clDrawer.sel[+row.dataset.i], other: e.target.value }; const b = $('tt-cl-drawer').querySelector('[data-cl-save]'); if(b) b.disabled = !(clDrawer.sel.length && clDrawer.sel.every(clValid)); } });
+  $('tt-cl-drawer').addEventListener('input', (e)=>{ if(clDrawer && e.target.matches('[data-cl-other]')){ const i = +e.target.closest('.tt-cl-row').dataset.i, j = +e.target.closest('[data-j]').dataset.j, v = e.target.value; clDrawer.typing[i + ':' + j] = v; clDrawer.sel = clEdit(clDrawer.sel, i, rs=> rs.map((r, k)=> k !== j ? r : { ...r, other: v })); clDrawerSaveState(); } });
   $('tt-cl-scrim').addEventListener('click', ()=> clCloseDrawer());
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && clDrawer){ clCloseDrawer(); e.stopImmediatePropagation(); } }, true);
   // the reminder's actions (bell, Attention panel and the widget share them)
@@ -7658,7 +7702,7 @@ match /users/{userId}/meta/{docId} {
     try{
       for(let i = 0; i < targets.length; i += 400){
         const batch = writeBatch(db);
-        targets.slice(i, i + 400).forEach(e=>{ const next = (Array.isArray(e.clients) && e.clients.length) ? e.clients.map(x=> clValid(x) ? x : { name: x.name, reason, other: reason === CL_SE ? other : '' }) : [{ name: client, reason, other: reason === CL_SE ? other : '' }]; batch.update(doc(entriesCol(currentUid), e.id), { clients: next }); });
+        targets.slice(i, i + 400).forEach(e=>{ const next = (Array.isArray(e.clients) && e.clients.length) ? e.clients.map(x=> { if(clValid(x)) return x; const n = clNorm(x); return clStore({ ...n, reasons: n.reasons.map(r=> clReasonOk(r) ? r : { reason, other: reason === CL_SE ? other : '' }) }); }) : [clStore(clNorm({ name: client, reason, other: reason === CL_SE ? other : '' }))]; batch.update(doc(entriesCol(currentUid), e.id), { clients: next }); });
         await batch.commit();
       }
       clBatch = { open: false, client: '', reason: '', other: '' };
@@ -9113,7 +9157,7 @@ match /users/{userId}/meta/{docId} {
           note: active.note || ''
         };
         if(withTz && tz) entry.tz = tz;
-        if(withTz && Array.isArray(active.clients) && active.clients.length) entry.clients = active.clients.map(x=> ({ name: x.name, reason: x.reason || '', other: x.other || '' }));
+        if(withTz && Array.isArray(active.clients) && active.clients.length) entry.clients = active.clients.map(x=> clStore(clNorm(x)));
         batch.set(newEntryRef, entry);
         batch.delete(activeDoc(currentUid));
         await batch.commit();
