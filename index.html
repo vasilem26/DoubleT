@@ -2956,7 +2956,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.109</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.110</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -9300,7 +9300,7 @@ match /users/{userId}/meta/{docId} {
       else parts.push(clRequired(e.note || '', e.date) ? ['Not set', 'Not set', ''] : ['', '', '']);
       const total = Math.round((e.durationSec || 0) / 36), each = Math.floor(total / parts.length);   // hundredths of an hour
       parts.forEach((pt, k)=>{ const share = (k === parts.length - 1 ? total - each * (parts.length - 1) : each) / 100;
-        out.push([e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), e.note || '', pt[0], pt[1], pt[2], share, +(e.durationSec / 3600).toFixed(2), n + 1, e.tz || '']); });
+        out.push([e.date, clockTime(e.startISO, e.tz), clockTime(e.stopISO, e.tz), e.note || '', pt[0], pt[1], pt[2], share, total / 100, n + 1, e.tz || '']); });
     });
     return out;
   }
@@ -9370,11 +9370,13 @@ match /users/{userId}/meta/{docId} {
     URL.revokeObjectURL(url);
   }
 
+  // the person exporting: their profile name, or their email when no name is set
+  const exporterName = ()=> { const u = auth.currentUser; return (u && (u.displayName || u.email)) || ''; };
   function doExportXlsx(dates, label){
     const wb = XLSX.utils.book_new();
     if(exportType==='clients'){
       const rows = buildClientRows(dates), total = rows.reduce((t, r)=> t + Math.round(r[7] * 100), 0) / 100;
-      const aoa = [[`Double T — Time by client (${label})`], [], CL_EXPORT_HEADS, ...rows, [], ['Total (h)', '', '', '', '', '', '', total]];
+      const aoa = [[`Double T — Time by client (${label})`], [exporterName() ? `Name: ${exporterName()}` : ''], CL_EXPORT_HEADS, ...rows, [], ['Total (h)', '', '', '', '', '', '', total]];
       const ws = XLSX.utils.aoa_to_sheet(aoa);
       ws['!cols'] = [{wch:12},{wch:8},{wch:8},{wch:16},{wch:24},{wch:34},{wch:22},{wch:13},{wch:12},{wch:7},{wch:18}];
       ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:CL_EXPORT_HEADS.length-1} }];
@@ -9395,7 +9397,7 @@ match /users/{userId}/meta/{docId} {
 
     const aoa = [
       [`Double T — Time Report (${typeLabel} · ${label})`],
-      [],
+      [exporterName() ? `Name: ${exporterName()}` : ''],
       headers,
       ...rows,
       [],
@@ -9530,15 +9532,19 @@ match /users/{userId}/meta/{docId} {
 
     // clear label/value info strip (Period · Type · Total)
     const infoY1 = 33, infoY2 = 40;
-    const cols = [14, 14 + (pageWidth-28)/3, 14 + 2*(pageWidth-28)/3];
-    const infoItems = [ ['PERIOD', label], ['TYPE', typeLabel], ['TOTAL', fmtHM(totalSec)+'h'] ];
+    const who = exporterName();
+    const infoItems = [ ...(who ? [['NAME', who]] : []), ['PERIOD', label], ['TYPE', typeLabel], ['TOTAL', fmtHM(totalSec)+'h'] ];
+    const colW = (pageWidth-28)/infoItems.length, cols = infoItems.map((_, i)=> 14 + i*colW);
     infoItems.forEach(([lbl,val], i)=>{
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.text(lbl, cols[i], infoY1);
-      doc.setFontSize(12);
+      let size = 12, txt = String(val);
+      doc.setFontSize(size);
+      while(size > 8 && doc.getTextWidth(txt) > colW - 4){ size -= 0.5; doc.setFontSize(size); }
+      while(txt.length > 1 && doc.getTextWidth(txt) > colW - 4) txt = txt.slice(0, -2) + '…';
       doc.setTextColor(30);
-      doc.text(String(val), cols[i], infoY2);
+      doc.text(txt, cols[i], infoY2);
     });
     doc.setDrawColor(230);
     doc.line(14, infoY2+4, pageWidth-14, infoY2+4);
