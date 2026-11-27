@@ -2956,7 +2956,7 @@
     </div>
 
     <footer class="tt-foot" id="tt-foot">
-      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.110</span></div>
+      <div class="tt-foot-left"><span class="tt-foot-logo"><svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#1B2733"/><text x="32" y="48" font-family="Courier New, monospace" font-weight="700" font-size="46" fill="#E8A33D" text-anchor="middle">T</text></svg></span><span class="tt-foot-ver" id="tt-foot-ver">Double T v1.111</span></div>
       <div class="tt-foot-status" id="tt-foot-status" role="status"><i class="tt-foot-dot" aria-hidden="true"></i><span id="tt-foot-status-text">Online · entries sync automatically</span></div>
       <nav class="tt-foot-links" aria-label="Shortcuts">
         <button type="button" data-foot="projects">Projects</button>
@@ -4368,6 +4368,7 @@
           const timeRange = (s && st) ? `${s.toTimeString().slice(0,5)}–${st.toTimeString().slice(0,5)}` : '';
           if(adminEditingRefId===refId){
             const stopVal = st ? st.toTimeString().slice(0,5) : '';
+            const startVal = s ? s.toTimeString().slice(0,5) : '';
             const currentNote = e.note || '';
             const projectOptions = [...adminSelectedUserPresets];
             if(currentNote && !projectOptions.includes(currentNote)) projectOptions.push(currentNote);
@@ -4380,8 +4381,10 @@
                   <select class="tt-admin-edit-time" id="tt-admin-edit-project-${escapeHtml(refId)}">${optionsHtml}</select>
                 </div>
                 <div class="tt-admin-edit-row">
-                  <span class="tt-admin-edit-label">Started ${s?s.toTimeString().slice(0,5):'—'}. New end time:</span>
-                  <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-input-${escapeHtml(refId)}" value="${stopVal}" />
+                  <span class="tt-admin-edit-label">Start</span>
+                  <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-start-${escapeHtml(refId)}" value="${startVal}" aria-label="Start time" />
+                  <span class="tt-admin-edit-label">End</span>
+                  <input type="time" class="tt-admin-edit-time" id="tt-admin-edit-input-${escapeHtml(refId)}" value="${stopVal}" aria-label="End time" />
                 </div>
                 <div class="tt-admin-edit-actions">
                   <button type="button" class="tt-btn tt-menu-btn-inline tt-admin-edit-cancel" data-ref-id="${escapeHtml(refId)}">Cancel</button>
@@ -4442,14 +4445,18 @@
         const errEl = $(`tt-admin-edit-error-${refId}`);
         const timeVal = $(`tt-admin-edit-input-${refId}`).value;
         const newNote = $(`tt-admin-edit-project-${refId}`).value;
+        const startVal = $(`tt-admin-edit-start-${refId}`).value;
+        if(!startVal){ errEl.textContent = 'Please choose a start time.'; return; }
         if(!timeVal){ errEl.textContent = 'Please choose an end time.'; return; }
-        const startDT = new Date(entry.startISO);
-        const [hh, mm] = timeVal.split(':').map(Number);
-        const newStopDT = new Date(startDT.getFullYear(), startDT.getMonth(), startDT.getDate(), hh, mm, 0);
-        if(newStopDT <= startDT){ errEl.textContent = 'End time must be after the start time.'; return; }
+        const oldStart = new Date(entry.startISO), oldStop = entry.stopISO ? new Date(entry.stopISO) : null;
+        // a time left as it was keeps its exact value (seconds included); a changed one is set on the entry's day
+        const at = (hhmm)=>{ const [hh, mm] = hhmm.split(':').map(Number); return new Date(oldStart.getFullYear(), oldStart.getMonth(), oldStart.getDate(), hh, mm, 0); };
+        const startDT = startVal === oldStart.toTimeString().slice(0,5) ? oldStart : at(startVal);
+        const newStopDT = (oldStop && timeVal === oldStop.toTimeString().slice(0,5)) ? oldStop : at(timeVal);
+        if(newStopDT <= startDT){ errEl.textContent = 'The end time must be after the start time.'; return; }
         const newDurationSec = Math.round((newStopDT - startDT)/1000);
         try{
-          const updated = editedEntryFields(entry, newStopDT.toISOString(), newDurationSec, newNote);
+          const updated = editedEntryFields(entry, newStopDT.toISOString(), newDurationSec, newNote, startDT.toISOString());
           await setDoc(entry.ref, updated);
           Object.assign(entry, updated);
           adminEditingRefId = null;
@@ -4953,8 +4960,8 @@
 
   // What an admin end-time edit writes back. setDoc replaces the whole document, so
   // every field to keep has to be listed here — including the entry's timezone.
-  function editedEntryFields(entry, stopISO, durationSec, note){
-    const updated = { date: entry.date, startISO: entry.startISO, stopISO, durationSec, note: note || '', uid: entry.uid };
+  function editedEntryFields(entry, stopISO, durationSec, note, startISO){
+    const updated = { date: entry.date, startISO: startISO || entry.startISO, stopISO, durationSec, note: note || '', uid: entry.uid };
     if(entry.tz) updated.tz = entry.tz;
     if(Array.isArray(entry.clients) && entry.clients.length) updated.clients = entry.clients;
     return updated;
